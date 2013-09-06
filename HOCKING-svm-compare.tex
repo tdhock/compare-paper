@@ -1,0 +1,273 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage[table]{xcolor}
+\usepackage{array}
+\usepackage{slashbox}
+\usepackage{multirow}
+\usepackage{fullpage}
+\usepackage{tikz}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{stfloats}
+\usepackage{float}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\newtheorem{proposition}{Proposition}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theo}{Theorem}    % numérotés par section
+\newtheorem{lem}{Lemma}
+
+\newcommand{\RR}{\mathbb R}
+\newcommand{\NN}{\mathbb N}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\plausibleK}{\textit{plausibleK}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\minimize}{minimize}
+
+
+\newfloat{Algorithm}{thp}{lop}
+\floatname{Algorithm}{Algorithm}
+
+% For citations
+\usepackage{natbib}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{hyperref}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage{icml2013} 
+
+\icmltitlerunning{Support vector comparison machines}
+
+\begin{document}
+
+\renewcommand{\arraystretch}{1.5}
+
+\definecolor{lightgray}{rgb}{0.9,0.9,0.9}
+\definecolor{pastelblue}{RGB}{213,229,255}
+\newcolumntype{a}{>{\columncolor{lightgray}}c}
+
+\twocolumn[
+\icmltitle{Support vector comparison machines}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2012
+% package.
+
+
+%\icmlauthor{Guillem Rigaill\footnotemark[1]}{rigaill@evry.inra.fr}
+%\icmladdress{Unit\'e de Recherche en G\'enomique V\'eg\'etale INRA-CNRS-Universit\'e d'Evry Val d'Essonne, Evry, France}
+%\icmlauthor{Toby Dylan Hocking\footnotemark[1], 
+% Francis Bach}{toby.hocking@inria.fr, francis.bach@inria.fr}
+\icmlauthor{Toby Dylan Hocking}{toby@sg.cs.titech.ac.jp}
+\icmlauthor{Supaporn Spanurattana}{supaporn@sg.cs.titech.ac.jp}
+\icmlauthor{Masashi Sugiyama}{sugi@cs.titech.ac.jp}
+\icmladdress{Department of Computer Science, Tokyo Institute of
+  Technology, Tokyo 152-8552, Japan}
+
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{support vector machine, ranking, comparing, convex,
+  optimization, relaxation, libsvm}
+
+\vskip 0.3in
+]
+
+\begin{abstract}
+  In ranking problems, the goal is to learn a ranking function
+  $f(x)\in\RR$ from labeled pairs $x,x'$ of input points. In this
+  paper, we consider the related comparison problem, where the label
+  $y\in\{-1,0,1\}$ indicates which element of the pair is better, or
+  if there is no significant difference. We cast the learning problem
+  as a margin maximization, and show that it can be solved by
+  converting it to a standard SVM. We compare our algorithm to SVMrank
+  using a benchmark ranking data set.
+\end{abstract}
+
+\section{Introduction}
+
+In this paper we consider the supervised comparison problem. Assume
+that we have $n$ labeled training pairs and for each pair
+$i\in\{1,\dots,n\}$ we have input features $x_i,x_i'\in\RR^p$ and a
+label $y_i\in\{-1,0,1\}$ that indicates which element is better:
+\begin{equation}
+  \label{eq:z}
+  y_i =
+  \begin{cases}
+    -1 & \text{ if $x_i$ is better than $x'_i$}\\
+    0 & \text{ if $x_i$ is as good as $x'_i$}\\
+    1 & \text{ if $x'_i$ is better than $x_i$}.
+  \end{cases}
+\end{equation}
+The goal of learning is to find a comparison function $c:\RR^p \times
+\RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data:
+\begin{equation}
+  \minimize_{c} 
+  \sum_{j=1}^n
+  e\left[ c(x_i, x_i'), y_i \right].
+\end{equation}
+For evaluation, we propose the zero-one loss function
+$e:\{-1,0,1\}\times\{-1,0,1\}\rightarrow\{0,1\}$, described in
+Table~\ref{tab:evaluation}.
+
+This is similar to a ranking problem, for which a number of machine
+learning algorithms exist \citep{learning-to-rank}, such as RankSVM
+\citep{ranksvm}. There are two key differences between ranking and
+comparing, which is what we want to do:
+\begin{itemize}
+\item Ranking algorithms ignore the $y_i=0$ equality constraints.
+\item The goal of ranking is to give an absolute order to a set of
+  items, typically documents in a search engine. Comparison is simpler
+  since we only need to make a decision about exactly two items.
+\end{itemize}
+
+\section{Related work}
+\label{sec:related}
+
+First we discuss connections with several existing methods in the
+machine learning literature, and then we discuss how ranking
+algorithms can be applied to the comparison problem.
+
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{|a|c|c|}\hline
+    \rowcolor{lightgray}
+    \backslashbox{Outputs}{Inputs}
+    &single items $x$&pairs $x,x'$\\ \hline
+    $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
+    $y\in\{-1,0,1\}$ &Reject option& this work\\ \hline
+  \end{tabular}
+  \caption{\label{tab:related} Comparison is similar to ranking 
+    and classification with reject option.}
+\end{table}
+
+\subsection{Rank, reject, and rate}
+
+Some related work appears in Table~\ref{tab:related}:
+
+\begin{itemize}
+\item \citet{reject-option} studied the statistical properties of the
+  hinge loss for the classification with reject option.
+\item \citet{ranksvm} proposed SVM for ranking.
+\item \citet{rank-with-ties} proposed a boosting algorithm for ranking
+  with ties, and observed that ties are more effective when there are
+  more output values.
+\item \citet{trueskill} proposed TrueSkill: a Bayesian skill rating
+  system, a generalization of the Elo chess rating system.
+\end{itemize}
+
+The rest of this article is organized as follows. In
+Section~\ref{sec:related} we explain how existing algorithms for
+ranking can be applied to the comparison problem, then in
+Section~\ref{sec:svm-compare} we propose a new algorithm:
+SVMcompare. We show a comparison with SVMrank on a benchmark dataset
+in Section~\ref{sec:results} and discuss future work in
+Section~\ref{sec:conclusions}.
+
+\subsection{SVMrank for comparing}
+
+In this section we explain how to apply the existing SVMrank algorithm
+to a comparison data set.
+
+TODO
+
+
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{|a|c|c|c|}\hline
+    \rowcolor{lightgray}
+    \backslashbox{$\hat{y}$}{ $y$}
+    &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
+    \textbf{-1}&0  & FP & Inversion   	\\ \hline 
+    \textbf{0} &FN& 0& FP\\ \hline
+    \textbf{1} & Inversion & FP &0	\\ \hline
+  \end{tabular}
+  % \cellcolor{pastelblue}
+  \caption{Evaluation for comparison problems.}
+  \label{tab:evaluation}
+\end{table}
+
+\subsection{Applying SVMrank}
+
+First we learn a ranking function $r:\RR^p \rightarrow \RR$ and then
+threshold it using 
+
+\section{Support vector comparison machines}
+\label{sec:svm-compare}
+
+Given a kernel function $\kappa:\RR^p\times \RR^p\rightarrow\RR$,
+define the $K\in\RR^{2n\times 2n}$ kernel matrix based on the $n$
+pairs of training inputs $x_i,x_i'$.
+% \begin{equation}
+%   \label{eq:kernel}
+%   K=  \left[
+%     \begin{array}{cccccc}
+%     \kappa(x_1, x_1) & \cdots & \kappa(x_n, x_1) &
+%     \kappa(x_1', x_1) & \cdots & \kappa(x_n', x_1) \\
+%     \vdots & & \vdots & \vdots && \vdots \\
+%     \kappa(x_1, x_n) & \cdots & \kappa(x_n, x_n) &
+%     \kappa(x_1', x_n) & \cdots & \kappa(x_n', x_n) \\
+%     \kappa(x_1, x_1') & \cdots & \kappa(x_n, x_1') &
+%     \kappa(x_1', x_1') & \cdots & \kappa(x_n', x_1') \\
+%     \vdots & & \vdots & \vdots && \vdots 
+%     \end{array}
+%     \right].
+% \end{equation}
+
+%The three rows shown are $K_1,K_n,K_1'\in\RR^{2n}$. 
+
+The primal problem for some $C\in\RR^+$ is
+\begin{equation}
+  \begin{aligned}
+      \minimize_{a\in\RR^{2n},\xi\in\RR^n,\beta\in\RR}\ \ & 
+      \frac 1 2 a^\intercal K a + C\sum_{i=1}^n \xi_i \\
+      \text{subject to}\ \ & 
+      \text{for all $i\in\{1,\dots,n\}$, }
+      \xi_i \geq 0,\\
+      &\text{and }
+      \xi_i \geq 1-y_i(\beta + a^\intercal (K_i'-K_i)).
+  \end{aligned}
+\end{equation}
+TODO: write the Lagrangian and dual feasibility conditions.
+
+If $v\in\RR^n$ are the dual variables corresponding to the second
+constraint, then the dual problem is
+\begin{equation}
+  \begin{aligned}
+    \minimize_{v\in\RR^n}\ \ &
+    \frac 1 2 v^\intercal Y M^\intercal K M Y v - v^\intercal 1\\
+    \text{subject to}\ \ &
+    \text{for all $i\in\{1,\dots,n\}$, } 0\leq v_i\leq C\\
+    & \sum_{i=1}^n v_i y_i = 0,
+  \end{aligned}
+\end{equation}
+where $M=[-I_n \, I_n]^\intercal\in\{-1,0,1\}^{2n\times n}$. This quadratic problem
+is equivalent to a standard SVM with kernel $M^\intercal K M$.
+
+So we can use any efficient SVM solver, such as libsvm
+\citep{libsvm}.
+
+After solving learned ranking function is $r(x) = \sum_{i\in\text{sv}}
+a_i \kappa(x, x_i)/\beta$.
+
+\section{Results}
+\label{sec:results}
+
+\section{Conclusions and future work}
+\label{sec:conclusions}
+
+\bibliographystyle{abbrvnat}
+\bibliography{refs}
+
+\end{document}
+
