@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{listings}
+\usepackage{clrscode}
 \usepackage[table]{xcolor}
 \usepackage{array}
 \usepackage{slashbox}
@@ -113,7 +114,7 @@ The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data:
 \begin{equation}
   \minimize_{c} 
-  \sum_{j=1}^n
+  \sum_{i=1}^n
   e\left[ c(x_i, x_i'), y_i \right].
 \end{equation}
 For evaluation, we propose the zero-one loss function
@@ -200,10 +201,23 @@ TODO
 \subsection{Applying SVMrank}
 
 First we learn a ranking function $r:\RR^p \rightarrow \RR$ and then
-threshold it using 
+threshold it using TODO.
 
 \section{Support vector comparison machines}
+
+In this section we propse \proc{SVMcompare}, a new learning algorithm for
+comparison problems.
+
+\subsection{LP and QP for separable data}
+\label{sec:lp-qp}
+
+To illustrate the nature of the max-margin comparison problem, in this
+section we assume that we have linearly separable training data.
+
+\subsection{Kernelized QP for non-separable data}
 \label{sec:svm-compare}
+
+In this section, we assume the 
 
 Given a kernel function $\kappa:\RR^p\times \RR^p\rightarrow\RR$,
 define the $K\in\RR^{2n\times 2n}$ kernel matrix based on the $n$
@@ -244,21 +258,76 @@ If $v\in\RR^n$ are the dual variables corresponding to the second
 constraint, then the dual problem is
 \begin{equation}
   \begin{aligned}
+    \label{eq:svm-dual}
     \minimize_{v\in\RR^n}\ \ &
     \frac 1 2 v^\intercal Y M^\intercal K M Y v - v^\intercal 1\\
     \text{subject to}\ \ &
-    \text{for all $i\in\{1,\dots,n\}$, } 0\leq v_i\leq C\\
-    & \sum_{i=1}^n v_i y_i = 0,
+    \sum_{i=1}^n v_i y_i = 0,\\
+&    \text{for all $i\in\{1,\dots,n\}$, } 0\leq v_i\leq C,
   \end{aligned}
 \end{equation}
 where $M=[-I_n \, I_n]^\intercal\in\{-1,0,1\}^{2n\times n}$. This quadratic problem
 is equivalent to a standard SVM with kernel $M^\intercal K M$.
 
 So we can use any efficient SVM solver, such as libsvm
-\citep{libsvm}.
+\citep{libsvm}. We used the R interface in the \texttt{kernlab}
+package of \citet{kernlab}, and our code is available in the
+\texttt{rankSVMcompare} package on Github.
 
-After solving learned ranking function is $r(x) = \sum_{i\in\text{sv}}
-a_i \kappa(x, x_i)/\beta$.
+After solving the SVM dual problem (\ref{eq:svm-dual}), we recover the
+primal variables $a = MYv$ and the bias $\beta$ using the usual method
+(TODO). The learned ranking function is $r(x) = \sum_{i\in\text{sv}}
+-a_i \kappa(x, x_i)/\beta$ (TODO...Z??).
+
+\proc{SVMcompare} is summarized as Algorithm~\ref{alg:SVMcompare}.
+
+\begin{algorithm}[b!]
+   \caption{\proc{SVMcompare}}
+   \label{alg:SVMcompare}
+\begin{algorithmic}
+  \STATE {\bfseries Input:} equality pairs $Z,Z'\in\RR^{m \times p}$,
+  inequality pairs $X,X'\in\RR^{n\times p},\, y\in\{-1,0,1\}$, cost
+  parameter $C\in\RR^+$, kernel $\kappa:\RR^p\times \RR^p \rightarrow
+  \RR$.
+
+  \STATE $v \gets \proc{SVMdual}(K, y, C)$.
+
+  \STATE $a \gets M Y v$.
+
+  \STATE $\beta = ...$
+  
+  \STATE $r(x) = ...$
+
+%  $k_c \gets \max \{ \plausibleK \}$ 
+
+  % \STATE $\plausibleK \gets \plausibleK \setminus k_c$
+  
+  % \WHILE{$\plausibleK \neq \emptyset$} 
+
+  % \STATE $\text{next}\lambda \gets + \infty, \quad \text{nextK} \gets
+  % 0$ 
+
+  % \FOR{$ k \in \plausibleK $} 
+  
+  % \STATE $\text{hit\_time} \gets \dfrac{ ||y_i-\hat y_i^{k_c}||_2^2 -
+  %   ||y_i-\hat y_i^k||_2^2 }{ h\left(\hat y_i^k, x_i\right) -
+  %   h\left(\hat y_i^{k_c}, x_i\right) }$
+
+  % \IF{$\text{next}\lambda > \text{hit\_time}$}
+
+  % \STATE $\text{next}\lambda \gets \text{hit\_time},\quad \text{nextK}
+  % \gets k$
+
+  %  \ENDIF
+  %  \ENDFOR
+  %  \STATE $k_c\gets \text{nextK},\quad$\textbf{Save} $k_c, \text{next}\lambda$ 
+  %  \STATE $\plausibleK \gets
+  %  \plausibleK \setminus \{k\mid k\geq k_c\}$
+  %  \ENDWHILE
+  %  \STATE {\bfseries Output:} $\hat k_i$ represented by breakpoints
+  %  $k_c,\text{next}\lambda$.
+   \end{algorithmic}
+\end{algorithm}
 
 \section{Results}
 \label{sec:results}
