@@ -19,7 +19,7 @@
 
 \newtheorem{definition}{Definition}
 \newtheorem{theo}{Theorem}    % numérotés par section
-\newtheorem{lem}{Lemma}
+\newtheorem{lemma}{Lemma}
 
 \newcommand{\RR}{\mathbb R}
 \newcommand{\NN}{\mathbb N}
@@ -139,6 +139,11 @@ First we discuss connections with several existing methods in the
 machine learning literature, and then we discuss how ranking
 algorithms can be applied to the comparison problem.
 
+When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
+problem is known as learning a relation \citep{relations}. In this
+article we only consider the case when inputs are continuous
+$x_i,x_i'\in\RR^p$.
+
 \begin{table}[b!]
   \centering
   \begin{tabular}{|a|c|c|}\hline
@@ -180,8 +185,8 @@ Section~\ref{sec:conclusions}.
 In this section we explain how to apply the existing SVMrank algorithm
 to a comparison data set.
 
-TODO
-
+First we learn a ranking function $r:\RR^p \rightarrow \RR$ and then
+threshold it using TODO.
 
 \begin{table}[b!]
   \centering
@@ -190,18 +195,26 @@ TODO
     \backslashbox{$\hat{y}$}{ $y$}
     &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
     \textbf{-1}&0  & FP & Inversion   	\\ \hline 
-    \textbf{0} &FN& 0& FP\\ \hline
+    \textbf{0} &FN& 0& FN\\ \hline
     \textbf{1} & Inversion & FP &0	\\ \hline
   \end{tabular}
   % \cellcolor{pastelblue}
-  \caption{Evaluation for comparison problems.}
+  \caption{We use the zero-one loss to evaluate a predicted label
+    $\hat y$ given the true label $y$. False positives (FP) occur 
+    when predicting a significant difference $\hat y\in\{-1,1\}$ 
+    when there is none $y=0$, and False Negatives (FN) are the opposite.
+  Inversions occur when predicting the opposite of the true label
+  $\hat y = -y$.}
   \label{tab:evaluation}
 \end{table}
 
-\subsection{Applying SVMrank}
-
-First we learn a ranking function $r:\RR^p \rightarrow \RR$ and then
-threshold it using TODO.
+\begin{equation}
+  \begin{aligned}
+    \minimize_{w\in\RR^p}\ \  & w^\intercal w \\
+    \text{subject to}\ \  & w^\intercal(x_i'-x_i)y_i \geq 1,
+    \ \forall i\in I_1\cup I_{-1}.
+  \end{aligned}
+\end{equation}
 
 \section{Support vector comparison machines}
 
@@ -214,14 +227,107 @@ comparison problems.
 To illustrate the nature of the max-margin comparison problem, in this
 section we assume that we have linearly separable training data.
 
+In the following linear program (LP), we consider learning a linear
+ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
+\begin{equation}
+  \label{eq:max-margin-lp}
+  \begin{aligned}
+    \maximize_{\mu\in\RR, w\in\RR^p}\ & \mu \\
+    \text{subject to}\ & \mu \leq 1-|w^\intercal (x_i' - x_i)|,\
+    \forall\  i\in I_0\\
+    &\mu \leq -1 +  w^\intercal(x_i'-x_i)y_i,\ \forall\ i\in I_1\cup I_{-1},
+  \end{aligned}
+\end{equation}
+where $I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
+labels. Note that solving this problem is a practical test for linear
+separability. If the optimal $\mu>0$ then the data are linearly
+separable. The geometric interpretation of the margin is shown in
+Figure~TODO. It is the distance from any difference vector $x_i'-x_i$
+to its nearest decision boundary $r(x)\in\{-1,1\}$.
+
+Another way to formulate the comparison problem is by first performing
+a change of variables, and then learning a binary SVM. The idea is to
+maximize the margin between significant differences $y_i\in\{-1,1\}$
+and equality pairs $y_i=0$. Let $X_y,X_y'$ denote the $|I_y|\times p$
+matrices formed by all the pairs $i\in I_y$. We thus define a new data
+set with $m=|I_1|+|I_{-1}|+2|I_0|$ points suitable for training a
+binary SVM:
+\begin{equation}
+  \tilde X = \left[
+    \begin{array}{c}
+      X_1 \\
+      X_{-1}'\\
+      X_0\\
+      X_0'
+    \end{array}
+  \right],\ 
+  \tilde X' = \left[
+    \begin{array}{c}
+      X_1' \\
+      X_{-1}\\
+      X_0'\\
+      X_0
+    \end{array}
+  \right],\ 
+  \tilde y = \left[
+    \begin{array}{c}
+      1 \\
+      1\\
+      -1\\
+      -1
+    \end{array}
+  \right],
+\end{equation}
+where $\tilde X,\tilde X'\in\RR^{m\times p}$ and $\tilde
+y\in\{-1,1\}^m$. We then learn a linear function
+$f(x)=\beta+a^\intercal x$ using binary SVM:
+\begin{equation}
+  \label{eq:max-margin-qp-tilde}
+  \begin{aligned}
+    \minimize_{a\in\RR^p, \beta\in\RR}\ & \frac 1 2 a^\intercal a  \\
+    \text{subject to}\ & \tilde y_i (\beta + a^\intercal \tilde x_i) \geq 1,
+    \ \forall i\in\{1,\dots,m\}.
+  \end{aligned}
+\end{equation}
+In the next Lemma, we construct a feasible solution to the original LP
+(\ref{eq:max-margin-lp}) based on this QP
+(\ref{eq:max-margin-qp-tilde}).
+\begin{lemma}
+  Let $a\in\RR^p,\beta\in\RR$ be a solution of
+  (\ref{eq:max-margin-qp-tilde}). Then $\hat mu = \frac{-1}{\beta} $
+  and $\hat w = \frac{-1}{\beta} a$ are feasible for
+  (\ref{eq:max-margin-lp}).
+\end{lemma}
+\begin{proof}
+  Begin by assuming that we want to find a ranking function $r(x)=\hat
+  w^\intercal x = \gamma a^\intercal x$, where $\gamma\in\RR$ is a
+  scaling constant.  Then consider that for all $x$ on the decision
+  boundary, we have the following two equalities
+  \begin{equation}
+    \label{eq:dec-boundary-rank}
+    a
+  \end{equation}
+and TODO
+\begin{equation}
+  \label{eq:max-margin-qp}
+  \begin{aligned}
+    \minimize_{a\in\RR^p, \beta\in\RR}\ & \frac 1 2 a^\intercal a  \\
+    \text{subject to}\ & \beta + |a^\intercal (x_i'-x_i)| \leq -1,\
+    \forall\  i\in I_0\\
+    & \beta + a^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
+  \end{aligned}
+\end{equation}
+\end{proof}
+
+
 \subsection{Kernelized QP for non-separable data}
 \label{sec:svm-compare}
 
 In this section, we assume the 
 
-Given a kernel function $\kappa:\RR^p\times \RR^p\rightarrow\RR$,
-define the $K\in\RR^{2n\times 2n}$ kernel matrix based on the $n$
-pairs of training inputs $x_i,x_i'$.
+Given a positive definite kernel function $\kappa:\RR^p\times
+\RR^p\rightarrow\RR$, define the $K\in\RR^{2n\times 2n}$ kernel matrix
+based on the $n$ pairs of training inputs $x_i,x_i'$.
 % \begin{equation}
 %   \label{eq:kernel}
 %   K=  \left[
