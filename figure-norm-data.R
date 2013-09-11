@@ -61,6 +61,9 @@ arrows(Xip[yi==-1,1],
        col=yi.colors[yi==-1])
 ##text(Xi, labels=seq_along(yi)) # show row numbers.
 ##text(Xi+1/4, labels=yi) # show labels.
+legend("bottomleft", legend=names(color.code), col=color.code,
+       lwd=pairLWD, lty=rep(1, length(color.code)),
+       title="label $y_i$", bg="white")
 
 lab.i <- c(1,11,20)
 pch.arr <- 1
@@ -137,7 +140,12 @@ abline(1,-1)
 abline(-1,-1)
 points(X.diff[lab.i,])
 text(-0.8, -1.4, "$\\Phi(x_{20}')-\\Phi(x_{20})$", cex=0.8)
+
+text(c(1,2,-1.3), c(-1,1.5,-1/2), sprintf("$y_i=%s$",names(color.code)),
+     col=color.code)
+
 text(-0.8, 0.8, "$\\Phi(x_{11}')-\\Phi(x_{11})$", cex=0.8)
+
 text(1.2, 2.5, "$\\Phi(x_{1}')-\\Phi(x_{1})$", cex=0.8)
 
 dev.off()
