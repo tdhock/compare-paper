@@ -40,7 +40,7 @@ tikz("figure-norm-data.tex", h=8,w=3)
 par(las=1, mar=c(2,1,0,1), mfrow=c(3,1), cex=1, omi=c(0,0,0,0))
 plot(X, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
 title(xlab="input feature 1", ylab="input feature 2", line=0.1)
-mtext("Original feature space", 4, las=0)
+mtext("Original feature space $x\\in\\mathbb R^p$", 4, las=0)
 contour(levs, levs, m, col="grey50", add=TRUE, levels=1:10)
 pairLWD <- 2
 segments(Xi[yi==0,1],
@@ -89,7 +89,9 @@ Xip.square <- Xip*Xip
 X.square <- rbind(Xi.square, Xip.square)
 plot(X.square, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
 title(xlab="additional feature 1", ylab="additional feature 2", line=0.1)
-mtext("Enlarged feature space", 4, las=0)
+mtext("Enlarged feature space $\\Phi(x)$", 4, las=0)
+
+text(5, 3/2, "$r(x)=w^\\intercal \\Phi(x)$", col="grey50", srt=-45)
 
 levs <- seq(min(X.square),max(X.square),l=20)
 m <- matrix(NA,length(levs),length(levs))
@@ -130,22 +132,29 @@ draw(1,c(3/5, 0))
 text(-1/2, 1/2, labels=sprintf("$\\Phi(x_{11}')$",i), cex=0.8)
 text(1.2, -0.05, labels=sprintf("$\\Phi(x_{11})$",i), cex=0.8)
 
+## Plot 3: difference vectors as points.
 X.diff <- Xip.square-Xi.square
 plot(X.diff, type="p", asp=1, xlab="", ylab="", xaxt="n", yaxt="n",
      pch=20, col=yi.colors)
 title(xlab="difference feature 1", ylab="difference feature 2", line=0.1)
-mtext("Original feature space", 4, las=0)
+mtext("Difference of enlarged features $\\Phi(x')-\\Phi(x)$", 4, las=0)
 abline(h=0,v=0, col="grey")
 abline(1,-1)
 abline(-1,-1)
 points(X.diff[lab.i,])
 text(-0.8, -1.4, "$\\Phi(x_{20}')-\\Phi(x_{20})$", cex=0.8)
 
-text(c(1,2,-1.3), c(-1,1.5,-1/2), sprintf("$y_i=%s$",names(color.code)),
+text(c(1,2,-1.3), c(-0.8,1.5,-1/2), sprintf("$y_i=%s$",names(color.code)),
      col=color.code)
 
 text(-0.8, 0.8, "$\\Phi(x_{11}')-\\Phi(x_{11})$", cex=0.8)
 
 text(1.2, 2.5, "$\\Phi(x_{1}')-\\Phi(x_{1})$", cex=0.8)
+
+text(0.2, -1, "$w^\\intercal [ \\Phi(x') - \\Phi(x) ] = -1$",
+     cex=0.7, srt=-45)
+
+text(2.2, -1, "$w^\\intercal [ \\Phi(x') - \\Phi(x) ] = 1$",
+     cex=0.7, srt=-45)
 
 dev.off()

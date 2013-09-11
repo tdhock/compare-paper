@@ -189,11 +189,11 @@ Some related work appears in Table~\ref{tab:related}:
     $y_i\in\{-1,0,1\}$. The level curves of the underlying ranking
     function $r(x)=||x||^2$ are drawn in grey, and differences
     $|r(x)-r(x')|\leq 1$ are considered insignificant
-    ($y_i=0$). \textbf{Middle}: in the enlarged
-    feature space $\Phi(x_i),\Phi(x_i')$, the ranking function
-    is linear. \textbf{Bottom}: two symmetric hyperplanes are used as
-    a comparison function to separate the difference vectors
-    $\Phi(x_i')-\Phi(x_i)$.}
+    ($y_i=0$). \textbf{Middle}: in the enlarged feature space
+    $\Phi(x_i),\Phi(x_i')$, the ranking function is linear:
+    $r(x)=w^\intercal \Phi(x)$. \textbf{Bottom}: two symmetric
+    hyperplanes $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are used
+  as a comparison function to separate the difference vectors.}
   \label{fig:geometry}
 \end{figure}
 
