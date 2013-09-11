@@ -132,6 +132,13 @@ comparing, which is what we want to do:
   since we only need to make a decision about exactly two items.
 \end{itemize}
 
+The rest of this article is organized as follows. In
+Section~\ref{sec:related} we discuss links with related work on
+classification and ranking, then in Section~\ref{sec:svm-compare} we
+propose a new algorithm: SVMcompare. We show results on a benchmark
+dataset in Section~\ref{sec:results} and discuss future work in
+Section~\ref{sec:conclusions}.
+
 \section{Related work}
 \label{sec:related}
 
@@ -172,13 +179,12 @@ Some related work appears in Table~\ref{tab:related}:
   system, a generalization of the Elo chess rating system.
 \end{itemize}
 
-The rest of this article is organized as follows. In
-Section~\ref{sec:related} we explain how existing algorithms for
-ranking can be applied to the comparison problem, then in
-Section~\ref{sec:svm-compare} we propose a new algorithm:
-SVMcompare. We show a comparison with SVMrank on a benchmark dataset
-in Section~\ref{sec:results} and discuss future work in
-Section~\ref{sec:conclusions}.
+\begin{figure}
+  \centering
+  \input{figure-norm-data}
+  \caption{geometric interpretation of the comparison problem.}
+  \label{fig:geometry}
+\end{figure}
 
 \subsection{SVMrank for comparing}
 
@@ -217,6 +223,7 @@ threshold it using TODO.
 \end{equation}
 
 \section{Support vector comparison machines}
+\label{sec:svm-compare}
 
 In this section we propse \proc{SVMcompare}, a new learning algorithm for
 comparison problems.
@@ -250,7 +257,7 @@ a change of variables, and then learning a binary SVM. The idea is to
 maximize the margin between significant differences $y_i\in\{-1,1\}$
 and equality pairs $y_i=0$. Let $X_y,X_y'$ denote the $|I_y|\times p$
 matrices formed by all the pairs $i\in I_y$. We thus define a new data
-set with $m=|I_1|+|I_{-1}|+2|I_0|$ points suitable for training a
+set with $m=|I_1|+|I_{-1}|+2|I_0|$ pairs suitable for training a
 binary SVM:
 \begin{equation}
   \tilde X = \left[
@@ -271,21 +278,25 @@ binary SVM:
   \right],\ 
   \tilde y = \left[
     \begin{array}{c}
-      1 \\
-      1\\
-      -1\\
-      -1
+      1_{|I_1|} \\
+      1_{|I_{-1}|}\\
+      -1_{|I_0|}\\
+      -1_{|I_0|}
     \end{array}
   \right],
 \end{equation}
-where $\tilde X,\tilde X'\in\RR^{m\times p}$ and $\tilde
-y\in\{-1,1\}^m$. We then learn a linear function
+where $1_n$ is an $n$-vector of ones, $\tilde X,\tilde
+X'\in\RR^{m\times p}$ and $\tilde y\in\{-1,1\}^m$. Note that $\tilde
+y_i=-1$ implies no significant difference between $\tilde x_i$ and
+$\tilde x_i'$, and $\tilde y_i=1$ implies that $\tilde x_i$ is better
+than $\tilde x_i'$. We then learn an affine function
 $f(x)=\beta+a^\intercal x$ using binary SVM:
 \begin{equation}
   \label{eq:max-margin-qp-tilde}
   \begin{aligned}
     \minimize_{a\in\RR^p, \beta\in\RR}\ & \frac 1 2 a^\intercal a  \\
-    \text{subject to}\ & \tilde y_i (\beta + a^\intercal \tilde x_i) \geq 1,
+    \text{subject to}\ & 
+    \tilde y_i (\beta + a^\intercal( \tilde x_i'-\tilde x_i) ) \geq 1,
     \ \forall i\in\{1,\dots,m\}.
   \end{aligned}
 \end{equation}
@@ -294,8 +305,8 @@ In the next Lemma, we construct a feasible solution to the original LP
 (\ref{eq:max-margin-qp-tilde}).
 \begin{lemma}
   Let $a\in\RR^p,\beta\in\RR$ be a solution of
-  (\ref{eq:max-margin-qp-tilde}). Then $\hat mu = \frac{-1}{\beta} $
-  and $\hat w = \frac{-1}{\beta} a$ are feasible for
+  (\ref{eq:max-margin-qp-tilde}). Then $\hat \mu = -1/\beta$
+  and $\hat w = -a/\beta$ are feasible for
   (\ref{eq:max-margin-lp}).
 \end{lemma}
 \begin{proof}
@@ -321,7 +332,6 @@ and TODO
 
 
 \subsection{Kernelized QP for non-separable data}
-\label{sec:svm-compare}
 
 In this section, we assume the 
 
