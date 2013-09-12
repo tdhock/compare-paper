@@ -191,7 +191,7 @@ Some related work appears in Table~\ref{tab:related}:
     problem. \textbf{Top}: input feature pairs $x_i,x_i'\in\RR^p$ are
     drawn as segments and arrows, colored using the labels
     $y_i\in\{-1,0,1\}$. The level curves of the underlying ranking
-    function $r(x)=||x||^2$ are drawn in grey, and differences
+    function $r(x)=||x||_2^2$ are drawn in grey, and differences
     $|r(x)-r(x')|\leq 1$ are considered insignificant
     ($y_i=0$). \textbf{Middle}: in the enlarged feature space, the
     ranking function is linear: $r(x)=w^\intercal
@@ -204,17 +204,19 @@ Some related work appears in Table~\ref{tab:related}:
 \subsection{SVMrank for comparing}
 
 In this section we explain how to apply the existing SVMrank algorithm
-to a comparison data set.
+of \citet{ranksvm} to a comparison data set.
 
 The goal of the SVMrank algorithm is to learn a ranking function
 $r:\RR^p \rightarrow \RR$. When $r(x)=w^\intercal x$ is linear, the
-primal problem is a quadratic program (QP):
-
+primal problem for some cost parameter $C\in\RR^+$ is the following
+quadratic program (QP):
 \begin{equation}
   \begin{aligned}
-    \minimize_{w\in\RR^p}\ \  & w^\intercal w \\
-    \text{subject to}\ \  & w^\intercal(x_i'-x_i)y_i \geq 1,
-    \ \forall i\in I_1\cup I_{-1},
+    \minimize_{w, \xi}\ \  & \frac 1 2 w^\intercal w 
+    + C \sum_{i\in I_1\cup I_{-1}} \xi_i \\
+    \text{subject to}\ \  & 
+    \forall i\in I_1\cup I_{-1},\ \xi_i \geq 0,\\
+&    \text{and }\xi_i \geq 1-w^\intercal(x_i'-x_i)y_i,
   \end{aligned}
   \label{eq:svmrank}
 \end{equation}
@@ -244,10 +246,10 @@ pairs:
 \end{equation}
 However, there are two potential problems with the learned comparison
 function $c_{\hat t}$. First, the equality pairs $i\in I_0$ are not
-used to learn the weight vector $w$. Second, the threshold $\hat t$ is
-learned in a separate optimization step, which may be suboptimal. In
-the next section, we propose a new algorithm that fixes these
-potential problems.
+used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
+threshold $\hat t$ is learned in a separate optimization step, which
+may be suboptimal. In the next section, we propose a new algorithm
+that fixes these potential problems.
 
 \section{Support vector comparison machines}
 \label{sec:svm-compare}
@@ -277,8 +279,22 @@ ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
 Note that solving this problem is a practical test for linear
 separability. If the optimal $\mu>0$ then the data are linearly
 separable. The geometric interpretation of the margin is shown in
-Figure~TODO. It is the distance from any difference vector $x_i'-x_i$
-to its nearest decision boundary $r(x)\in\{-1,1\}$.
+Figure~\ref{fig:hard-margin}. It is the distance from any difference
+vector $x_i'-x_i$ to its nearest decision boundary $r(x)\in\{-1,1\}$.
+
+\begin{figure*}
+  \centering
+  \input{figure-hard-margin}
+  \vskip -1cm
+  \caption{The separable LP and QP comparison problems. \textbf{Left}:
+    the difference vectors $x'-x$ of the original data and the optimal
+    solution to the LP (\ref{eq:max-margin-lp}). \textbf{Middle}: for
+    the unscaled flipped data $\tilde x'-\tilde x$ (\ref{eq:tilde}),
+    the LP is not the same as the QP
+    (\ref{eq:max-margin-qp}). \textbf{Right}: for the scaled flipped
+    data, the QP is equivalent to the LP.}
+  \label{fig:hard-margin}
+\end{figure*}
 
 Another way to formulate the comparison problem is by first performing
 a change of variables, and then learning a binary SVM. The idea is to
@@ -288,6 +304,7 @@ matrices formed by all the pairs $i\in I_y$. We define a new data set
 with $m=|I_1|+|I_{-1}|+2|I_0|$ pairs suitable for training a binary
 SVM:
 \begin{equation}
+\label{eq:tilde}
   \tilde X = \left[
     \begin{array}{c}
       X_1 \\
