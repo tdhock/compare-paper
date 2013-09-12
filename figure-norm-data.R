@@ -61,7 +61,8 @@ arrows(Xip[yi==-1,1],
        col=yi.colors[yi==-1])
 ##text(Xi, labels=seq_along(yi)) # show row numbers.
 ##text(Xi+1/4, labels=yi) # show labels.
-legend("bottomleft", legend=names(color.code), col=color.code,
+leg.ord <- c("1","0","-1")
+legend("bottomleft", legend=leg.ord, col=color.code[leg.ord],
        lwd=pairLWD, lty=rep(1, length(color.code)),
        title="label $y_i$", bg="white")
 
