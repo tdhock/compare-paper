@@ -509,11 +509,12 @@ evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
   \tilde y_i v_i\left[ 
     \kappa(\tilde x_i, x)
     - \kappa(\tilde x_i', x)
-  \right]/\beta,
+  \right]/\beta.
 \end{equation}
-where the optimal primal variables $\alpha_i=-\tilde y_i v_i$ and
-$\alpha_i'=\tilde y_i v_i$ for all $i\in\{1,\dots,m\}$. The learned
-comparison function remains the same (\ref{eq:kernelized_c}).
+Note that for all $i\in\{1,\dots,m\}$, the optimal primal variables
+$\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
+recovered using the stationary condition (\ref{eq:stationarity}). The
+learned comparison function remains the same (\ref{eq:kernelized_c}).
 
 The overall training procedure \proc{SVMcompare} is summarized as
 Algorithm~\ref{alg:SVMcompare}. There are two hyper-parameters to
