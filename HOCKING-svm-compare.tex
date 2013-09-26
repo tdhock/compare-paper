@@ -27,6 +27,7 @@
 \newcommand{\plausibleK}{\textit{plausibleK}}
 
 \DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\Diag}{Diag}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\maximize}{maximize}
 \DeclareMathOperator*{\minimize}{minimize}
@@ -126,9 +127,9 @@ The goal of learning is to find a comparison function $c:\RR^p \times
 where $e(\hat y, y) = 1_{\hat y \neq y}$ is the zero-one loss.
 
 This is similar to a ranking problem, for which a number of machine
-learning algorithms exist \citep{learning-to-rank}, such as RankSVM
+learning algorithms exist \citep{learning-to-rank}, such as SVMrank
 \citep{ranksvm}. There are two key differences between ranking and
-comparing, which is what we want to do:
+comparing:
 \begin{itemize}
 \item Ranking algorithms ignore the $y_i=0$ equality pairs.
 \item The goal of ranking is to give an absolute order to a set of
@@ -270,17 +271,18 @@ ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
 \begin{equation}
   \label{eq:max-margin-lp}
   \begin{aligned}
-    \maximize_{\mu\in\RR, w\in\RR^p}\ & \mu \\
+    \maximize_{\mu\in\RR^+, w\in\RR^p}\ & \mu \\
     \text{subject to}\ & \mu \leq 1-|w^\intercal (x_i' - x_i)|,\
     \forall\  i\in I_0,\\
     &\mu \leq -1 +  w^\intercal(x_i'-x_i)y_i,\ \forall\ i\in I_1\cup I_{-1}.
   \end{aligned}
 \end{equation}
-Note that solving this problem is a practical test for linear
-separability. If the optimal $\mu>0$ then the data are linearly
-separable. The geometric interpretation of the margin is shown in
-Figure~\ref{fig:hard-margin}. It is the distance from any difference
-vector $x_i'-x_i$ to its nearest decision boundary $r(x)\in\{-1,1\}$.
+Note that finding a feasible point for this LP is a test of linear
+separability. If there are no feasible points then the data are not
+linearly separable. The geometric interpretation of the LP margin is
+shown in the left panel of Figure~\ref{fig:hard-margin}. It is the
+distance from any difference vector $x_i'-x_i$ to its nearest decision
+boundary $r(x)\in\{-1,1\}$.
 
 \begin{figure*}
   \centering
@@ -299,10 +301,10 @@ vector $x_i'-x_i$ to its nearest decision boundary $r(x)\in\{-1,1\}$.
 Another way to formulate the comparison problem is by first performing
 a change of variables, and then learning a binary SVM. The idea is to
 maximize the margin between significant differences $y_i\in\{-1,1\}$
-and equality pairs $y_i=0$. Let $X_y,X_y'$ denote the $|I_y|\times p$
-matrices formed by all the pairs $i\in I_y$. We define a new data set
-with $m=|I_1|+|I_{-1}|+2|I_0|$ pairs suitable for training a binary
-SVM:
+and equality pairs $y_i=0$. Let $X_y,X_y'$ be the $|I_y|\times p$
+matrices formed by all the pairs $i\in I_y$. We define a new
+``flipped'' data set with $m=|I_1|+|I_{-1}|+2|I_0|$ pairs suitable for
+training a binary SVM:
 \begin{equation}
 \label{eq:tilde}
   \tilde X = \left[
@@ -378,6 +380,11 @@ and TODO
 \end{equation}
 \end{proof}
 
+% This Lemma is very useful in practice. It means that a comparison
+% ranking function $\hat r$ can be learned by first solving a standard
+% binary SVM and then transforming the solution. However
+
+One may also wonder 
 
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
@@ -397,9 +404,9 @@ define the ranking function
 \begin{equation}
   \label{eq:kernelized_r}
   r(x)= \frac{u^\intercal \Phi(x)}{-\beta} = \frac{1}{-\beta}
-  \sum_{i=1}^m \left[
+  \sum_{i=1}^m
     \alpha_i \kappa(\tilde x_i, x) + \alpha_i'  \kappa(\tilde x_i', x) 
-  \right],
+  ,
 \end{equation}
 which implies the comparison function
 \begin{equation}
@@ -438,9 +445,9 @@ vectors $K_i,K_i'\in\RR^{2m}$ are defined as
   \right].
 \end{equation}
 Letting $a=[\alpha^\intercal\
-\alpha'^\intercal]^\intercal\in\RR^{2m}$, The norm of the linear
+\alpha'^\intercal]^\intercal\in\RR^{2m}$, the norm of the linear
 function in the feature space is $w^\intercal w = a^\intercal K a$,
-and we can write the primal soft-margin SVM problem for some
+and we can write the primal soft-margin comparison QP for some
 $C\in\RR^+$ as
 \begin{equation}
   \begin{aligned}
@@ -453,34 +460,64 @@ $C\in\RR^+$ as
       \xi_i \geq 1-\tilde y_i(\beta + a^\intercal (K_i'-K_i)).
   \end{aligned}
 \end{equation}
-TODO: write the Lagrangian and dual feasibility conditions.
-
-If $v\in\RR^m$ are the dual variables corresponding to the second
-constraint, then the dual problem is
+Let $\lambda, v\in\RR^m$ be the dual variables, let $Y=\Diag(\tilde
+y)$ be the diagonal matrix of $m$ labels. Then the Lagrangian can be
+written as
+\begin{equation}
+  \label{eq:lagrangian}
+  \mathcal L = \frac 1 2 a^\intercal K a + C\xi^\intercal 1_{m}\\
+  -\lambda^\intercal \xi + v^\intercal(1_m - \tilde y\beta - Y M^\intercal K a - \xi),
+\end{equation}
+where $M=[-I_m \, I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving
+$\nabla_a \mathcal L=0$ results in the following stationary condition:
+\begin{equation}
+  \label{eq:stationarity}
+  a = M Y v.
+\end{equation}
+The rest of the derivation of the dual comparison problem is the same
+as for the standard binary SVM. The resulting dual QP is
 \begin{equation}
   \begin{aligned}
     \label{eq:svm-dual}
     \minimize_{v\in\RR^m}\ \ &
-    \frac 1 2 v^\intercal Y M^\intercal K M Y v - v^\intercal 1\\
+    \frac 1 2 v^\intercal Y M^\intercal K M Y v - v^\intercal 1_m\\
     \text{subject to}\ \ &
-    \sum_{i=1}^n v_i y_i = 0,\\
-&    \text{for all $i\in\{1,\dots,n\}$, } 0\leq v_i\leq C,
+    \sum_{i=1}^m v_i \tilde y_i = 0,\\
+&    \text{for all $i\in\{1,\dots,m\}$, } 0\leq v_i\leq C,
   \end{aligned}
 \end{equation}
-where $M=[-I_n \, I_n]^\intercal\in\{-1,0,1\}^{2n\times n}$. This quadratic problem
-is equivalent to a standard SVM with kernel $M^\intercal K M$.
+which is equivalent to the dual problem of a standard binary SVM with
+kernel $\tilde K = M^\intercal K M\in\RR^{m\times m}$ and labels
+$\tilde y=\{-1,1\}^m$.
 
-So we can use any efficient SVM solver, such as libsvm
-\citep{libsvm}. We used the R interface in the \texttt{kernlab}
-package of \citet{kernlab}, and our code is available in the
-\texttt{rankSVMcompare} package on Github.
+So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
+any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
+interface in the \texttt{kernlab} package of \citet{kernlab}, and our
+code is available in the \texttt{rankSVMcompare} package on Github.
 
-After solving the SVM dual problem (\ref{eq:svm-dual}), we recover the
-primal variables $a = MYv$ and the bias $\beta$ using the usual method
-(TODO). The learned ranking function is $r(x) = \sum_{i\in\text{sv}}
--a_i \kappa(x, x_i)/\beta$ (TODO...Z??).
+After obtaining optimal dual variables $v\in\RR^m$ as the solution of
+(\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
+$\beta$ by analyzing the complementary slackness conditions.
+The learned ranking function can be quickly evaluated since the
+optimal $v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
+of the support vectors. Since we need only $2|\textbf{sv}|$ kernel
+evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
+\begin{equation}
+  \label{eq:r_sv}
+  r(x)= 
+  \sum_{i\in \textbf{sv}}
+  \tilde y_i v_i\left[ 
+    \kappa(\tilde x_i, x)
+    - \kappa(\tilde x_i', x)
+  \right]/\beta,
+\end{equation}
+and the learned comparison function remains (\ref{eq:kernelized_c}).
 
-\proc{SVMcompare} is summarized as Algorithm~\ref{alg:SVMcompare}.
+The overall training procedure \proc{SVMcompare} is summarized as
+Algorithm~\ref{alg:SVMcompare}. There are two hyper-parameters to
+tune: the cost $C$ and the kernel $\kappa$. As with standard SVM for
+binary classification, these parameters can be tuned by minimizing the
+prediction error on a held-out validation set.
 
 \begin{algorithm}[b!]
    \caption{\proc{SVMcompare}}
@@ -519,17 +556,19 @@ primal variables $a = MYv$ and the bias $\beta$ using the usual method
 
   \STATE $v,\beta \gets \proc{SVMdual}(\tilde K, \tilde y, C)$.
 
-  \STATE $\alpha_i \gets $ 
-  \makebox[1cm][r]{$-\tilde y_i v_i$},
-  $\forall i\in\{1,\dots, m\}$.
+  % \STATE $\alpha_i \gets $ 
+  % \makebox[1cm][r]{$-\tilde y_i v_i$},
+  % $\forall i\in\{1,\dots, m\}$.
 
-  \STATE $\alpha_i' \gets $
-  \makebox[1cm][r]{$\tilde y_i v_i$},
-  $\forall i\in\{1,\dots, m\}$.
+  % \STATE $\alpha_i' \gets $
+  % \makebox[1cm][r]{$\tilde y_i v_i$},
+  % $\forall i\in\{1,\dots, m\}$.
 
-  \STATE {\bfseries Output:} coefficients $\alpha,\alpha'\in\RR^{m}$,
-  bias $\beta\in\RR$, ranking $r$ (\ref{eq:kernelized_r}) and
-  comparison $c$ (\ref{eq:kernelized_c}) functions.
+  \STATE $\textbf{sv}\gets\{i: v_i>0\}$.
+  
+  \STATE {\bfseries Output:} Support vectors $\tilde
+  X_{\textbf{sv}},\tilde X_{\textbf{sv}}'$, labels $\tilde y_{\textbf{sv}}$,
+  bias~$\beta$, dual variables $v$.
 
    \end{algorithmic}
 \end{algorithm}
