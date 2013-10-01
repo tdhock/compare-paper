@@ -1,4 +1,4 @@
-HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex
+HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty
 	rm -f *.aux *.bbl
 	pdflatex HOCKING-svm-compare
 	bibtex HOCKING-svm-compare

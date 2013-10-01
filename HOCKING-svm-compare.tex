@@ -45,9 +45,9 @@
 \usepackage{hyperref}
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-\usepackage{icml2013} 
+\usepackage{aistats2014} 
 
-\icmltitlerunning{Support vector comparison machines}
+%\icmltitlerunning{Support vector comparison machines}
 
 \begin{document}
 
@@ -58,7 +58,7 @@
 \newcolumntype{a}{>{\columncolor{lightgray}}c}
 
 \twocolumn[
-\icmltitle{Support vector comparison machines}
+\aistatstitle{Support vector comparison machines}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
@@ -70,17 +70,13 @@
 %\icmladdress{Unit\'e de Recherche en G\'enomique V\'eg\'etale INRA-CNRS-Universit\'e d'Evry Val d'Essonne, Evry, France}
 %\icmlauthor{Toby Dylan Hocking\footnotemark[1], 
 % Francis Bach}{toby.hocking@inria.fr, francis.bach@inria.fr}
-\icmlauthor{Toby Dylan Hocking}{toby@sg.cs.titech.ac.jp}
-\icmlauthor{Supaporn Spanurattana}{supaporn@sg.cs.titech.ac.jp}
-\icmlauthor{Masashi Sugiyama}{sugi@cs.titech.ac.jp}
-\icmladdress{Department of Computer Science, Tokyo Institute of
+\aistatsauthor{Toby Dylan Hocking \And Supaporn Spanurattana \And Masashi Sugiyama}
+\aistatsaddress{Department of Computer Science, Tokyo Institute of
   Technology, Tokyo 152-8552, Japan}
 
 % You may provide any keywords that you 
 % find helpful for describing your paper; these are used to populate 
 % the "keywords" metadata in the PDF but will not be shown in the document
-\icmlkeywords{support vector machine, ranking, comparing, convex,
-  optimization, relaxation, libsvm}
 
 \vskip 0.3in
 ]
@@ -124,7 +120,7 @@ The goal of learning is to find a comparison function $c:\RR^p \times
   \sum_{i=1}^n
   e\left[ c(x_i, x_i'), y_i \right],
 \end{equation}
-where $e(\hat y, y) = 1_{\hat y \neq y}$ is the zero-one loss.
+where $e(\hat y, y) = I(\hat y \neq y)$ is the zero-one loss.
 
 This is similar to a ranking problem, for which a number of machine
 learning algorithms exist \citep{learning-to-rank}, such as SVMrank
@@ -238,7 +234,7 @@ we define a comparison function $c_t:\RR^p\times \RR^p\rightarrow
   \end{cases}
 \end{equation}
 We can then use grid search to estimate an optimal threshold $\hat t$,
-by minimizing the zero-one loss with respect to all the training
+by minimizing the zero-one loss $e$ with respect to all the training
 pairs:
 \begin{equation}
   \hat t = \argmin_{t}
@@ -251,11 +247,11 @@ used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
 threshold $\hat t$ is learned in a separate optimization step, which
 may be suboptimal. In the next section, we propose a new algorithm
 that fixes these potential problems.
-
+%Supplementary File for Online Publication
 \section{Support vector comparison machines}
 \label{sec:svm-compare}
 
-In this section we propose \proc{SVMcompare}, a new learning algorithm
+In this section we develop \proc{SVMcompare}, a new learning algorithm
 designed for comparison problems.
 
 \subsection{LP and QP for separable data}
@@ -493,7 +489,7 @@ $\tilde y=\{-1,1\}^m$.
 So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
 any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
 interface in the \texttt{kernlab} package of \citet{kernlab}, and our
-code is available in the \texttt{rankSVMcompare} package on Github.
+code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
 
 After obtaining optimal dual variables $v\in\RR^m$ as the solution of
 (\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
