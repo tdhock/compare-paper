@@ -1,11 +1,12 @@
 \documentclass{article}
+\usepackage{aistats2014} 
 \usepackage{listings}
 \usepackage{clrscode}
 \usepackage[table]{xcolor}
 \usepackage{array}
 \usepackage{slashbox}
 \usepackage{multirow}
-\usepackage{fullpage}
+%\usepackage{fullpage}
 \usepackage{tikz}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
@@ -45,7 +46,6 @@
 \usepackage{hyperref}
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-\usepackage{aistats2014} 
 
 %\icmltitlerunning{Support vector comparison machines}
 
@@ -89,7 +89,7 @@
   if there is no significant difference. We cast the learning problem
   as a margin maximization, and show that it can be solved by
   converting it to a standard SVM. We compare our algorithm to SVMrank
-  using a benchmark ranking data set.
+  using simulations and benchmark ranking data.
 \end{abstract}
 
 \section{Introduction}
@@ -108,30 +108,36 @@ label $y_i\in\{-1,0,1\}$ that indicates which element is better:
   \end{cases}
 \end{equation}
 These data are geometrically represented by segments and arrows in the
-top panel of Figure~\ref{fig:geometry}. Comparison data naturally
+top panel of Figure~\ref{fig:geometry}. 
+
+Comparison data naturally
 arise when considering subjective human evaluations of pairs of
-items. For example, movies, graph layouts, and web
-search results. TODO.
+items. For example, if I were to compare some
+pairs of movies I have watched, I would say \textit{Les Mis\'erables}
+is better than \textit{Star Wars}, and \textit{The Empire Strikes
+  Back} is as good as \textit{Star Wars}. Features $x_i,x_i'$ of the
+movies can be length in minutes, year of theatrical release,
+indicators for genre, actors/actresses, directors, etc.
 
 The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data:
 \begin{equation}
   \minimize_{c} 
-  \sum_{i=1}^n
+  \sum_{i\in\text{test}}
   e\left[ c(x_i, x_i'), y_i \right],
 \end{equation}
 where $e(\hat y, y) = I(\hat y \neq y)$ is the zero-one loss.
 
-This is similar to a ranking problem, for which a number of machine
-learning algorithms exist \citep{learning-to-rank}, such as SVMrank
-\citep{ranksvm}. There are two key differences between ranking and
-comparing:
-\begin{itemize}
-\item Ranking algorithms ignore the $y_i=0$ equality pairs.
-\item The goal of ranking is to give an absolute order to a set of
-  items, typically documents in a search engine. Comparison is simpler
-  since we only need to make a decision about exactly two items.
-\end{itemize}
+% This is similar to a ranking problem, for which a number of machine
+% learning algorithms exist \citep{learning-to-rank}, such as SVMrank
+% \citep{ranksvm}. There are two key differences between ranking and
+% comparing:
+% \begin{itemize}
+% \item Ranking algorithms ignore the $y_i=0$ equality pairs.
+% \item The goal of ranking is to give an absolute order to a set of
+%   items, typically documents in a search engine. Comparison is simpler
+%   since we only need to make a decision about exactly two items.
+% \end{itemize}
 
 The rest of this article is organized as follows. In
 Section~\ref{sec:related} we discuss links with related work on
@@ -147,9 +153,36 @@ First we discuss connections with several existing methods in the
 machine learning literature, and then we discuss how ranking
 algorithms can be applied to the comparison problem.
 
+\subsection{Rank, reject, and rate}
+
+Comparison is similar to ranking and classification with a reject
+option (Table~\ref{tab:related}).  \citet{reject-option} studied the
+statistical properties of a hinge loss for an extension of SVM where
+$y\in\{-1,0,1\}$, and 0 signifies ``rejection'' or ``no guess,''
+calling this the ``classification with reject option'' problem.  There
+are many algorithms for the supervised learning to rank problem
+\citep{learning-to-rank}, which is similar to the supervised
+comparison problem we consider in this paper. The main idea of
+learning to rank is to train on labeled pairs of possible documents
+$x_i,x_i'$ for the same search query. The labels are $y_i\in\{-1,1\}$,
+where $y_i=1$ means document $x_i'$ is more relevant than $x_i$ and
+$y_i=-1$ means the opposite. \citet{ranksvm} proposed the SVMrank
+algorithm for this problem, and the algorithm we propose here is
+similar. The difference is that we also consider the case where both
+possible items/documents are judged to be equally good ($y_i=0$).
+\citet{rank-with-ties} called this the ``ranking with ties'' problem,
+proposed a boosting algorithm, and observed that modeling ties is more
+effective when there are more output values. \citet{trueskill}
+proposed TrueSkill, a generalization of the Elo chess rating system
+which can be applied to comparison data. 
+% Neither TrueSkill nor SVMrank
+% can predict ties ($y_i=0$), and \citet{rank-with-ties} did not respond
+% to a request for their code, which is what motivates us to propose a
+% new algorithm.
+
 When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
-article we only consider the case when inputs are continuous
+article we consider the case when inputs are continuous
 $x_i,x_i'\in\RR^p$.
 
 \begin{table}[b!]
@@ -165,41 +198,39 @@ $x_i,x_i'\in\RR^p$.
     and classification with reject option.}
 \end{table}
 
-\subsection{Rank, reject, and rate}
 
-Some related work appears in Table~\ref{tab:related}:
+% Some related work appears in Table~\ref{tab:related}:
 
-\begin{itemize}
-\item \citet{reject-option} studied the statistical properties of the
-  hinge loss for the classification with reject option.
-\item \citet{ranksvm} proposed SVM for ranking.
-\item \citet{rank-with-ties} proposed a boosting algorithm for ranking
-  with ties, and observed that ties are more effective when there are
-  more output values.
-\item \citet{trueskill} proposed TrueSkill: a Bayesian skill rating
-  system, a generalization of the Elo chess rating system.
-\end{itemize}
+% \begin{itemize}
+% \item \citet{reject-option} studied the statistical properties of the
+%   hinge loss for the classification with reject option.
+% \item \citet{ranksvm} proposed SVM for ranking.
+% \item \citet{rank-with-ties} proposed a boosting algorithm for ranking
+%   with ties, and observed that ties are more effective when there are
+%   more output values.
+% \item \citet{trueskill} proposed TrueSkill: a Bayesian skill rating
+%   system, a generalization of the Elo chess rating system.
+% \end{itemize}
 
 \begin{figure}
   \centering
   \input{figure-norm-data}
   \vskip -0.5cm
-  \caption{Geometric interpretation of the comparison
-    problem. \textbf{Top}: input feature pairs $x_i,x_i'\in\RR^p$ are
-    drawn as segments and arrows, colored using the labels
-    $y_i\in\{-1,0,1\}$. The level curves of the underlying ranking
-    function $r(x)=||x||_2^2$ are drawn in grey, and differences
+  \caption{Geometric interpretation. \textbf{Top}: input feature pairs
+    $x_i,x_i'\in\RR^p$ are segments and arrows, colored using the
+    labels $y_i\in\{-1,0,1\}$. The level curves of the ranking
+    function $r(x)=||x||_2^2$ are grey, and differences
     $|r(x)-r(x')|\leq 1$ are considered insignificant
     ($y_i=0$). \textbf{Middle}: in the enlarged feature space, the
     ranking function is linear: $r(x)=w^\intercal
     \Phi(x)$. \textbf{Bottom}: two symmetric hyperplanes
-    $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are used as a
-    comparison function to separate the difference vectors.}
+    $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are used to
+    classify the difference vectors.}
   \label{fig:geometry}
 \end{figure}
 
 \subsection{SVMrank for comparing}
-
+\label{sec:svmrank}
 In this section we explain how to apply the existing SVMrank algorithm
 of \citet{ranksvm} to a comparison data set.
 
@@ -218,12 +249,12 @@ quadratic program (QP):
   \label{eq:svmrank}
 \end{equation}
 where $I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
-labels. Note that the equality pairs $i$ such that $y_i=0$ are not
+labels. Note that the equality pairs $i\in I_0$ are not
 used in the optimization problem.
 
 After obtaining an optimal $w\in\RR^p$ by solving (\ref{eq:svmrank}),
-we define a comparison function $c_t:\RR^p\times \RR^p\rightarrow
-\{-1, 0, 1\}$ for any threshold $t\in\RR^+$:
+we define a threshold $t\in\RR^+$ and a comparison function
+$c_t:\RR^p\times \RR^p\rightarrow \{-1, 0, 1\}$:
 \begin{equation}
   \label{eq:svmrank_c_t}
   c_t(x, x') =
@@ -262,17 +293,26 @@ section we assume that the training data are linearly separable. Later
 in Section~\ref{sec:kernelized-qp}, we propose an algorithm for
 learning a nonlinear function from non-separable data.
 
-In the following linear program (LP), we consider learning a linear
-ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
-\begin{equation}
+Using the following linear program (LP), we learn a linear ranking
+function $r(x)=w^\intercal x$ that maximizes the geometric margin
+$\mu$. As shown in the left panel of Figure~\ref{fig:hard-margin}, the
+geometric margin $\mu$ is the smallest distance from any difference
+vector $x_i'-x_i$ to a decision boundary $r(x)\in\{-1,1\}$. 
+%Letting $I_y=\{i\mid y_i=y\}$ be the sets of indices for the different labels, the
+The
+ max margin LP is
+%In the following linear program (LP), we consider learning a linear
+%ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
+\begin{eqnarray}
   \label{eq:max-margin-lp}
-  \begin{aligned}
-    \maximize_{\mu\in\RR^+, w\in\RR^p}\ & \mu \\
-    \text{subject to}\ & \mu \leq 1-|w^\intercal (x_i' - x_i)|,\
+  \maximize_{\mu\in\RR^+, w\in\RR^p}\ &&\hskip -0.5cm \mu \\
+\nonumber
+    \text{subject to}\ && \hskip -0.5cm \mu \leq 1-|w^\intercal (x_i' - x_i)|,\ 
     \forall\  i\in I_0,\\
-    &\mu \leq -1 +  w^\intercal(x_i'-x_i)y_i,\ \forall\ i\in I_1\cup I_{-1}.
-  \end{aligned}
-\end{equation}
+\nonumber
+    &&\hskip -0.5cm
+\mu \leq -1 +  w^\intercal(x_i'-x_i)y_i,\ \forall\ i\in I_1\cup I_{-1}.
+\end{eqnarray}
 Note that finding a feasible point for this LP is a test of linear
 separability. If there are no feasible points then the data are not
 linearly separable. The geometric interpretation of the LP margin is
@@ -289,7 +329,7 @@ boundary $r(x)\in\{-1,1\}$.
     solution to the LP (\ref{eq:max-margin-lp}). \textbf{Middle}: for
     the unscaled flipped data $\tilde x'-\tilde x$ (\ref{eq:tilde}),
     the LP is not the same as the QP
-    (\ref{eq:max-margin-qp}). \textbf{Right}: for the scaled flipped
+    (\ref{eq:max-margin-qp}). \textbf{Right}: in these scaled
     data, the QP is equivalent to the LP.}
   \label{fig:hard-margin}
 \end{figure*}
@@ -334,15 +374,14 @@ y_i=-1$ implies no significant difference between $\tilde x_i$ and
 $\tilde x_i'$, and $\tilde y_i=1$ implies that $\tilde x_i$ is better
 than $\tilde x_i'$. We then learn an affine function
 $f(x)=\beta+u^\intercal x$ using binary SVM:
-\begin{equation}
+\begin{eqnarray}
   \label{eq:max-margin-qp-tilde}
-  \begin{aligned}
-    \minimize_{u\in\RR^p, \beta\in\RR}\ & u^\intercal u  \\
-    \text{subject to}\ & 
+  \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm
+ u^\intercal u  \\
+\nonumber    \text{subject to}\ &&\hskip -0.5cm 
     \tilde y_i (\beta + u^\intercal( \tilde x_i'-\tilde x_i) ) \geq 1,
     \ \forall i\in\{1,\dots,m\}.
-  \end{aligned}
-\end{equation}
+\end{eqnarray}
 In the next Lemma, we use this QP
 % (\ref{eq:max-margin-qp-tilde}) 
 to
@@ -575,9 +614,37 @@ prediction error on a held-out validation set.
 \section{Results}
 \label{sec:results}
 
-For evaluation, we propose the zero-one loss function
+The goal of our learning algorithm is to accurately predict a test set
+of labeled pairs. For evaluation, we use the zero-one loss function
 $e:\{-1,0,1\}\times\{-1,0,1\}\rightarrow\{0,1\}$, described in
 Table~\ref{tab:evaluation}.
+
+\subsection{Simulation: norms in 2d}
+
+We used a simulation to compare the model of
+Section~\ref{sec:kernelized-qp} with a baseline ranking model that
+ignores the equality $y_i=0$ pairs, SVMrank \citep{ranksvm}. The goal
+of our simulation is to demonstrate that our model can perform better
+by learning from the equality $y_i=0$ pairs, when there are few
+inequality $y_i\in\{-1,1\}$ pairs. We generated pairs
+$x_i,x_i'\in[-3,3]^2$ and noisy labels
+$y_i=t[r(x'_i)-r(x_i)+\epsilon_i]$, where $t$ is the threshold
+function (\ref{eq:compare_threshold}), $r$ is the latent ranking
+function, and $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train,
+validation, and test sets, each with $n/2$ equality pairs and $n/2$
+inequality pairs, for $n\in\{50,\dots,300\}$. We fit a $10\times 10$
+grid of models to the training set ($C=10^{-3},\dots,10^3$, Gaussian
+kernel width $\gamma=2^{-7},\dots,2^4$), select the model with minimal
+zero-one loss on the validation set, and then use the test set to
+estimate the generalization ability of the selected model. For the
+SVMrank model explained in Section~\ref{sec:svmrank}, equality pairs
+are ignored when learning the ranking function, but used to learn a
+threshold via grid search for when to predict $c(x,x')=0$. In
+Figure~\ref{fig:simulation-samples} the test error of the proposed
+\proc{SVMcompare} model is clearly lower than that of the baseline
+SVMrank model.
+
+\subsection{Learning to rank data}
 
 \begin{table}[b!]
   \centering
@@ -598,6 +665,21 @@ Table~\ref{tab:evaluation}.
   $\hat y = -y$.}
   \label{tab:evaluation}
 \end{table}
+
+\begin{figure*}[b!]
+  \input{figure-simulation-samples}
+  \vskip -1cm
+  \caption{Application to simulated patterns $x,x'\in\RR^2$. The three
+    ranking functions $r(x)=||x||^2$ are squared norms. In each case,
+    half of the training data were equality pairs, which are used
+    directly by the comparison model, but are ignored by the ranking
+    model (the Bayes error rate of the latent $r$ is shown for
+    comparison). We plot mean and standard deviation of the prediction
+    error across 4 randomly chosen data sets, as a function of
+    training set size $n$. It is clear that the comparison model makes
+    better predictions on the test data.}
+  \label{fig:simulation-samples}
+\end{figure*}
 
 \section{Conclusions and future work}
 \label{sec:conclusions}
