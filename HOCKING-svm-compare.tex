@@ -109,7 +109,7 @@ label $y_i\in\{-1,0,1\}$ that indicates which element is better:
   \end{cases}
 \end{equation}
 These data are geometrically represented by segments and arrows in the
-top panel of Figure~\ref{fig:geometry}. 
+top panel of Figure~\ref{fig:norm-data}. 
 
 Comparison data naturally
 arise when considering subjective human evaluations of pairs of
@@ -185,7 +185,7 @@ where $y_i=1$ means document $x_i'$ is more relevant than $x_i$ and
 $y_i=-1$ means the opposite. \citet{ranksvm} proposed the SVMrank
 algorithm for this problem, and the algorithm we propose here is
 similar. The difference is that we also consider the case where both
-possible items/documents are judged to be equally good ($y_i=0$).
+items/documents are judged to be equally good ($y_i=0$).
 \citet{rank-with-ties} called this the ``ranking with ties'' problem,
 proposed a boosting algorithm, and observed that modeling ties is more
 effective when there are more output values. \citet{trueskill}
@@ -229,7 +229,7 @@ $x_i,x_i'\in\RR^p$.
     \Phi(x)$. \textbf{Bottom}: two symmetric hyperplanes
     $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are used to
     classify the difference vectors.}
-  \label{fig:geometry}
+  \label{fig:norm-data}
 \end{figure}
 
 \subsection{SVMrank for comparing}
@@ -269,8 +269,9 @@ used in the optimization problem.
   \label{fig:hard-margin}
 \end{figure*}
 
-After obtaining an optimal $w\in\RR^p$ by solving (\ref{eq:svmrank}),
-we define a threshold $\tau\in\RR^+$ and a thresholding function
+After obtaining a weight vector $w\in\RR^p$ and ranking
+function $r$ by solving (\ref{eq:svmrank}), we define a threshold
+$\tau\in\RR^+$ and a thresholding function
 $t_\tau:\RR\rightarrow\{-1,0,1\}$
 \begin{equation}
   \label{eq:threshold}
@@ -287,7 +288,7 @@ A comparison function $c_\tau:\RR^p\times \RR^p\rightarrow \{-1, 0,
   \label{eq:svmrank_c_t}
   c_\tau(x, x') = 
   t_\tau\big(
-  w^\intercal(x' - x)
+  r(x') - r(x)
   \big).
 \end{equation}
 We can then use grid search to estimate an optimal threshold $\hat
@@ -310,8 +311,13 @@ that fixes these potential problems.
 
 In this section we discuss new learning algorithms for comparison
 problems. In all cases, we will first learn a ranking function
-$r:\RR^p\rightarrow\RR$ and then a comparison function $c(x,
-x')=t_1\big( r(x') - r(x) \big)\in\{-1,0,1\}$, using the threshold
+$r:\RR^p\rightarrow\RR$ and then a comparison function $c:\RR^p\times
+\RR^p\rightarrow\{-1,0,1\}$:
+\begin{equation}
+  \label{eq:compare_general}
+  c(x,x')=t_1\big( r(x') - r(x) \big)
+\end{equation}
+using the threshold
 function $t_1:\RR\rightarrow\{-1,0,1\}$ (\ref{eq:threshold}). 
 In other
 words, any small difference in ranks $r(x')-r(x)\leq 1$ is considered
@@ -427,15 +433,15 @@ that is feasible for the original max margin comparison LP
     u
   \end{equation}
 and TODO
-\begin{equation}
+\begin{eqnarray}
   \label{eq:max-margin-qp}
-  \begin{aligned}
-    \minimize_{u\in\RR^p, \beta\in\RR}\ & u^\intercal u  \\
-    \text{subject to}\ & \beta + |u^\intercal (x_i'-x_i)| \leq -1,\
+    \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm u^\intercal u  \\
+    \text{subject to}\ &&\hskip -0.5cm
+    \nonumber \beta + |u^\intercal (x_i'-x_i)| \leq -1,\
     \forall\  i\in I_0,\\
-    & \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
-  \end{aligned}
-\end{equation}
+    &&\hskip -0.5cm
+\nonumber \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
+\end{eqnarray}
 \end{proof}
 
 % This Lemma is very useful in practice. It means that a comparison
@@ -447,35 +453,35 @@ One may also wonder
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
 In this section, we assume the data are not separable, and want to
-learn a general nonlinear ranking function. We define a positive
+learn a nonlinear ranking function. We define a positive
 definite kernel $\kappa:\RR^p\times \RR^p\rightarrow\RR$, which
-implicitly defines features $\Phi(x)$. As in
-(\ref{eq:max-margin-qp-tilde}), we learn a function $f(x)=\beta +
-u^\intercal \Phi(x)$ which is affine in the feature space. Let
-$\alpha,\alpha'\in\RR^m$ be coefficients such that $u=\sum_{i=1}^m
-\alpha_i \Phi(\tilde x_i) + \alpha_i' \Phi(\tilde x_i')$, and so we
-have
+implicitly defines an enlarged set of features $\Phi(x)$ (middle panel
+of Figure~\ref{fig:norm-data}). As in (\ref{eq:max-margin-qp-tilde}),
+we learn a function $f(x)=\beta + u^\intercal \Phi(x)$ which is affine
+in the feature space. Let $\alpha,\alpha'\in\RR^m$ be coefficients
+such that $u=\sum_{i=1}^m \alpha_i \Phi(\tilde x_i) + \alpha_i'
+\Phi(\tilde x_i')$, and so we have
 %the learned function is thus
  $f(x) =\beta + \sum_{i=1}^m \alpha_i \kappa(\tilde x_i, x) +
 \alpha_i' \kappa(\tilde x_i', x)$. We then use Lemma~\ref{lemma:feasible} to
 define the ranking function
 \begin{equation}
   \label{eq:kernelized_r}
-  r(x)= \frac{u^\intercal \Phi(x)}{-\beta} = \frac{1}{-\beta}
+  r(x)= \frac{u^\intercal \Phi(x)}{-\beta} = %\frac{1}{-\beta}
   \sum_{i=1}^m
-    \alpha_i \kappa(\tilde x_i, x) + \alpha_i'  \kappa(\tilde x_i', x) 
-  ,
+  \frac{\alpha_i \kappa(\tilde x_i, x) + \alpha_i'  \kappa(\tilde x_i', x)}
+{-\beta}.
 \end{equation}
-which implies the comparison function
-\begin{equation}
-  \label{eq:kernelized_c}
-  c(x, x') =
-  \begin{cases}
-    -1 & \text{if } r(x') - r(x) < -1, \\
-    0 & \text{if } |r(x') - r(x)| \leq 1, \\
-    1 & \text{if } r(x') - r(x) > 1. \\
-  \end{cases}
-\end{equation}
+% which implies the comparison function
+% \begin{equation}
+%   \label{eq:kernelized_c}
+%   c(x, x') =
+%   \begin{cases}
+%     -1 & \text{if } r(x') - r(x) < -1, \\
+%     0 & \text{if } |r(x') - r(x)| \leq 1, \\
+%     1 & \text{if } r(x') - r(x) > 1. \\
+%   \end{cases}
+% \end{equation}
 
 Let $K=[K_1\cdots K_m\ K_1'\cdots K_m']\in\RR^{2m\times 2m}$ be the
 kernel matrix, where for all pairs $i\in\{1, \dots, m\}$, the kernel
@@ -572,7 +578,7 @@ evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
 Note that for all $i\in\{1,\dots,m\}$, the optimal primal variables
 $\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
 recovered using the stationary condition (\ref{eq:stationarity}). The
-learned comparison function remains the same (\ref{eq:kernelized_c}).
+learned comparison function remains the same (\ref{eq:compare_general}).
 
 The training procedure is summarized as
 Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
