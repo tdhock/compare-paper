@@ -89,11 +89,12 @@ segPlot <- basePlot+
                color="red")
 print(segPlot)
 ## Looks fine.
-levs <- seq(-2,2,l=41)
+levs <- seq(-3,3,l=41)
 X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
 all.ranks <- data.frame()
 ## fit SVM.
 unused.err <- data.frame()
+train.pairs <- list()
 for(norm in names(pairs.picked)){
   Pairs <- pairs.picked[[norm]]
   is.zero <- Pairs$yi == 0
@@ -104,6 +105,7 @@ for(norm in names(pairs.picked)){
   Pairs.train <- list(Xi=Pairs$Xi[is.train,],
                       Xip=Pairs$Xip[is.train,],
                       yi=Pairs$yi[is.train])
+  train.pairs[[norm]] <- Pairs.train
   err.df <- data.frame()
   Cvals <- 4^seq(-4,5,by=1)
   models <- list()
@@ -187,7 +189,7 @@ for(norm in names(pairs.picked)){
   all.ranks <- rbind(all.ranks, data.frame(rank.df, norm))
 }
 
-simulation <- list(rank=all.ranks, error=unused.err)
+simulation <- list(rank=all.ranks, error=unused.err, train.pairs=train.pairs)
 
 save(simulation, file="simulation.RData")
 

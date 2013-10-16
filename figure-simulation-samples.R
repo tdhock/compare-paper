@@ -72,6 +72,7 @@ percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 leg <- "learned\nfunction"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
+  geom_vline(xintercept=100,size=2)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:

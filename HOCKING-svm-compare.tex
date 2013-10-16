@@ -640,19 +640,21 @@ comparison function on the test set (Table~\ref{tab:evaluation}).
 
 \subsection{Simulation: norms in 2d}
 
-\begin{figure}[b!]
+\begin{figure*}[b!]
   \centering
   \input{figure-norm-level-curves}
   \vskip -0.5cm
-  \caption{Application to simulated patterns $x,x'\in\RR^2$. The three
-    latent ranking functions $r(x)=||x||^2$ are squared norms. In each
-    case, half of the training data were equality pairs, which are
-    used directly by the comparison model, but are ignored by the
+  \caption{Application to simulated patterns $x,x'\in\RR^2$, where the
+    ranking functions $r(x)=||x||^2$ are squared norms (panels from
+    left to right). \textbf{Top}: the training data are $n=100$ pairs,
+    half equality (black segments indicate two points of equal rank),
+    and half inequality (red arrows point to the higher rank). which
+    are used directly by the comparison model, but are ignored by the
     ranking model.  We draw the level curves of the learned ranking
     functions.  It is clear that the comparison model recovers the
     latent pattern better than the ranking model.}
   \label{fig:norms}
-\end{figure}
+\end{figure*}
 
 We used a simulation to compare the model of
 Section~\ref{sec:kernelized-qp} with a baseline ranking model that
@@ -702,15 +704,12 @@ SVMrank model.
 \begin{figure*}[b!]
   \input{figure-simulation-samples}
   \vskip -1cm
-  \caption{Application to simulated patterns $x,x'\in\RR^2$. The three
-    ranking functions $r(x)=||x||^2$ are squared norms. In each case,
-    half of the training data were equality pairs, which are used
-    directly by the comparison model, but are ignored by the ranking
-    model (the Bayes error rate of the latent $r$ is shown for
-    comparison). We plot mean and standard deviation of the prediction
-    error across 4 randomly chosen data sets, as a function of
-    training set size $n$. It is clear that the comparison model makes
-    better predictions on the test data.}
+  \caption{  directly by the comparison model, but are
+    ignored by the ranking model (the Bayes error rate of the latent
+    $r$ is shown for comparison). We plot mean and standard deviation
+    of the prediction error across 4 randomly chosen data sets, as a
+    function of training set size $n$. It is clear that the comparison
+    model makes better predictions on the test data.}
   \label{fig:simulation-samples}
 \end{figure*}
 
