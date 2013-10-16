@@ -14,3 +14,4 @@ auto
 figure-*.tex
 HOCKING-*.pdf
 tikzMetrics
+*.RData

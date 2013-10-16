@@ -252,38 +252,68 @@ where $I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
 labels. Note that the equality pairs $i\in I_0$ are not
 used in the optimization problem.
 
+\begin{figure*}[b!]
+  \centering
+  \input{figure-hard-margin}
+  \vskip -1cm
+  \caption{The separable LP and QP comparison problems. \textbf{Left}:
+    the difference vectors $x'-x$ of the original data and the optimal
+    solution to the LP (\ref{eq:max-margin-lp}). \textbf{Middle}: for
+    the unscaled flipped data $\tilde x'-\tilde x$ (\ref{eq:tilde}),
+    the LP is not the same as the QP
+    (\ref{eq:max-margin-qp}). \textbf{Right}: in these scaled
+    data, the QP is equivalent to the LP.}
+  \label{fig:hard-margin}
+\end{figure*}
+
 After obtaining an optimal $w\in\RR^p$ by solving (\ref{eq:svmrank}),
-we define a threshold $t\in\RR^+$ and a comparison function
-$c_t:\RR^p\times \RR^p\rightarrow \{-1, 0, 1\}$:
+we define a threshold $\tau\in\RR^+$ and a thresholding function
+$t_\tau:\RR\rightarrow\{-1,0,1\}$
 \begin{equation}
-  \label{eq:svmrank_c_t}
-  c_t(x, x') =
+  \label{eq:threshold}
+  t_\tau(z) = 
   \begin{cases}
-    -1 & \text{ if } w^\intercal(x' - x) < -t, \\
-    0 & \text{ if } |w^\intercal(x' - x)| \leq t, \\
-    1 & \text{ if } w^\intercal(x' - x) > t. \\
+    -1 & \text{ if } z < -\tau, \\
+    0 & \text{ if } |z| \leq \tau, \\
+    1 & \text{ if } z > \tau. \\
   \end{cases}
 \end{equation}
-We can then use grid search to estimate an optimal threshold $\hat t$,
-by minimizing the zero-one loss $e$ with respect to all the training
-pairs:
+A comparison function $c_\tau:\RR^p\times \RR^p\rightarrow \{-1, 0,
+1\}$ is defined as the thresholded difference of predicted ranks
 \begin{equation}
-  \hat t = \argmin_{t}
+  \label{eq:svmrank_c_t}
+  c_\tau(x, x') = 
+  t_\tau\big(
+  w^\intercal(x' - x)
+  \big).
+\end{equation}
+We can then use grid search to estimate an optimal threshold $\hat
+\tau$, by minimizing the zero-one loss $e$ with respect to all the
+training pairs:
+\begin{equation}
+  \hat \tau = \argmin_{\tau}
   \sum_{i=1}^n
-  e\left[ c_t(x_i, x_i'), y_i \right].
+  e\left[ c_\tau(x_i, x_i'), y_i \right].
 \end{equation}
 However, there are two potential problems with the learned comparison
-function $c_{\hat t}$. First, the equality pairs $i\in I_0$ are not
+function $c_{\hat\tau}$. First, the equality pairs $i\in I_0$ are not
 used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
-threshold $\hat t$ is learned in a separate optimization step, which
+threshold $\hat \tau$ is learned in a separate optimization step, which
 may be suboptimal. In the next section, we propose a new algorithm
 that fixes these potential problems.
 %Supplementary File for Online Publication
 \section{Support vector comparison machines}
 \label{sec:svm-compare}
 
-In this section we develop \proc{SVMcompare}, a new learning algorithm
-designed for comparison problems.
+In this section we discuss new learning algorithms for comparison
+problems. In all cases, we will first learn a ranking function
+$r:\RR^p\rightarrow\RR$ and then a comparison function $c(x,
+x')=t_1\big( r(x') - r(x) \big)\in\{-1,0,1\}$, using the threshold
+function $t_1:\RR\rightarrow\{-1,0,1\}$ (\ref{eq:threshold}). 
+In other
+words, any small difference in ranks $r(x')-r(x)\leq 1$ is considered
+insignificant, and there are two decision boundaries
+$r(x')-r(x)\in\{-1,1\}$.
 
 \subsection{LP and QP for separable data}
 \label{sec:lp-qp}
@@ -315,27 +345,14 @@ The
 \end{eqnarray}
 Note that finding a feasible point for this LP is a test of linear
 separability. If there are no feasible points then the data are not
-linearly separable. The geometric interpretation of the LP margin is
-shown in the left panel of Figure~\ref{fig:hard-margin}. It is the
-distance from any difference vector $x_i'-x_i$ to its nearest decision
-boundary $r(x)\in\{-1,1\}$.
-
-\begin{figure*}
-  \centering
-  \input{figure-hard-margin}
-  \vskip -1cm
-  \caption{The separable LP and QP comparison problems. \textbf{Left}:
-    the difference vectors $x'-x$ of the original data and the optimal
-    solution to the LP (\ref{eq:max-margin-lp}). \textbf{Middle}: for
-    the unscaled flipped data $\tilde x'-\tilde x$ (\ref{eq:tilde}),
-    the LP is not the same as the QP
-    (\ref{eq:max-margin-qp}). \textbf{Right}: in these scaled
-    data, the QP is equivalent to the LP.}
-  \label{fig:hard-margin}
-\end{figure*}
+linearly separable. 
+% The geometric interpretation of the LP margin is
+% shown in the left panel of Figure~\ref{fig:hard-margin}. It is the
+% distance from any difference vector $x_i'-x_i$ to its nearest decision
+% boundary $r(x)\in\{-1,1\}$.
 
 Another way to formulate the comparison problem is by first performing
-a change of variables, and then learning a binary SVM. The idea is to
+a change of variables, and then solving a binary SVM QP. The idea is to
 maximize the margin between significant differences $y_i\in\{-1,1\}$
 and equality pairs $y_i=0$. Let $X_y,X_y'$ be the $|I_y|\times p$
 matrices formed by all the pairs $i\in I_y$. We define a new
@@ -371,9 +388,10 @@ training a binary SVM:
 where $1_n$ is an $n$-vector of ones, $\tilde X,\tilde
 X'\in\RR^{m\times p}$ and $\tilde y\in\{-1,1\}^m$. Note that $\tilde
 y_i=-1$ implies no significant difference between $\tilde x_i$ and
-$\tilde x_i'$, and $\tilde y_i=1$ implies that $\tilde x_i$ is better
-than $\tilde x_i'$. We then learn an affine function
-$f(x)=\beta+u^\intercal x$ using binary SVM:
+$\tilde x_i'$, and $\tilde y_i=1$ implies that $\tilde x_i'$ is better
+than $\tilde x_i$. We then learn an affine function
+$f(x)=\beta+u^\intercal x$ using a binary SVM QP (black lines in
+middle and right panels of Figure~\ref{fig:hard-margin}):
 \begin{eqnarray}
   \label{eq:max-margin-qp-tilde}
   \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm
@@ -382,11 +400,13 @@ $f(x)=\beta+u^\intercal x$ using binary SVM:
     \tilde y_i (\beta + u^\intercal( \tilde x_i'-\tilde x_i) ) \geq 1,
     \ \forall i\in\{1,\dots,m\}.
 \end{eqnarray}
-In the next Lemma, we use this QP
-% (\ref{eq:max-margin-qp-tilde}) 
-to
-construct a ranking function $\hat r(x)= \hat w^\intercal x$ that is
-feasible for the original LP (\ref{eq:max-margin-lp}).
+Intuitively, the SVM QP learns a separator $f(x)=0$ between
+significant difference pairs $\tilde y_i=1$ and insignificant
+difference pairs $\tilde y_i=-1$. However, we want a comparison
+function that predicts $c(x,x')\in\{-1,0,1\}$. So we use the next
+Lemma to construct a ranking function $\hat r(x)= \hat w^\intercal x$
+that is feasible for the original max margin comparison LP
+(\ref{eq:max-margin-lp}).
 \begin{lemma}
   Let $u\in\RR^p,\beta\in\RR$ be a solution of
   (\ref{eq:max-margin-qp-tilde}). Then $\hat \mu = -1/\beta$
@@ -615,11 +635,24 @@ prediction error on a held-out validation set.
 \label{sec:results}
 
 The goal of our learning algorithm is to accurately predict a test set
-of labeled pairs. For evaluation, we use the zero-one loss function
-$e:\{-1,0,1\}\times\{-1,0,1\}\rightarrow\{0,1\}$, described in
-Table~\ref{tab:evaluation}.
+of labeled pairs. We use the zero-one loss for evaluating the learned
+comparison function on the test set (Table~\ref{tab:evaluation}).
 
 \subsection{Simulation: norms in 2d}
+
+\begin{figure}[b!]
+  \centering
+  \input{figure-norm-level-curves}
+  \vskip -0.5cm
+  \caption{Application to simulated patterns $x,x'\in\RR^2$. The three
+    latent ranking functions $r(x)=||x||^2$ are squared norms. In each
+    case, half of the training data were equality pairs, which are
+    used directly by the comparison model, but are ignored by the
+    ranking model.  We draw the level curves of the learned ranking
+    functions.  It is clear that the comparison model recovers the
+    latent pattern better than the ranking model.}
+  \label{fig:norms}
+\end{figure}
 
 We used a simulation to compare the model of
 Section~\ref{sec:kernelized-qp} with a baseline ranking model that
@@ -628,8 +661,8 @@ of our simulation is to demonstrate that our model can perform better
 by learning from the equality $y_i=0$ pairs, when there are few
 inequality $y_i\in\{-1,1\}$ pairs. We generated pairs
 $x_i,x_i'\in[-3,3]^2$ and noisy labels
-$y_i=t[r(x'_i)-r(x_i)+\epsilon_i]$, where $t$ is the threshold
-function (\ref{eq:compare_threshold}), $r$ is the latent ranking
+$y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
+function (\ref{eq:threshold}), $r$ is the latent ranking
 function, and $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train,
 validation, and test sets, each with $n/2$ equality pairs and $n/2$
 inequality pairs, for $n\in\{50,\dots,300\}$. We fit a $10\times 10$
@@ -644,7 +677,7 @@ Figure~\ref{fig:simulation-samples} the test error of the proposed
 \proc{SVMcompare} model is clearly lower than that of the baseline
 SVMrank model.
 
-\subsection{Learning to rank data}
+%\subsection{Learning to rank data}
 
 \begin{table}[b!]
   \centering
