@@ -13,6 +13,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{stfloats}
 \usepackage{float}
+\newcommand{\SVMcompare}{SVMcompare}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
@@ -122,6 +123,7 @@ indicators for genre, actors/actresses, directors, etc.
 The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data:
 \begin{equation}
+  \label{eq:min_c}
   \minimize_{c} 
   \sum_{i\in\text{test}}
   e\left[ c(x_i, x_i'), y_i \right],
@@ -142,9 +144,22 @@ where $e(\hat y, y) = I(\hat y \neq y)$ is the zero-one loss.
 The rest of this article is organized as follows. In
 Section~\ref{sec:related} we discuss links with related work on
 classification and ranking, then in Section~\ref{sec:svm-compare} we
-propose a new algorithm: \proc{SVMcompare}. We show results on a benchmark
+propose a new algorithm: \SVMcompare. We show results on a benchmark
 dataset in Section~\ref{sec:results} and discuss future work in
 Section~\ref{sec:conclusions}.
+
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{|a|c|c|}\hline
+    \rowcolor{lightgray}
+    \backslashbox{Outputs}{Inputs}
+    &single items $x$&pairs $x,x'$\\ \hline
+    $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
+    $y\in\{-1,0,1\}$ &Reject option& this work\\ \hline
+  \end{tabular}
+  \caption{\label{tab:related} Comparison is similar to ranking 
+    and classification with reject option.}
+\end{table}
 
 \section{Related work}
 \label{sec:related}
@@ -156,7 +171,8 @@ algorithms can be applied to the comparison problem.
 \subsection{Rank, reject, and rate}
 
 Comparison is similar to ranking and classification with a reject
-option (Table~\ref{tab:related}).  \citet{reject-option} studied the
+option (Table~\ref{tab:related}). 
+\citet{reject-option} studied the
 statistical properties of a hinge loss for an extension of SVM where
 $y\in\{-1,0,1\}$, and 0 signifies ``rejection'' or ``no guess,''
 calling this the ``classification with reject option'' problem.  There
@@ -184,19 +200,6 @@ When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
 article we consider the case when inputs are continuous
 $x_i,x_i'\in\RR^p$.
-
-\begin{table}[b!]
-  \centering
-  \begin{tabular}{|a|c|c|}\hline
-    \rowcolor{lightgray}
-    \backslashbox{Outputs}{Inputs}
-    &single items $x$&pairs $x,x'$\\ \hline
-    $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
-    $y\in\{-1,0,1\}$ &Reject option& this work\\ \hline
-  \end{tabular}
-  \caption{\label{tab:related} Comparison is similar to ranking 
-    and classification with reject option.}
-\end{table}
 
 
 % Some related work appears in Table~\ref{tab:related}:
@@ -571,14 +574,16 @@ $\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
 recovered using the stationary condition (\ref{eq:stationarity}). The
 learned comparison function remains the same (\ref{eq:kernelized_c}).
 
-The overall training procedure \proc{SVMcompare} is summarized as
-Algorithm~\ref{alg:SVMcompare}. There are two hyper-parameters to
-tune: the cost $C$ and the kernel $\kappa$. As with standard SVM for
-binary classification, these parameters can be tuned by minimizing the
-prediction error on a held-out validation set.
+The training procedure is summarized as
+Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
+\proc{KernelMatrix} computes the $2m\times 2m$ kernel matrix, and
+\proc{SVMdual} solves the SVM dual QP. There are two hyper-parameters
+to tune: the cost $C$ and the kernel $\kappa$. As with standard SVM
+for binary classification, these parameters can be tuned by minimizing
+the prediction error on a held-out validation set.
 
 \begin{algorithm}[b!]
-   \caption{\proc{SVMcompare}}
+   \caption{\SVMcompare}
    \label{alg:SVMcompare}
 \begin{algorithmic}
   \STATE {\bfseries Input:} cost $C\in\RR^+$, kernel
@@ -635,8 +640,9 @@ prediction error on a held-out validation set.
 \label{sec:results}
 
 The goal of our learning algorithm is to accurately predict a test set
-of labeled pairs. We use the zero-one loss for evaluating the learned
-comparison function on the test set (Table~\ref{tab:evaluation}).
+of labeled pairs (\ref{eq:min_c}). We use the zero-one loss for
+evaluating the learned comparison function on the test set
+(Table~\ref{tab:evaluation}).
 
 \subsection{Simulation: norms in 2d}
 
@@ -648,36 +654,43 @@ comparison function on the test set (Table~\ref{tab:evaluation}).
     ranking functions $r(x)=||x||^2$ are squared norms (panels from
     left to right). \textbf{Top}: the training data are $n=100$ pairs,
     half equality (black segments indicate two points of equal rank),
-    and half inequality (red arrows point to the higher rank). which
-    are used directly by the comparison model, but are ignored by the
-    ranking model.  We draw the level curves of the learned ranking
-    functions.  It is clear that the comparison model recovers the
-    latent pattern better than the ranking model.}
-  \label{fig:norms}
+    and half inequality (red arrows point to the higher
+    rank). \textbf{Middle and bottom}: level curves of the ranking
+    functions learned by SVMrank and SVMcompare. SVMrank ignores the
+    equality pairs, so in general SVMcompare recovers the latent
+    pattern better.}
+  \label{fig:norm-level-curves}
 \end{figure*}
 
-We used a simulation to compare the model of
-Section~\ref{sec:kernelized-qp} with a baseline ranking model that
-ignores the equality $y_i=0$ pairs, SVMrank \citep{ranksvm}. The goal
-of our simulation is to demonstrate that our model can perform better
-by learning from the equality $y_i=0$ pairs, when there are few
-inequality $y_i\in\{-1,1\}$ pairs. We generated pairs
-$x_i,x_i'\in[-3,3]^2$ and noisy labels
+We used a simulation to test the proposed SVMcompare model and a
+baseline ranking model that ignores the equality $y_i=0$ pairs,
+SVMrank \citep{ranksvm}. The goal of our simulation is to demonstrate
+that our model can perform better by learning from the equality
+$y_i=0$ pairs, when there are few inequality $y_i\in\{-1,1\}$
+pairs. We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
-function (\ref{eq:threshold}), $r$ is the latent ranking
-function, and $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train,
-validation, and test sets, each with $n/2$ equality pairs and $n/2$
-inequality pairs, for $n\in\{50,\dots,300\}$. We fit a $10\times 10$
-grid of models to the training set ($C=10^{-3},\dots,10^3$, Gaussian
-kernel width $\gamma=2^{-7},\dots,2^4$), select the model with minimal
-zero-one loss on the validation set, and then use the test set to
-estimate the generalization ability of the selected model. For the
-SVMrank model explained in Section~\ref{sec:svmrank}, equality pairs
-are ignored when learning the ranking function, but used to learn a
-threshold via grid search for when to predict $c(x,x')=0$. In
-Figure~\ref{fig:simulation-samples} the test error of the proposed
-\proc{SVMcompare} model is clearly lower than that of the baseline
-SVMrank model.
+function (\ref{eq:threshold}), $r$ is the latent ranking function, and
+$\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
+test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
+for $n\in\{50,\dots,300\}$. We fit a $10\times 10$ grid of models to
+the training set ($C=10^{-3},\dots,10^3$, Gaussian kernel width
+$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
+the validation set, and then use the test set to estimate the
+generalization ability of the selected model. For the SVMrank model
+explained in Section~\ref{sec:svmrank}, equality pairs are ignored
+when learning the ranking function, but used to learn a threshold
+$\hat \tau$ via grid search for when to predict $c(x,x')=0$.
+
+In Figure~\ref{fig:norm-level-curves} we show the training set for
+$n=100$ pairs, and the level curves of the ranking functions learned
+by the SVMrank and SVMcompare models. It is clear that SVMcompare
+recovers a ranking function that is closer to the latent $r$,
+especially in the case of the squared $\ell_1$ norm $r(x)=||x||_1^2$.
+
+In Figure~\ref{fig:simulation-samples} the test error of the proposed
+\SVMcompare\ model is clearly lower than that of the baseline SVMrank
+model. The only exception is when $r(x)=||x||^2_2$, the methods
+perform about the same.
 
 %\subsection{Learning to rank data}
 
@@ -704,17 +717,30 @@ SVMrank model.
 \begin{figure*}[b!]
   \input{figure-simulation-samples}
   \vskip -1cm
-  \caption{  directly by the comparison model, but are
-    ignored by the ranking model (the Bayes error rate of the latent
-    $r$ is shown for comparison). We plot mean and standard deviation
-    of the prediction error across 4 randomly chosen data sets, as a
-    function of training set size $n$. It is clear that the comparison
-    model makes better predictions on the test data.}
+  \caption{Test error of SVMrank and SVMcompare (the Bayes error rate
+    of the latent $r$ is shown for comparison). We plot mean and
+    standard deviation of the prediction error across 4 randomly
+    chosen data sets, as a function of training set size $n$ (a
+    vertical line shows the data set size $n=100$ which was used in
+    Figure~\ref{fig:norm-level-curves}). It is clear that in general
+    SVMcompare makes better predictions on the test data.}
   \label{fig:simulation-samples}
 \end{figure*}
 
 \section{Conclusions and future work}
 \label{sec:conclusions}
+
+We discussed an extension of SVM to comparison problems. Our results
+highlighted the importance of directly modeling the equality pairs
+($y_i=0$), and it will be interesting to see if the same results are
+observed in learning to rank data sets. For scaling to very large data
+sets, it will be interesting to try algorithms based on smooth
+discriminative loss functions, such as stochastic gradient descent
+with a logistic loss.
+
+\textbf{Acknowledgements}: TDH was funded by KAKENHI 23120004, SS by a
+MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
+Lacoste-Julien and Hang Li for helpful discussions.
 
 \bibliographystyle{abbrvnat}
 \bibliography{refs}

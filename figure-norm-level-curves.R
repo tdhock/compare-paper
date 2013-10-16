@@ -73,7 +73,7 @@ p <- ggplot()+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
   coord_equal()+
-  scale_colour_manual(values=model.colors, breaks=what.levs,
+  scale_colour_manual("lines",values=model.colors, breaks=what.levs,
                       labels=c(eq.lab, ineq.lab, "latent $r$",
                         "SVMrank\nmodel", "SVMcompare\nmodel"))+
   xlab("feature 1")+
