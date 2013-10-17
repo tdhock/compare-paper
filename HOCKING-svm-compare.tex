@@ -426,13 +426,23 @@ that is feasible for the original max margin comparison LP
 \begin{proof}
   Begin by assuming that we want to find a ranking function $r(x)=\hat
   w^\intercal x = \gamma u^\intercal x$, where $\gamma\in\RR$ is a
-  scaling constant.  Then consider that for all $x$ on the decision
+  scaling constant.  
+  Then consider that for all $x$ on the decision
   boundary, we have the following two equalities
   \begin{equation}
     \label{eq:dec-boundary-rank}
-    u
+    r(x) = \hat w^\intercal x = 1\text{ and } f(x)=u^\intercal x + \beta = 0.
   \end{equation}
-and TODO
+  Taken together, it is clear that $\gamma=-1/\beta$ and thus $\hat w
+  = -u/\beta$. Consider for all $x$ on the margin we have the
+  following two inequalities
+  \begin{equation}
+    \label{eq:margin-rank}
+    r(x) = \hat w^\intercal x = 1+\hat\mu\text{ and } f(x)=u^\intercal x + \beta= 1.
+  \end{equation}
+  Taken together, these imply $\hat \mu=-1/\beta$. Now, by definition
+  of the flipped data (\ref{eq:tilde}), we can re-write the max margin
+  QP (\ref{eq:max-margin-qp-tilde}) as
 \begin{eqnarray}
   \label{eq:max-margin-qp}
     \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm u^\intercal u  \\
@@ -442,13 +452,26 @@ and TODO
     &&\hskip -0.5cm
 \nonumber \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
 \end{eqnarray}
+By plugging in $\hat \mu,\hat w$ into the constraints of
+(\ref{eq:max-margin-qp}), it is clear that $\hat \mu, \hat w$ are
+feasible for the max margin comparison LP (\ref{eq:max-margin-lp}).
 \end{proof}
 
-% This Lemma is very useful in practice. It means that a comparison
-% ranking function $\hat r$ can be learned by first solving a standard
-% binary SVM and then transforming the solution. However
+One may also wonder: are $\hat \mu,\hat w$ optimal for the max margin
+comparison LP? In general, the answer is no, and we give one
+counterexample in the middle panel of
+Figure~\ref{fig:hard-margin}. This is because the LP defines the
+margin in terms of ranking function values, but the QP defines the
+margin in terms of $||u||$, which depends on the scale of the inputs
+$x,x'$. However, when the input variables are on the same scale, we
+have observed that the solutions to the LP and QP are equivalent
+(right panel of Figure~\ref{fig:hard-margin}).
 
-One may also wonder 
+Lemma~\ref{lemma:feasible} is very useful in practice. It means that a
+ranking function $\hat r$ can be learned on comparison data by first
+solving a standard binary SVM, and then transforming the solution. We
+use this reult in the next section to build a general support vector
+algorithm for comparison data.
 
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
@@ -554,39 +577,6 @@ which is equivalent to the dual problem of a standard binary SVM with
 kernel $\tilde K = M^\intercal K M\in\RR^{m\times m}$ and labels
 $\tilde y=\{-1,1\}^m$.
 
-So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
-any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
-interface in the \texttt{kernlab} package of \citet{kernlab}, and our
-code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
-
-After obtaining optimal dual variables $v\in\RR^m$ as the solution of
-(\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
-$\beta$ by analyzing the complementary slackness conditions.
-The learned ranking function can be quickly evaluated since the
-optimal $v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
-of the support vectors. Since we need only $2|\textbf{sv}|$ kernel
-evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
-\begin{equation}
-  \label{eq:r_sv}
-  r(x)= 
-  \sum_{i\in \textbf{sv}}
-  \tilde y_i v_i\left[ 
-    \kappa(\tilde x_i, x)
-    - \kappa(\tilde x_i', x)
-  \right]/\beta.
-\end{equation}
-Note that for all $i\in\{1,\dots,m\}$, the optimal primal variables
-$\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
-recovered using the stationary condition (\ref{eq:stationarity}). The
-learned comparison function remains the same (\ref{eq:compare_general}).
-
-The training procedure is summarized as
-Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
-\proc{KernelMatrix} computes the $2m\times 2m$ kernel matrix, and
-\proc{SVMdual} solves the SVM dual QP. There are two hyper-parameters
-to tune: the cost $C$ and the kernel $\kappa$. As with standard SVM
-for binary classification, these parameters can be tuned by minimizing
-the prediction error on a held-out validation set.
 
 \begin{algorithm}[b!]
    \caption{\SVMcompare}
@@ -642,63 +632,39 @@ the prediction error on a held-out validation set.
    \end{algorithmic}
 \end{algorithm}
 
-\section{Results}
-\label{sec:results}
+So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
+any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
+interface in the \texttt{kernlab} package of \citet{kernlab}, and our
+code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
 
-The goal of our learning algorithm is to accurately predict a test set
-of labeled pairs (\ref{eq:min_c}). We use the zero-one loss for
-evaluating the learned comparison function on the test set
-(Table~\ref{tab:evaluation}).
+After obtaining optimal dual variables $v\in\RR^m$ as the solution of
+(\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
+$\beta$ by analyzing the complementary slackness conditions.
+The learned ranking function can be quickly evaluated since the
+optimal $v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
+of the support vectors. Since we need only $2|\textbf{sv}|$ kernel
+evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
+\begin{equation}
+  \label{eq:r_sv}
+  r(x)= 
+  \sum_{i\in \textbf{sv}}
+  \tilde y_i v_i\left[ 
+    \kappa(\tilde x_i, x)
+    - \kappa(\tilde x_i', x)
+  \right]/\beta.
+\end{equation}
+Note that for all $i\in\{1,\dots,m\}$, the optimal primal variables
+$\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
+recovered using the stationary condition (\ref{eq:stationarity}). The
+learned comparison function remains the same (\ref{eq:compare_general}).
 
-\subsection{Simulation: norms in 2d}
-
-\begin{figure*}[b!]
-  \centering
-  \input{figure-norm-level-curves}
-  \vskip -0.5cm
-  \caption{Application to simulated patterns $x,x'\in\RR^2$, where the
-    ranking functions $r(x)=||x||^2$ are squared norms (panels from
-    left to right). \textbf{Top}: the training data are $n=100$ pairs,
-    half equality (black segments indicate two points of equal rank),
-    and half inequality (red arrows point to the higher
-    rank). \textbf{Middle and bottom}: level curves of the ranking
-    functions learned by SVMrank and SVMcompare. SVMrank ignores the
-    equality pairs, so in general SVMcompare recovers the latent
-    pattern better.}
-  \label{fig:norm-level-curves}
-\end{figure*}
-
-We used a simulation to test the proposed SVMcompare model and a
-baseline ranking model that ignores the equality $y_i=0$ pairs,
-SVMrank \citep{ranksvm}. The goal of our simulation is to demonstrate
-that our model can perform better by learning from the equality
-$y_i=0$ pairs, when there are few inequality $y_i\in\{-1,1\}$
-pairs. We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
-$y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
-function (\ref{eq:threshold}), $r$ is the latent ranking function, and
-$\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
-test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
-for $n\in\{50,\dots,300\}$. We fit a $10\times 10$ grid of models to
-the training set ($C=10^{-3},\dots,10^3$, Gaussian kernel width
-$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
-the validation set, and then use the test set to estimate the
-generalization ability of the selected model. For the SVMrank model
-explained in Section~\ref{sec:svmrank}, equality pairs are ignored
-when learning the ranking function, but used to learn a threshold
-$\hat \tau$ via grid search for when to predict $c(x,x')=0$.
-
-In Figure~\ref{fig:norm-level-curves} we show the training set for
-$n=100$ pairs, and the level curves of the ranking functions learned
-by the SVMrank and SVMcompare models. It is clear that SVMcompare
-recovers a ranking function that is closer to the latent $r$,
-especially in the case of the squared $\ell_1$ norm $r(x)=||x||_1^2$.
-
-In Figure~\ref{fig:simulation-samples} the test error of the proposed
-\SVMcompare\ model is clearly lower than that of the baseline SVMrank
-model. The only exception is when $r(x)=||x||^2_2$, the methods
-perform about the same.
-
-%\subsection{Learning to rank data}
+The training procedure is summarized as
+Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
+\proc{KernelMatrix} computes the $2m\times 2m$ kernel matrix, and
+\proc{SVMdual} solves the SVM dual QP. There are two hyper-parameters
+to tune: the cost $C$ and the kernel $\kappa$. As with standard SVM
+for binary classification, these parameters can be tuned by minimizing
+the prediction error on a held-out validation set.
 
 \begin{table}[b!]
   \centering
@@ -719,6 +685,64 @@ perform about the same.
   $\hat y = -y$.}
   \label{tab:evaluation}
 \end{table}
+
+\section{Results}
+\label{sec:results}
+
+The goal of our learning algorithm is to accurately predict a test set
+of labeled pairs (\ref{eq:min_c}). We use the zero-one loss for
+evaluating the learned comparison function on the test set
+(Table~\ref{tab:evaluation}).
+
+\subsection{Simulation: norms in 2d}
+
+We used a simulation to test the proposed SVMcompare model and a
+baseline ranking model that ignores the equality $y_i=0$ pairs,
+SVMrank \citep{ranksvm}. The goal of our simulation is to demonstrate
+that our model can perform better by learning from the equality
+$y_i=0$ pairs, when there are few inequality $y_i\in\{-1,1\}$
+pairs. We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
+$y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
+function (\ref{eq:threshold}), $r$ is the latent ranking function, and
+$\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
+test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
+for $n\in\{50,\dots,300\}$. We fit a $10\times 10$ grid of models to
+the training set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian
+kernel width $2^{-7},\dots,2^4$), select the model with minimal
+zero-one loss on the validation set, and then use the test set to
+estimate the generalization ability of the selected model. For the
+SVMrank model explained in Section~\ref{sec:svmrank}, equality pairs
+are ignored when learning the ranking function, but used to learn a
+threshold $\hat \tau$ via grid search for when to predict $c(x,x')=0$.
+
+In Figure~\ref{fig:norm-level-curves} we show the training set for
+$n=100$ pairs, and the level curves of the ranking functions learned
+by the SVMrank and SVMcompare models. It is clear that SVMcompare
+recovers a ranking function that is closer to the latent $r$,
+especially in the case of the squared $\ell_1$ norm $r(x)=||x||_1^2$.
+
+In Figure~\ref{fig:simulation-samples} the test error of the proposed
+\SVMcompare\ model is clearly lower than that of the baseline SVMrank
+model. The only exception is when $r(x)=||x||^2_2$, the methods
+perform about the same.
+
+%\subsection{Learning to rank data}
+
+\begin{figure*}[b!]
+  \centering
+  \input{figure-norm-level-curves}
+  \vskip -1cm
+  \caption{Application to simulated patterns $x,x'\in\RR^2$, where the
+    ranking functions $r(x)=||x||^2$ are squared norms (panels from
+    left to right). \textbf{Top}: the training data are $n=100$ pairs,
+    half equality (black segments indicate two points of equal rank),
+    and half inequality (red arrows point to the higher
+    rank). \textbf{Middle and bottom}: level curves of the ranking
+    functions learned by SVMrank and SVMcompare. SVMrank ignores the
+    equality pairs, so in general SVMcompare recovers the latent
+    pattern better.}
+  \label{fig:norm-level-curves}
+\end{figure*}
 
 \begin{figure*}[b!]
   \input{figure-simulation-samples}

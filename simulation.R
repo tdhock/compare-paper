@@ -125,7 +125,8 @@ for(norm in names(pairs.picked)){
     ##                cache400=softCompareQP(Pairs.train, ker, C=Cval,cache=4000),
     ##                times=10)
     fits <- list(compare=softCompareQP(Pairs.train, ker, C=Cval),
-                 rank=svmlight(Pairs.train, Cval, k.width))
+                 rank=svmlight(Pairs.train, Cval, k.width),
+           rank2=svmlight(Pairs.train, Cval, k.width, equality="bothpairs"))
     models[[model.i]] <- fits
     ##X.grid$rank <- fit$rank(as.matrix(X.grid))
     ## pretty good train err:

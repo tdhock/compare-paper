@@ -2,7 +2,7 @@ load("simulation.RData")
 
 source("tikz.R")
 
-fun.levs <- c("training data", "rank", "compare")
+fun.levs <- c("training data", "rank", "rank2", "compare")
 model.colors <- c()
 eq.lab <- "equality\npair\n$y_i=0$"
 ineq.lab <- "inequality\npair\n$y_i\\in\\{-1,1\\}$"
@@ -11,6 +11,7 @@ model.colors[[ineq.lab]] <- "red"
 model.colors <- c(model.colors, {
   c(latent="grey",
     rank="#f8766d",
+    rank2="green",
     compare="#00bfc4") #bluish
 })
 what.levs <- names(model.colors)
@@ -57,7 +58,7 @@ all.ranks$label <- sprintf("$r(x) = %s$", labels[as.character(all.ranks$norm)])
 seg.df$label <- sprintf("$r(x) = %s$", labels[as.character(seg.df$norm)])
 arrow.df$label <- sprintf("$r(x) = %s$", labels[as.character(arrow.df$norm)])
 toplot <- data.frame()
-for(fun in c("rank","compare")){
+for(fun in c("rank","rank2","compare")){
   these <- subset(all.ranks, what %in% c("latent", fun))
   fun <- factor(fun, fun.levs)
   toplot <- rbind(toplot, data.frame(these, fun))
@@ -75,13 +76,14 @@ p <- ggplot()+
   coord_equal()+
   scale_colour_manual("lines",values=model.colors, breaks=what.levs,
                       labels=c(eq.lab, ineq.lab, "latent $r$",
-                        "SVMrank\nmodel", "SVMcompare\nmodel"))+
+                        "SVMrank\nignore $y_i=0$", "SVMrank\ndouble $y_i=0$",
+                        "SVMcompare\nmodel"))+
   xlab("feature 1")+
   ylab("feature 2")+
   guides(colour=guide_legend(keyheight=3))
 print(p)
 
-tikz("figure-norm-level-curves.tex", h=5)
+tikz("figure-norm-level-curves.tex", h=5.8)
 print(p)
 dev.off()
 
