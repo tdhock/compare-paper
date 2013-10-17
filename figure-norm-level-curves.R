@@ -58,7 +58,10 @@ all.ranks$label <- sprintf("$r(x) = %s$", labels[as.character(all.ranks$norm)])
 seg.df$label <- sprintf("$r(x) = %s$", labels[as.character(seg.df$norm)])
 arrow.df$label <- sprintf("$r(x) = %s$", labels[as.character(arrow.df$norm)])
 toplot <- data.frame()
-for(fun in c("rank","rank2","compare")){
+plot.funs <- c("rank",
+               ##"rank2",
+               "compare")
+for(fun in plot.funs){
   these <- subset(all.ranks, what %in% c("latent", fun))
   fun <- factor(fun, fun.levs)
   toplot <- rbind(toplot, data.frame(these, fun))
@@ -76,14 +79,15 @@ p <- ggplot()+
   coord_equal()+
   scale_colour_manual("lines",values=model.colors, breaks=what.levs,
                       labels=c(eq.lab, ineq.lab, "latent $r$",
-                        "SVMrank\nignore $y_i=0$", "SVMrank\ndouble $y_i=0$",
+                        "SVMrank\nignore $y_i=0$",
+                        "SVMrank\ndouble $y_i=0$",
                         "SVMcompare\nmodel"))+
   xlab("feature 1")+
   ylab("feature 2")+
   guides(colour=guide_legend(keyheight=3))
 print(p)
 
-tikz("figure-norm-level-curves.tex", h=5.8)
+tikz("figure-norm-level-curves.tex", h=5.7)
 print(p)
 dev.off()
 
