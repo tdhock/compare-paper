@@ -28,7 +28,7 @@ for(set.id in sets$set.id){
   seed <- as.character(e$seed)
   err$set.id[err$norm == norm & err$prop == prop & err$seed == seed] <- set.id
   set.list <- size.list[[prop]][[seed]][[norm]]
-  info <- data.frame(prop=as.integer(as.character(prop)), norm, seed, set.id)
+  info <- data.frame(prop=as.numeric(as.character(prop)), norm, seed, set.id)
   ## The Bayes error on the test data set.
   test <- set.list$test
   fun <- funs[[norm]]
@@ -39,10 +39,16 @@ for(set.id in sets$set.id){
   percent <- mean(yhat != test$yi) * 100
   bayes.df <- rbind(bayes.df, data.frame(info, percent))
   ## Train pairs, oriented in the same way:
+  go <- function(y, yt, left, right){
+    data.frame(Xt=left[yi==y,,drop=FALSE],Xtp=right[yi==y,,drop=FALSE],yt=yt)
+  }
   pair.df <- with(set.list$train,{
-    rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
-          data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
-          data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
+    ## rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
+    ##       data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
+    ##       data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
+    rbind(go(1, 1, Xi, Xip),
+          go(-1, 1, Xip, Xi),
+          go(0, -1, Xi, Xip))
   })
   train.df <- rbind(train.df, data.frame(pair.df, info))
 }
@@ -63,7 +69,7 @@ model.labels <- c("rank (\\ref{eq:svmrank})",
                   "compare (\\ref{eq:svm-dual})","latent $r$")
 model.labels <- names(model.colors)
 library(grid)
-percents$fit.name <- factor(percents$fit.name, names(model.colors))
+##percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="||x||_1^2",
             l2="||x||_2^2",
             linf="||x||_\\infty^2")
@@ -72,7 +78,6 @@ percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 leg <- "learned\nfunction"
 boring <- ggplot(percents, aes(prop, mean, group=fit.name))+
-  geom_vline(xintercept=100,size=2)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:

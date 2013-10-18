@@ -8,10 +8,11 @@ lapply(small.folds, with, table(yi))
 
 unused.err <- data.frame()
 data.list <- list()
-props <- seq(0.1, 0.9, by=0.8)
+props <- seq(0.1, 0.9, by=0.2)
 N <- 100
+library(grid)
 for(prop in props){
-  for(seed in 1:2){
+  for(seed in 1:4){
     cat(sprintf("prop=%.1f seed=%4d\n", prop, seed))
     set.seed(seed)
     Pair.sets <- list()
@@ -29,9 +30,9 @@ for(prop in props){
     lapply(Pair.sets, with, table(yi))
     ## fit SVM.
     err.df <- data.frame()
-    Cvals <- 10^seq(-3,3,l=10)
+    Cvals <- 10^seq(-2,4,l=10)
     models <- list()
-    kvals <- 2^seq(-7, 4, l=10)
+    kvals <- 2^seq(-11, 2, l=10)
     model.df <- expand.grid(C=Cvals, k.width=kvals)
     for(model.i in 1:nrow(model.df)){
       model <- model.df[model.i,]
