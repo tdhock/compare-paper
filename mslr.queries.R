@@ -86,12 +86,12 @@ pick.pairs <- function(train, equals.target=1/2){
     Xip <- rbind(Xip, feat(right))
     yi <- c(yi, rep(0, pair.count))
   }
-  list(Xi=Xi, Xip=Xip, yi=yi)
+  list(Xi=Xi, Xip=Xip, yi=as.integer(yi))
 }
 
 ## only consider a few queries from one of the sets to save
 ## time/memory.
-n.queries <- 1000
+n.queries <- 300
 set <- folds[[1]]$test
 
 set.seed(1)
