@@ -26,4 +26,8 @@ figure-simulation-proportion.tex: figure-simulation-proportion.R
 	R --no-save < $<
 mslr.queries.RData: mslr.queries.R ~/MSLR-WEB10K/folds.RData
 	R --no-save < $<
+small.folds.RData: small.folds.R mslr.queries.RData
+	R --no-save < $<
+mslr.proportion.RData: mslr.proportion.R svmlight.R small.folds.RData
+	R --no-save < $<
 

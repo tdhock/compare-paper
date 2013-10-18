@@ -167,6 +167,7 @@ svmlight <- function
   f.values <- with(pairs, c(f(pairs$Xip),f(pairs$Xi)))
   mu <- mean(f.values)
   sigma <- sd(f.values)
+  sigma[sigma==0] <- 1
   fnorm <- function(X){
     (f(X) - mu)/sigma
   }
@@ -189,30 +190,35 @@ svmlight <- function
   fxdiff <- with(pairs, fnorm(pairs$Xip)-fnorm(pairs$Xi))
   adiff <- abs(fxdiff)
   min.abs <- min(adiff)
+  max.abs <- max(adiff)
   if(min.abs == 0) min.abs <- 1e-6
-  ## Do grid search using these 100 possible thresholds...
-  tgrid <- 10^seq(log10(min.abs),log10(max(adiff)),l=100)
-  ## ...and the differences found in the data.
-  thresholds <- sort(unique(c(tgrid, adiff)))
-  rug.df <- data.frame(threshold=adiff,
-                       label=ifelse(pairs$yi==0,"same","different"))
-  err.df <- data.frame()
-  for(threshold in thresholds){
-    yhat <- ifelse(fxdiff < -threshold, -1,
-                   ifelse(fxdiff > threshold, 1, 0))
-    fp <- sum(pairs$yi == 0 & yhat != 0)
-    inv <- sum(pairs$yi %in% c(-1,1) & yhat != pairs$yi & yhat %in% c(-1,1))
-    fn <- sum(pairs$yi!=0 & yhat==0)
-    err <- sum(pairs$yi != yhat)
-    stopifnot(err == fp+inv+fn)
-    df <- data.frame(threshold,
-                     false.positive=fp/length(yhat),
-                     false.negative=fn/length(yhat),
-                     inversion=inv/length(yhat),
-                     error=err/length(yhat))
-    err.df <- rbind(err.df, df)
+  thresh <- if(max.abs == 0){
+    1
+  }else{
+    ## Do grid search using these 100 possible thresholds...
+    tgrid <- 10^seq(log10(min.abs),log10(max.abs),l=100)
+    ## ...and the differences found in the data.
+    thresholds <- sort(unique(c(tgrid, adiff)))
+    rug.df <- data.frame(threshold=adiff,
+                         label=ifelse(pairs$yi==0,"same","different"))
+    err.df <- data.frame()
+    for(threshold in thresholds){
+      yhat <- ifelse(fxdiff < -threshold, -1,
+                     ifelse(fxdiff > threshold, 1, 0))
+      fp <- sum(pairs$yi == 0 & yhat != 0)
+      inv <- sum(pairs$yi %in% c(-1,1) & yhat != pairs$yi & yhat %in% c(-1,1))
+      fn <- sum(pairs$yi!=0 & yhat==0)
+      err <- sum(pairs$yi != yhat)
+      stopifnot(err == fp+inv+fn)
+      df <- data.frame(threshold,
+                       false.positive=fp/length(yhat),
+                       false.negative=fn/length(yhat),
+                       inversion=inv/length(yhat),
+                       error=err/length(yhat))
+      err.df <- rbind(err.df, df)
+    }
+    err.df[pick.best.index(err.df$error),"threshold"]
   }
-  thresh <- err.df[pick.best.index(err.df$error),"threshold"]
   list(rank=fnorm,predict=function(Xi, Xip){
     fxdiff <- fnorm(Xip)-fnorm(Xi)
     ifelse(fxdiff < -thresh, -1L,
