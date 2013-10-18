@@ -9,8 +9,8 @@ funs <- list(l2=function(x)rowSums(x*x),
              l1=function(x)rowSums(abs(x))^2,
              linf=function(x)apply(abs(x), 1, max)^2)
 
-size.list <- simulation.samples$data
-err <- simulation.samples$err
+size.list <- simulation.proportion$data
+err <- simulation.proportion$err
 err$percent <- err$error / err$count * 100
 ## sets of training data and bayes error on test data.
 sets <- dcast(err, prop + seed + norm ~ fit.name, value.var="percent")
@@ -83,7 +83,7 @@ boring <- ggplot(percents, aes(prop, mean, group=fit.name))+
   scale_colour_manual(leg,values=model.colors,labels=model.labels)+
   scale_fill_manual(leg,values=model.colors,labels=model.labels)+
   ylab("percent incorrectly\npredicted test pairs")+
-  xlab("$\delta=$ proportion of equality pairs $y_i=0$ in the training set")
+  xlab("$\\delta=$ proportion of equality pairs $y_i=0$ in the training set")
 
 tikz("figure-simulation-proportion.tex",h=2)
 print(boring)

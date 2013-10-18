@@ -37,7 +37,7 @@ lapply(pair.sets, with, table(yi))
 all.ranks <- data.frame()
 unused.err <- data.frame()
 data.list <- list()
-props <- seq(0.1, 0.9, by=0.3)
+props <- seq(0.1, 0.9, by=0.8)
 N <- 100
 for(prop in props){
   for(seed in 1:2){
@@ -63,7 +63,7 @@ for(prop in props){
       }
       norm.list[[norm]] <- set.list
     }
-    data.list[[as.character(N)]][[as.character(seed)]] <- norm.list
+    data.list[[as.character(prop)]][[as.character(seed)]] <- norm.list
     ## Plot the points.
     point.df <- data.frame()
     seg.df <- data.frame()
@@ -155,16 +155,9 @@ print(segPlot)
         })
         yhat <- with(unused, fit$predict(Xi, Xip))
         unused.err <- rbind(unused.err, {
-          data.frame(N, seed, norm, fit.name, FpFnInv(unused$yi, yhat))
+          data.frame(prop, seed, norm, fit.name, FpFnInv(unused$yi, yhat))
         })
       }
-  normContour <- ggplot(rank.df, aes(x1, x2, z=rank))+
-    geom_contour(colour="black")+
-    coord_equal()+
-    theme_bw()+
-    theme(panel.margin=unit(0,"cm"))+
-    facet_grid(.~what)
-  print(normContour)
   overfitPlot <- ggplot(err.df, aes(log2(Cval), error, colour=fit.name))+
     geom_line(aes(group=interaction(set, fit.name), linetype=set))+
     facet_wrap("k.width")+
@@ -172,6 +165,13 @@ print(segPlot)
     theme(panel.margin=unit(0,"cm"))+
     geom_point(data=chosen.df)
   print(overfitPlot)
+  normContour <- ggplot(rank.df, aes(x1, x2, z=rank))+
+    geom_contour(colour="black")+
+    coord_equal()+
+    theme_bw()+
+    theme(panel.margin=unit(0,"cm"))+
+    facet_grid(.~what)
+  print(normContour)
       ## if the optimal model occurs on the min/max of the validationed
       ## hyperparameters, then this is probably sub-optimal and we need to
       ## define a larger grid.
@@ -183,6 +183,6 @@ print(segPlot)
   }
 }
 
-simulation.samples <- list(rank=all.ranks, error=unused.err, data=data.list)
+simulation.proportion <- list(rank=all.ranks, error=unused.err, data=data.list)
 
-save(simulation.samples, file="simulation.proportion.RData")
+save(simulation.proportion, file="simulation.proportion.RData")
