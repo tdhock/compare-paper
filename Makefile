@@ -20,3 +20,10 @@ simulation.proportion.RData: simulation.proportion.R
 	R --no-save < $<
 figure-simulation-proportion.tex: figure-simulation-proportion.R
 	R --no-save < $<
+
+# MSLR-WEB10K should contain Fold1, Fold2, ...
+~/MSLR-WEB10K/folds.RData: folds.R
+	R --no-save < $<
+mslr.queries.RData: mslr.queries.R ~/MSLR-WEB10K/folds.RData
+	R --no-save < $<
+
