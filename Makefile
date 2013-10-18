@@ -1,4 +1,4 @@
-HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-samples.tex figure-norm-level-curves.tex
+HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-samples.tex figure-norm-level-curves.tex figure-simulation-proportion.tex
 	rm -f *.aux *.bbl
 	pdflatex HOCKING-svm-compare
 	bibtex HOCKING-svm-compare
@@ -15,4 +15,8 @@ figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RD
 figure-norm-level-curves.tex: figure-norm-level-curves.R tikz.R simulation.RData
 	R --no-save < $<
 simulation.RData: simulation.R svmlight.R
+	R --no-save < $<
+simulation.proportion.RData: simulation.proportion.R
+	R --no-save < $<
+figure-simulation-proportion.tex: figure-simulation-proportion.R
 	R --no-save < $<
