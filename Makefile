@@ -30,4 +30,6 @@ small.folds.RData: small.folds.R mslr.queries.RData
 	R --no-save < $<
 mslr.proportion.RData: mslr.proportion.R svmlight.R small.folds.RData
 	R --no-save < $<
+mslr.samples.RData: mslr.samples.R svmlight.R small.folds.RData
+	R --no-save < $<
 
