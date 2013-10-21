@@ -8,12 +8,12 @@ lapply(small.folds, with, table(yi))
 
 unused.err <- data.frame()
 data.list <- list()
-props <- seq(0.1, 0.9, by=0.2)
-N <- 100
+prop <- 1/2
+Nsamp <- c(800, 50, 100, 200, 400)
 library(grid)
-for(prop in props){
+for(N in Nsamp){
   for(seed in 1:4){
-    cat(sprintf("prop=%.1f seed=%4d\n", prop, seed))
+    cat(sprintf("N=%.1f seed=%4d\n", N, seed))
     set.seed(seed)
     Pair.sets <- list()
     for(set.name in names(small.folds)){
@@ -71,7 +71,7 @@ for(prop in props){
       fit <- models[[chosen]][[fit.name]]
       yhat <- with(unused, fit$predict(Xi, Xip))
       unused.err <- rbind(unused.err, {
-        data.frame(prop, seed, fit.name, FpFnInv(unused$yi, yhat))
+        data.frame(N, seed, fit.name, FpFnInv(unused$yi, yhat))
       })
     }
   overfitPlot <- ggplot(err.df, aes(log2(Cval), error, colour=fit.name))+
@@ -90,6 +90,6 @@ for(prop in props){
   }
 }
 
-mslr.proportion <- list(error=unused.err, data=data.list)
+mslr.samples <- list(error=unused.err, data=data.list)
 
-save(mslr.proportion, file="mslr.proportion.RData")
+save(mslr.samples, file="mslr.samples.RData")

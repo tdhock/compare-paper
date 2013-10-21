@@ -182,6 +182,13 @@ for(set.name in c("both","scaled")){
 plotted.points <- rbind(model.points, model.sv)
 qp <- data.frame(x=200,y=3,label="QP",set.name="both")
 lp <- data.frame(x=-200,y=0,label="LP",set.name="both")
+lab.df <-
+  data.frame(set.name=c("one","one","one","scaled","scaled"),
+             yi=c(-1,0,1,0,1),
+             distance=c(-190, -50, 180, -0.3, 1.8),
+             angle=c(-1.5, 1.9, 2.4, -1.8, 3),
+             label=c("$y_i=-1$","$y_i=0$","$y_i=1$",
+               "$\\tilde y_i=-1$", "$\\tilde y_i=1$"))
 mplot <- ggplot()+
   geom_abline(aes(slope=slope,intercept=intercept,linetype=line),
               data=model.lines, size=1, color=lp.color)+
@@ -199,13 +206,15 @@ mplot <- ggplot()+
                         "$y_i=1$, $\\tilde y_i=1$",
                         "QP support vector"))+
   ##scale_size_manual(values=c(active=2,inactive=1))+
-  scale_shape_manual("point",values=c(active=13,inactive=19, sv=20),
+  scale_shape_manual("point",values=c(active=8,inactive=1, sv=20),
                      labels=c("LP constraint active",
                        "LP constraint inactive",
                        "QP support vector"))+
   scale_linetype_manual(values=c(decision="solid",margin="dotted"),
                         labels=c("decision $r(x)=\\pm 1$",
                           "margin $r(x)=\\pm 1\\pm\\mu$"))+
+  geom_text(aes(distance, angle, colour=factor(yi), label=label),
+            data=lab.df, size=3)+
   facet_grid(.~set.name,scales="free",labeller=function(var,val){
     c(one="original $x'-x$",
       both="flipped $\\tilde x'-\\tilde x$",
@@ -215,8 +224,9 @@ mplot <- ggplot()+
   ##geom_point(aes(distance, angle), data=model.sv, size=1, pch=1)+
   theme(panel.margin=unit(0,"cm"))+
   xlab("difference feature 1")+
-  ylab("difference feature 2")
-
+  ylab("difference feature 2")+
+  guides(colour="none")
+print(mplot)
 tikz("figure-hard-margin.tex",h=2.8)
 print(mplot)
 dev.off()
