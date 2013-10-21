@@ -3,6 +3,7 @@ works_with_R("3.0.1",rankSVMcompare="2013.9.3",quadmod="2013.8.23",
 
 data(separable)
 source("tikz.R")
+source("colors.R")
 
 only <- 1:50
 one <- with(separable, list(yi=yi[only],Xi=Xi[only,],Xip=Xip[only,]))
@@ -29,10 +30,7 @@ point.df <- rbind(setdf(one$yi,Di,"one"),
                   setdf(yi.both,both.scaled,"scaled"))
 svm.color <- "black"
 lp.color <- "grey50"
-yi.colors <- c("0"="#f8756e", #orange
-               "1"="#00ba38", #green
-               "-1"="#619cff",
-               "2"=svm.color) #blue
+yi.colors[["2"]] <- svm.color #blue
 library(grid)
 p <- ggplot()+
   geom_point(aes(distance, angle, colour=factor(yi)), data=point.df)+

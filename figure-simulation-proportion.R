@@ -1,6 +1,7 @@
 works_with_R("3.0.2", plyr="1.8", reshape2="1.2.2")
 
 source("tikz.R")
+source("colors.R")
 
 load("simulation.proportion.RData")
 
@@ -39,16 +40,21 @@ for(set.id in sets$set.id){
   percent <- mean(yhat != test$yi) * 100
   bayes.df <- rbind(bayes.df, data.frame(info, percent))
   ## Train pairs, oriented in the same way:
-  go <- function(y, yt, left, right){
-    data.frame(Xt=left[yi==y,,drop=FALSE],Xtp=right[yi==y,,drop=FALSE],yt=yt)
+  go <- function(y, yt, left, right, yi){
+    i <- yi==y
+    if(any(i)){
+      data.frame(Xt=left[i,,drop=FALSE],Xtp=right[i,,drop=FALSE],yt)
+    }else{
+      data.frame()
+    }
   }
   pair.df <- with(set.list$train,{
     ## rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
     ##       data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
     ##       data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
-    rbind(go(1, 1, Xi, Xip),
-          go(-1, 1, Xip, Xi),
-          go(0, -1, Xi, Xip))
+    rbind(go(1, 1, Xi, Xip, yi),
+          go(-1, 1, Xip, Xi, yi),
+          go(0, -1, Xi, Xip, yi))
   })
   train.df <- rbind(train.df, data.frame(pair.df, info))
 }
@@ -61,13 +67,6 @@ percents <-
         sd=sd(percent),
         se=sd(percent)/sqrt(length(percent)))
 
-model.colors <- c(
-                  rank="#f8766d",
-                  compare="#00bfc4", #bluish
-                  latent="grey")
-model.labels <- c("rank (\\ref{eq:svmrank})",
-                  "compare (\\ref{eq:svm-dual})","latent $r$")
-model.labels <- names(model.colors)
 library(grid)
 ##percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="||x||_1^2",
@@ -77,7 +76,7 @@ makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 leg <- "learned\nfunction"
-boring <- ggplot(percents, aes(prop, mean, group=fit.name))+
+boring <- ggplot(percents, aes(prop*100, mean, group=fit.name))+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:
@@ -85,11 +84,12 @@ boring <- ggplot(percents, aes(prop, mean, group=fit.name))+
   facet_grid(.~label)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
-  scale_colour_manual(leg,values=model.colors,labels=model.labels)+
-  scale_fill_manual(leg,values=model.colors,labels=model.labels)+
+  scale_colour_manual(leg,values=model.colors)+
+  scale_fill_manual(leg,values=model.colors)+
   ylab("percent incorrectly\npredicted test pairs")+
-  xlab("$\\delta=$ proportion of equality pairs $y_i=0$ in the training set")
+  scale_x_continuous("percent of equality pairs $y_i=0$",
+                     breaks=seq(10,90,by=20))
 
-tikz("figure-simulation-proportion.tex",h=2)
+tikz("figure-simulation-proportion.tex",h=3)
 print(boring)
 dev.off()

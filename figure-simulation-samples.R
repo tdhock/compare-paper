@@ -1,6 +1,8 @@
 works_with_R("3.0.2", plyr="1.8", reshape2="1.2.2")
 
 source("tikz.R")
+source("Nsamp.R")
+source("colors.R")
 
 load("simulation.samples.RData")
 
@@ -55,13 +57,6 @@ percents <-
         sd=sd(percent),
         se=sd(percent)/sqrt(length(percent)))
 
-model.colors <- c(
-                  rank="#f8766d",
-                  compare="#00bfc4", #bluish
-                  latent="grey")
-model.labels <- c("rank (\\ref{eq:svmrank})",
-                  "compare (\\ref{eq:svm-dual})","latent $r$")
-model.labels <- names(model.colors)
 library(grid)
 percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="||x||_1^2",
@@ -72,7 +67,7 @@ percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 leg <- "learned\nfunction"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
-  geom_vline(xintercept=100,size=2)+
+  geom_vline(xintercept=as.numeric(Nsamp),size=2)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:
@@ -80,8 +75,8 @@ boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   facet_grid(.~label)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
-  scale_colour_manual(leg,values=model.colors,labels=model.labels)+
-  scale_fill_manual(leg,values=model.colors,labels=model.labels)+
+  scale_colour_manual(leg,values=model.colors)+
+  scale_fill_manual(leg,values=model.colors)+
   ylab("percent incorrectly\npredicted test pairs")+
   xlab("$n=$ number of labeled pairs in the training set")
 

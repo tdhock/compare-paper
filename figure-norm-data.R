@@ -1,4 +1,5 @@
 source("tikz.R")
+source("colors.R")
 
 f <- function(x)sum(x*x)
 Xi <- c()
@@ -30,10 +31,7 @@ for(i in seq_along(levs)){
   }
 }
 
-color.code <- c("0"="#f8756e", #orange
-               "1"="#00ba38", #green
-               "-1"="#619cff") #blue
-yi.colors <- color.code[as.character(yi)]
+yi.col <- yi.colors[as.character(yi)]
 
 tikz("figure-norm-data.tex", h=8,w=3)
 
@@ -47,23 +45,23 @@ segments(Xi[yi==0,1],
          Xi[yi==0,2],
          Xip[yi==0,1],
          Xip[yi==0,2], lwd=pairLWD,
-         col=yi.colors[yi==0])
+         col=yi.col[yi==0])
 arrowLength <- 0.1
 arrows(Xi[yi==1,1],
        Xi[yi==1,2],
        Xip[yi==1,1],
        Xip[yi==1,2], lwd=pairLWD, length=arrowLength,
-       col=yi.colors[yi==1])
+       col=yi.col[yi==1])
 arrows(Xip[yi==-1,1],
        Xip[yi==-1,2],
        Xi[yi==-1,1],
        Xi[yi==-1,2], lwd=pairLWD, length=arrowLength,
-       col=yi.colors[yi==-1])
+       col=yi.col[yi==-1])
 ##text(Xi, labels=seq_along(yi)) # show row numbers.
 ##text(Xi+1/4, labels=yi) # show labels.
 leg.ord <- c("1","0","-1")
-legend("bottomleft", legend=leg.ord, col=color.code[leg.ord],
-       lwd=pairLWD, lty=rep(1, length(color.code)),
+legend("bottomleft", legend=leg.ord, col=yi.colors[leg.ord],
+       lwd=pairLWD, lty=rep(1, length(yi.colors)),
        title="label $y_i$", bg="white")
 
 lab.i <- c(1,11,20)
@@ -109,17 +107,17 @@ segments(Xi.square[yi==0,1],
          Xi.square[yi==0,2],
          Xip.square[yi==0,1],
          Xip.square[yi==0,2], lwd=pairLWD,
-         col=yi.colors[yi==0])
+         col=yi.col[yi==0])
 arrows(Xi.square[yi==1,1],
        Xi.square[yi==1,2],
        Xip.square[yi==1,1],
        Xip.square[yi==1,2], lwd=pairLWD, length=arrowLength,
-       col=yi.colors[yi==1])
+       col=yi.col[yi==1])
 arrows(Xip.square[yi==-1,1],
        Xip.square[yi==-1,2],
        Xi.square[yi==-1,1],
        Xi.square[yi==-1,2], lwd=pairLWD, length=arrowLength,
-       col=yi.colors[yi==-1])
+       col=yi.col[yi==-1])
 points(Xi.square[lab.i,], pch=pch.arr)
 points(Xip.square[lab.i,], pch=pch.arr)
 draw <- function(i, off){
@@ -136,7 +134,7 @@ text(1.2, -0.05, labels=sprintf("$\\Phi(x_{11})$",i), cex=0.8)
 ## Plot 3: difference vectors as points.
 X.diff <- Xip.square-Xi.square
 plot(X.diff, type="p", asp=1, xlab="", ylab="", xaxt="n", yaxt="n",
-     pch=20, col=yi.colors)
+     pch=20, col=yi.col)
 title(xlab="difference feature 1", ylab="difference feature 2", line=0.1)
 mtext("Difference of enlarged features $\\Phi(x')-\\Phi(x)$", 4, las=0)
 abline(h=0,v=0, col="grey")
@@ -145,8 +143,8 @@ abline(-1,-1)
 points(X.diff[lab.i,])
 text(-0.8, -1.4, "$\\Phi(x_{20}')-\\Phi(x_{20})$", cex=0.8)
 
-text(c(1,2,-1.3), c(-0.8,1.5,-1/2), sprintf("$y_i=%s$",names(color.code)),
-     col=color.code)
+text(c(1,2,-1.3), c(-0.8,1.5,-1/2), sprintf("$y_i=%s$",names(yi.colors)),
+     col=yi.colors)
 
 text(-0.8, 0.8, "$\\Phi(x_{11}')-\\Phi(x_{11})$", cex=0.8)
 
