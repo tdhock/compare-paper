@@ -194,15 +194,17 @@ boosting algorithm has been proposed for this ``ranking with ties''
 problem \cite{rank-with-ties}, and the authors observed that modeling
 ties is more effective when there are more output values. A Bayesian
 model which can be applied to these data is TrueSkill
-\cite{trueskill}, a generalization of the Elo chess rating system.
-% Neither TrueSkill nor SVMrank
-% can predict ties ($y_i=0$), and \citet{rank-with-ties} did not respond
-% to a request for their code, which is what motivates us to propose a
-% new algorithm.
+\citep{trueskill}, a generalization of the Elo chess rating system.
 When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
 article we consider the case when inputs are continuous
 $x_i,x_i'\in\RR^p$.
+
+Ranking data sets are often described not in terms of labeled pairs of
+inputs $(x_i, x_i', y_i)$ but instead single inputs $x_i$ with ordinal
+labels $y_i\in\{1,\dots,k\}$, where $k$ is the number of integral
+output values. In this case algorithms such as Support Vector Oridinal
+Regression are applicable \citep{ordinal}.
 
 
 % Some related work appears in Table~\ref{tab:related}:
@@ -699,11 +701,11 @@ evaluating the learned comparison function on the test set
 (Table~\ref{tab:evaluation}).
 
 \subsection{Simulation: norms in 2d}
-
 We used a simulation to test the proposed SVMcompare model and a
 baseline ranking model that ignores the equality $y_i=0$ pairs,
-SVMrank \citep{ranksvm}. The goal of our simulation is to demonstrate
-that our model can perform better by learning from the equality
+SVMrank \citep{ranksvm}. This simulation has two goals: (1) visualize
+the learned 2D nonlinear ranking functions, and (2) demonstrate that
+our model can achieve lower test error by learning from the equality
 $y_i=0$ pairs, when there are few inequality $y_i\in\{-1,1\}$
 pairs. We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
@@ -718,6 +720,38 @@ estimate the generalization ability of the selected model. For the
 SVMrank model explained in Section~\ref{sec:svmrank}, equality pairs
 are ignored when learning the ranking function, but used to learn a
 threshold $\hat \tau$ via grid search for when to predict $c(x,x')=0$.
+
+\begin{table}
+  \centering
+  \begin{tabular}{r|cc|cc|}
+    & \#train %$\tilde y_i= -1$
+    & --- 
+    & \#train %$\tilde y_i=1$
+    & $\rightarrow$
+    \\
+    \hline
+    rank 
+    & 0 
+    & 
+    & $|I_1|+|I_{-1}|$ 
+    & $\rightarrow$ 
+    \\
+    \hline
+    rank2 
+    & $2|I_0|$ 
+    & $\leftarrow \rightarrow$
+    & $2(|I_1|+|I_{-1}|)$ 
+    & $\rightarrow \rightarrow$
+    \\
+    \hline
+    compare 
+    & $2|I_0|$ 
+    & --- --- 
+    & $|I_1|+|I_{-1}|$ 
+    & $\rightarrow$
+  \end{tabular}
+\caption{}
+\end{table}
 
 In Figure~\ref{fig:norm-level-curves} we show the training set for
 $n=100$ pairs, and the level curves of the ranking functions learned
