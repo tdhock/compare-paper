@@ -37,6 +37,7 @@ lapply(pair.sets, with, table(yi))
 all.ranks <- data.frame()
 unused.err <- data.frame()
 data.list <- list()
+test.rank.list <- list()
 props <- seq(0.1, 0.9, by=0.8)
 N <- 100
 for(prop in props){
@@ -63,7 +64,6 @@ for(prop in props){
       }
       norm.list[[norm]] <- set.list
     }
-    data.list[[as.character(prop)]][[as.character(seed)]] <- norm.list
     ## Plot the points.
     point.df <- data.frame()
     seg.df <- data.frame()
@@ -149,6 +149,11 @@ print(segPlot)
         chosen <- which.min(validation.err$error)
         chosen.df <- rbind(chosen.df, validation.err[chosen,])
         fit <- models[[chosen]][[fit.name]]
+        ## Evaluate the rank on the test points, for ROC analysis.
+        test.ranks <- with(unused, cbind(Xi=fit$rank(Xi), Xip=fit$rank(Xip)))
+       test.rank.list[[as.character(prop)]][[as.character(seed)]][[fit.name]] <-
+         test.ranks
+        ## Evaluate the rank on a grid, for drawing contour lines.
         r <- fit$rank(X.grid)
         rank.df <- rbind(rank.df, {
           data.frame(X.grid, rank=r-min(r), what=fit.name)
@@ -172,6 +177,7 @@ print(segPlot)
     theme(panel.margin=unit(0,"cm"))+
     facet_grid(.~what)
   print(normContour)
+    data.list[[as.character(prop)]][[as.character(seed)]] <- norm.list
       ## if the optimal model occurs on the min/max of the validationed
       ## hyperparameters, then this is probably sub-optimal and we need to
       ## define a larger grid.
@@ -179,10 +185,12 @@ print(segPlot)
       ##stopifnot(! validation.err[chosen,"k.width"] %in% range(kvals))
       
       all.ranks <- rbind(all.ranks, data.frame(rank.df, norm, seed, prop))
-    }
+    } ## end norm
   }
 }
 
-simulation.proportion <- list(rank=all.ranks, error=unused.err, data=data.list)
+simulation.proportion <-
+  list(rank=all.ranks, error=unused.err, data=data.list,
+       test.rank=test.rank.list)
 
 save(simulation.proportion, file="simulation.proportion.RData")
