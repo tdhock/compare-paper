@@ -64,11 +64,21 @@ combined <- rbind(err[,names(bayes.df)],
 percents <-
   ddply(combined, .(prop, fit.name, norm), summarize,
         mean=mean(percent),
-        sd=sd(percent),
-        se=sd(percent)/sqrt(length(percent)))
-
+        sd=sd(percent))
+components <- melt(err, id.vars=c("prop","seed","norm","fit.name"),
+                   measure.vars=c("false.positive","false.negative"))
+comp.sum <- ddply(components, .(prop,norm,fit.name,variable), summarize,
+                  mean=mean(value), sd=sd(value))
 library(grid)
-##percents$fit.name <- factor(percents$fit.name, names(model.colors))
+ggplot(comp.sum, aes(prop, mean, group=interaction(fit.name, variable)))+
+  geom_ribbon(aes(fill=fit.name,ymin=mean-sd,ymax=mean+sd), alpha=1/4)+
+  geom_line(aes(colour=fit.name),lwd=2)+
+  facet_grid(variable~norm)+
+  theme_bw()+
+  theme(panel.margin=unit(0,"cm"))+
+  xlab("proportion of equality pairs")+
+  ylab("incorrect test labels")
+percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="||x||_1^2",
             l2="||x||_2^2",
             linf="||x||_\\infty^2")
