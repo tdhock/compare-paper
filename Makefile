@@ -18,7 +18,7 @@ simulation.RData: simulation.R svmlight.R
 	R --no-save < $<
 simulation.proportion.RData: simulation.proportion.R
 	R --no-save < $<
-figure-simulation-proportion.tex: figure-simulation-proportion.R colors.R
+figure-simulation-proportion.tex: figure-simulation-proportion.R colors.R simulation.proportion.RData
 	R --no-save < $<
 
 # MSLR-WEB10K should contain Fold1, Fold2, ...

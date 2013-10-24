@@ -90,6 +90,6 @@ boring <- ggplot(percents, aes(prop*100, mean, group=fit.name))+
   scale_x_continuous("percent of equality pairs $y_i=0$",
                      breaks=seq(10,90,by=20))
 
-tikz("figure-simulation-proportion.tex",h=3)
+tikz("figure-simulation-proportion.tex",h=2)
 print(boring)
 dev.off()

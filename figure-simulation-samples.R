@@ -65,9 +65,10 @@ labels <- c(l1="||x||_1^2",
 makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
+indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.norm))
 leg <- "learned\nfunction"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
-  geom_vline(xintercept=as.numeric(Nsamp),size=2)+
+  geom_vline(aes(xintercept=N),size=2,data=indicator)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:
