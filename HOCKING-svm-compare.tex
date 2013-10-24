@@ -180,18 +180,18 @@ Comparison is similar to ranking and classification with a reject
 option (Table~\ref{tab:related}). The classification with reject
 option problem is a version of binary classification with outputs
 $y\in\{-1,0,1\}$, where 0 signifies ``rejection'' or ``no guess''
-\cite{reject-option}. There are many algorithms for the supervised
+\citep{reject-option}. There are many algorithms for the supervised
 learning to rank problem \citep{learning-to-rank}, which is similar to
 the supervised comparison problem we consider in this paper. The main
 idea of learning to rank is to train on labeled pairs of possible
 documents $x_i,x_i'$ for the same search query. The labels are
 $y_i\in\{-1,1\}$, where $y_i=1$ means document $x_i'$ is more relevant
 than $x_i$ and $y_i=-1$ means the opposite. The SVMrank algorithm was
-proposed for this problem \cite{ranksvm}, and the algorithm we propose
+proposed for this problem \citep{ranksvm}, and the algorithm we propose
 here is similar. The difference is that we also consider the case
 where both items/documents are judged to be equally good ($y_i=0$).  A
 boosting algorithm has been proposed for this ``ranking with ties''
-problem \cite{rank-with-ties}, and the authors observed that modeling
+problem \citep{rank-with-ties}, and the authors observed that modeling
 ties is more effective when there are more output values. A Bayesian
 model which can be applied to these data is TrueSkill
 \citep{trueskill}, a generalization of the Elo chess rating system.
@@ -203,7 +203,7 @@ $x_i,x_i'\in\RR^p$.
 Ranking data sets are often described not in terms of labeled pairs of
 inputs $(x_i, x_i', y_i)$ but instead single inputs $x_i$ with ordinal
 labels $y_i\in\{1,\dots,k\}$, where $k$ is the number of integral
-output values. In this case algorithms such as Support Vector Oridinal
+output values. In this case algorithms such as Support Vector Ordinal
 Regression are applicable \citep{ordinal}.
 
 
@@ -640,7 +640,7 @@ $\tilde y\in\{-1,1\}^m$.
 
 So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
 any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
-interface in the \texttt{kernlab} package \cite{kernlab}, and our
+interface in the \texttt{kernlab} package \citep{kernlab}, and our
 code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
 
 After obtaining optimal dual variables $v\in\RR^m$ as the solution of
@@ -780,7 +780,7 @@ with a logistic loss.
 MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
 Lacoste-Julien and Hang Li for helpful discussions.
 
-\bibliographystyle{plain}
+\bibliographystyle{abbrvnat}
 \bibliography{refs}
 
 \begin{figure*}[b!]
