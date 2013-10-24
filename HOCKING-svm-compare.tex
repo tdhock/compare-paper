@@ -643,6 +643,43 @@ any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
 interface in the \texttt{kernlab} package \citep{kernlab}, and our
 code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
 
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{r|cc|cc|}
+Input:&    \multicolumn{2}{c|}{equality pairs}
+&    \multicolumn{2}{c|}{inequality pairs}\\
+    & $|I_0|$ %$\tilde y_i= -1$
+    & --- 
+    & $|I_1|+|I_{-1}|$ %$\tilde y_i=1$
+    & $\rightarrow$
+    \\
+    \hline
+    rank 
+    & 0 
+    & 
+    & $|I_1|+|I_{-1}|$ 
+    & $\rightarrow$ 
+    \\
+    \hline
+    rank2 
+    & $2|I_0|$ 
+    & $\leftarrow \rightarrow$
+    & $2(|I_1|+|I_{-1}|)$ 
+    & $\rightarrow \rightarrow$
+    \\
+    \hline
+    compare 
+    & $2|I_0|$ 
+    & --- --- 
+    & $|I_1|+|I_{-1}|$ 
+    & $\rightarrow$\\
+    \hline
+  \end{tabular}
+  \caption{\label{tab:models}
+    Summary of how the input pairs are used to learn the ranking 
+    function $r$.}
+\end{table}
+
 After obtaining optimal dual variables $v\in\RR^m$ as the solution of
 (\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
 $\beta$ by analyzing the complementary slackness conditions.
@@ -672,96 +709,83 @@ two hyper-parameters to tune: the cost $C$ and the kernel $\kappa$. As
 with standard SVM for binary classification, these parameters can be
 tuned by minimizing the prediction error on a held-out validation set.
 
-\begin{table}[b!]
-  \centering
-  \begin{tabular}{|a|c|c|c|}\hline
-    \rowcolor{lightgray}
-    \backslashbox{$\hat{y}$}{ $y$}
-    &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
-    \textbf{-1}&0  & FP & Inversion   	\\ \hline 
-    \textbf{0} &FN& 0& FN\\ \hline
-    \textbf{1} & Inversion & FP &0	\\ \hline
-  \end{tabular}
-  % \cellcolor{pastelblue}
-  \caption{We use the zero-one loss to evaluate a predicted label
-    $\hat y$ given the true label $y$. False positives (FP) occur 
-    when predicting a significant difference $\hat y\in\{-1,1\}$ 
-    when there is none $y=0$, and False Negatives (FN) are the opposite.
-  Inversions occur when predicting the opposite of the true label
-  $\hat y = -y$.}
-  \label{tab:evaluation}
-\end{table}
+% \begin{table}[b!]
+%   \centering
+%   \begin{tabular}{|a|c|c|c|}\hline
+%     \rowcolor{lightgray}
+%     \backslashbox{$\hat{y}$}{ $y$}
+%     &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
+%     \textbf{-1}&0  & FP & Inversion   	\\ \hline 
+%     \textbf{0} &FN& 0& FN\\ \hline
+%     \textbf{1} & Inversion & FP &0	\\ \hline
+%   \end{tabular}
+%   % \cellcolor{pastelblue}
+%   \caption{We use the zero-one loss to evaluate a predicted label
+%     $\hat y$ given the true label $y$. False positives (FP) occur 
+%     when predicting a significant difference $\hat y\in\{-1,1\}$ 
+%     when there is none $y=0$, and False Negatives (FN) are the opposite.
+%   Inversions occur when predicting the opposite of the true label
+%   $\hat y = -y$.}
+%   \label{tab:evaluation}
+% \end{table}
 
 \section{Results}
 \label{sec:results}
 
 The goal of our learning algorithm is to accurately predict a test set
 of labeled pairs (\ref{eq:min_c}). We use the zero-one loss for
-evaluating the learned comparison function on the test set
-(Table~\ref{tab:evaluation}).
+evaluating the learned comparison function on the test set.
+%(Table~\ref{tab:evaluation}).
+We test the SVMcompare algorithm alongside two baseline models that
+use SVMrank \citep{ranksvm}. The differences between these algorithms
+are summarized in Table~\ref{tab:models}:
 
-\subsection{Simulation: norms in 2d}
-We used a simulation to test the proposed SVMcompare model and a
-baseline ranking model that ignores the equality $y_i=0$ pairs,
-SVMrank \citep{ranksvm}. This simulation has two goals: (1) visualize
-the learned 2D nonlinear ranking functions, and (2) demonstrate that
-our model can achieve lower test error by learning from the equality
-$y_i=0$ pairs, when there are few inequality $y_i\in\{-1,1\}$
-pairs. We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
+\begin{description}
+\item[rank] first ignores the equality pairs for learning SVMrank,
+  using only $|I_1|+|I_{-1}|$ pairs (Section~\ref{sec:svmrank}). Then
+  we use all $n$ pairs to learn a threshold $\hat \tau$ via grid
+  search for when to predict $c(x,x')=0$.
+\item[rank2] is another variant of SVMrank that treats each input pair
+  as 2 inequality pairs. Since SVMrank can only use inequality pairs,
+  we transform each equality pair $(x_i,x_i',0)$ into two
+  opposite-facing inequality pairs $(x_i,x_i',1)$ and
+  $(x_i,x_i',-1)$. To ensure equal weight for all input pairs in the
+  cost function, we also duplicate each inequality pair, resulting in
+  $2n$ pairs used to train SVMrank.
+\item[compare] is the SVMcompare model proposed in this paper, which
+  uses $m=n+|I_0|$ input pairs.
+\end{description}
+% test the proposed SVMcompare model and a
+% baseline ranking model that ignores the equality $y_i=0$ pairs,
+% SVMrank \citep{ranksvm}. This simulation has two goals:
+
+In all cases, we fit a $10\times 10$ grid of models to the training
+set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian kernel width
+$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
+the validation set, and then use the test set to estimate the
+generalization ability of the selected model.
+
+\subsection{Simulation: norms in 2D}
+We used a simulation to visualize the learned nonlinear ranking
+functions in 2D, and to demonstrate that our model can achieve
+lower test error by learning from the equality $y_i=0$ pairs.
+%, when there are few inequality $y_i\in\{-1,1\}$ pairs. 
+We generated pairs
+$x_i,x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
 function (\ref{eq:threshold}), $r$ is the latent ranking function, and
 $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
 test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
-for $n\in\{50,\dots,800\}$. We fit a $10\times 10$ grid of models to
-the training set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian
-kernel width $2^{-7},\dots,2^4$), select the model with minimal
-zero-one loss on the validation set, and then use the test set to
-estimate the generalization ability of the selected model. For the
-SVMrank model explained in Section~\ref{sec:svmrank}, equality pairs
-are ignored when learning the ranking function, but used to learn a
-threshold $\hat \tau$ via grid search for when to predict $c(x,x')=0$.
-
-\begin{table}
-  \centering
-  \begin{tabular}{r|cc|cc|}
-    & \#train %$\tilde y_i= -1$
-    & --- 
-    & \#train %$\tilde y_i=1$
-    & $\rightarrow$
-    \\
-    \hline
-    rank 
-    & 0 
-    & 
-    & $|I_1|+|I_{-1}|$ 
-    & $\rightarrow$ 
-    \\
-    \hline
-    rank2 
-    & $2|I_0|$ 
-    & $\leftarrow \rightarrow$
-    & $2(|I_1|+|I_{-1}|)$ 
-    & $\rightarrow \rightarrow$
-    \\
-    \hline
-    compare 
-    & $2|I_0|$ 
-    & --- --- 
-    & $|I_1|+|I_{-1}|$ 
-    & $\rightarrow$
-  \end{tabular}
-\caption{}
-\end{table}
+for $n\in\{50,\dots,800\}$. 
 
 In Figure~\ref{fig:norm-level-curves} we show the training set for
 $n=100$ pairs, and the level curves of the ranking functions learned
 by the SVMrank and SVMcompare models. It is clear that SVMcompare
-recovers a ranking function that is closer to the latent $r$,
-especially in the case of the squared $\ell_1$ norm $r(x)=||x||_1^2$.
+recovers a ranking function that is closer to the latent $r$.
 
 In Figure~\ref{fig:simulation-samples} the test error of the proposed
 \SVMcompare\ model is clearly lower than that of the baseline SVMrank
-model, especially with more labeled pairs $n$. 
+models, especially with more labeled pairs~$n$. 
 
 %\subsection{Learning to rank data}
 
@@ -787,14 +811,13 @@ Lacoste-Julien and Hang Li for helpful discussions.
   \centering
   \input{figure-norm-level-curves}
   \vskip -1cm
-  \caption{Application to simulated patterns $x,x'\in\RR^2$, where the
-    ranking functions $r(x)=||x||^2$ are squared norms (panels from
-    left to right). \textbf{Top}: the training data are $n=100$ pairs,
-    half equality (segments indicate two points of equal rank),
-    and half inequality (arrows point to the higher
-    rank). \textbf{Middle and bottom}: level curves of the ranking
-    functions learned by SVMrank and SVMcompare. SVMrank ignores the
-    equality pairs, so in general SVMcompare recovers the latent
+  \caption{Application to a simulated pattern $r(x)=||x||_1^2$ where
+    $x\in\RR^2$. \textbf{Left}: the training data are $n=100$ pairs,
+    half equality (segments indicate two points of equal rank), and
+    half inequality (arrows point to the higher
+    rank). \textbf{others}: level curves of the learned ranking
+    functions. The rank and rank2 models do not directly model the
+    equality pairs, so SVMcompare recovers the latent
     pattern better.}
   \label{fig:norm-level-curves}
 \end{figure*}
@@ -802,24 +825,22 @@ Lacoste-Julien and Hang Li for helpful discussions.
 \begin{figure*}[b!]
   \input{figure-simulation-samples}
   \vskip -1cm
-  \caption{Test error of SVMrank and SVMcompare (the Bayes error rate
-    of the latent $r$ is shown for comparison). We plot mean and
-    standard deviation of the prediction error across 4 randomly
-    chosen data sets, as a function of training set size $n$ (a
-    vertical line shows the data set size $n=100$ which was used in
-    Figure~\ref{fig:norm-level-curves}). It is clear that in general
-    SVMcompare makes better predictions on the test data.}
+  \caption{Test error for 3 different simulated patterns $r(x)$ where
+    $x\in\RR^2$. We randomly generated 4 data sets with half equality
+    and half inequality pairs, then plot mean and standard deviation
+    of the test error as a function of training set size $n$ (a
+    vertical line shows the data set which was used in
+    Figure~\ref{fig:norm-level-curves}).}
   \label{fig:simulation-samples}
 \end{figure*}
 
 \begin{figure*}[b!]
   \input{figure-simulation-proportion}
   \vskip -1cm
-  \caption{Test error of SVMrank and SVMcompare (the Bayes error rate
-    of the latent $r$ is shown for comparison). We plot mean and
-    standard deviation of the prediction error across 4 randomly
-    chosen data sets, as a function of percent $y_i=0$ equality pairs
-    in data sets of size $n=100$ pairs.}
+  \caption{Test error for 3 different simulated patterns $r(x)$ where
+    $x\in\RR^2$. In each simulation we generated $n=400$ pairs,
+    varying the percent of equality pairs. We plot mean and standard
+    deviation of the test error over 4 random seeds.}
   \label{fig:simulation-proportion}
 \end{figure*}
 

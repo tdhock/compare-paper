@@ -1,2 +1,2 @@
-Nsamp <- "200"
+Nsamp <- "100"
 show.norm <- "l1"

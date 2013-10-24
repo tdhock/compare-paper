@@ -56,7 +56,6 @@ percents <-
         mean=mean(percent),
         sd=sd(percent),
         se=sd(percent)/sqrt(length(percent)))
-
 library(grid)
 percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="||x||_1^2",

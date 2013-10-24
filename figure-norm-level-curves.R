@@ -17,11 +17,11 @@ pair.types <- c(eq.lab, ineq.lab)
 names(pair.colors) <- pair.types
 
 ##norm.list <- simulation$train
-Nseed <- 4
+Nseed <- 2
 norm.list <- simulation.samples$data[[Nsamp]][[Nseed]]
 seg.df <- data.frame()
 arrow.df <- data.frame()
-for(norm in names(norm.list)){
+for(norm in show.norm){
   Pairs <- norm.list[[norm]]$train
   m <- with(Pairs, rbind(Xi, Xip))
   yi <- Pairs$yi
