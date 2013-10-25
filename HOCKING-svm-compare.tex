@@ -748,8 +748,8 @@ are summarized in Table~\ref{tab:models}:
 \item[rank2] is another variant of SVMrank that treats each input pair
   as 2 inequality pairs. Since SVMrank can only use inequality pairs,
   we transform each equality pair $(x_i,x_i',0)$ into two
-  opposite-facing inequality pairs $(x_i,x_i',1)$ and
-  $(x_i,x_i',-1)$. To ensure equal weight for all input pairs in the
+  opposite-facing inequality pairs $(x_i',x_i,1)$ and
+  $(x_i,x_i',1)$. To ensure equal weight for all input pairs in the
   cost function, we also duplicate each inequality pair, resulting in
   $2n$ pairs used to train SVMrank.
 \item[compare] is the SVMcompare model proposed in this paper, which
@@ -826,21 +826,21 @@ Lacoste-Julien and Hang Li for helpful discussions.
   \input{figure-simulation-samples}
   \vskip -1cm
   \caption{Test error for 3 different simulated patterns $r(x)$ where
-    $x\in\RR^2$. We randomly generated 4 data sets with half equality
-    and half inequality pairs, then plot mean and standard deviation
-    of the test error as a function of training set size $n$ (a
-    vertical line shows the data set which was used in
-    Figure~\ref{fig:norm-level-curves}).}
+    $x\in\RR^2$. We randomly generated data sets with half equality
+    and half inequality pairs, and plot test error as a function of
+    training set size $n$ (a vertical line shows the data set which
+    was used in Figure~\ref{fig:norm-level-curves}). Lines show mean
+    and shaded bands show standard deviation over 4 test sets.}
   \label{fig:simulation-samples}
 \end{figure*}
 
 \begin{figure*}[b!]
   \input{figure-simulation-proportion}
   \vskip -1cm
-  \caption{Test error for 3 different simulated patterns $r(x)$ where
-    $x\in\RR^2$. In each simulation we generated $n=400$ pairs,
-    varying the percent of equality pairs. We plot mean and standard
-    deviation of the test error over 4 random seeds.}
+  \caption{Area under the ROC curve (AUC) for 3 different simulated
+    patterns $r(x)$ where $x\in\RR^2$. In each simulation we generated
+    $n=400$ pairs, varying the percent of equality pairs. We plot mean
+    and standard deviation of AUC over 4 test sets.}
   \label{fig:simulation-proportion}
 \end{figure*}
 

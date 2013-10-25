@@ -11,8 +11,11 @@ load("simulation.proportion.RData")
 funs <- list(l2=function(x)rowSums(x*x),
              l1=function(x)rowSums(abs(x))^2,
              linf=function(x)apply(abs(x), 1, max)^2)
-
-leg <- "learned\nfunction"
+labels <- c(l1="||x||_1^2",
+            l2="||x||_2^2",
+            linf="||x||_\\infty^2")
+makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
+leg <- "function"
 classify <- function(x, thresh=1){
   stopifnot(is.numeric(thresh))
   stopifnot(is.finite(thresh))
@@ -31,7 +34,7 @@ for(prop in names(tr)){
     norm <- "linf"
     latent <- funs[[norm]]
     Pairs <- simulation.proportion$data[[prop]][[seed]][[norm]]$test
-    fit.list$latent <- with(Pairs, cbind(latent(Xi), latent(Xip)))
+    fit.list$truth <- with(Pairs, cbind(latent(Xi), latent(Xip)))
     for(fit.name in names(fit.list)){
       rank.mat <- fit.list[[fit.name]]
       rank.diff <- rank.mat[,2]-rank.mat[,1]
@@ -66,17 +69,19 @@ ggplot(roc, aes(FPR, TPR))+
   scale_colour_manual(leg,values=model.colors)
 auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
-ggplot(auc.stats, aes(prop, mean))+
+br <- c("latent", "truth", "compare", "rank2", "rank")
+boring <- ggplot(auc.stats, aes(prop, mean))+
   geom_ribbon(aes(fill=fit.name,ymin=mean-sd,ymax=mean+sd), alpha=1/4)+
   geom_line(aes(colour=fit.name),lwd=2)+
   facet_grid(.~norm)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
   xlab("proportion of equality pairs")+
-  scale_colour_manual(leg,values=model.colors)+
-  scale_fill_manual(leg,values=model.colors)+
-  ylab("Area under the ROC curve")
-
+  scale_colour_manual(leg,values=model.colors,breaks=br)+
+  scale_fill_manual(leg,values=model.colors,breaks=br)+
+  ylab("Area under ROC curve")+
+  scale_x_continuous("percent of equality pairs $y_i=0$",
+                     breaks=seq(10,90,by=20))
 
 size.list <- simulation.proportion$data
 err <- simulation.proportion$err
@@ -145,13 +150,9 @@ ggplot(comp.sum, aes(prop, mean, group=interaction(fit.name, variable)))+
   xlab("proportion of equality pairs")+
   ylab("incorrect test labels")
 percents$fit.name <- factor(percents$fit.name, names(model.colors))
-labels <- c(l1="||x||_1^2",
-            l2="||x||_2^2",
-            linf="||x||_\\infty^2")
-makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
-boring <- ggplot(percents, aes(prop*100, mean, group=fit.name))+
+ggplot(percents, aes(prop*100, mean, group=fit.name))+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:

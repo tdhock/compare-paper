@@ -48,7 +48,7 @@ for(set.id in sets$set.id){
   })
   train.df <- rbind(train.df, data.frame(pair.df, info))
 }
-bayes.df$fit.name <- "latent"
+bayes.df$fit.name <- "truth"
 combined <- rbind(err[,names(bayes.df)],
                   bayes.df)
 percents <-
@@ -65,7 +65,7 @@ makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.norm))
-leg <- "learned\nfunction"
+leg <- "function"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   geom_vline(aes(xintercept=N),size=2,data=indicator)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+

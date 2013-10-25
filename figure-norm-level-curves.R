@@ -70,7 +70,7 @@ for(fun in plot.funs){
   fun <- pfactor(fun)
   toplot <- rbind(toplot, data.frame(these, fun))
 }
-toplot$fun.type <- factor(ifelse(toplot$what=="latent", "latent", "learned"))
+toplot$fun.type <- factor(ifelse(toplot$what=="latent", "truth", "learned"))
 br <- seq(-2,2,by=1)
 p <- ggplot()+
   geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=seg.df)+
@@ -79,7 +79,8 @@ p <- ggplot()+
   geom_contour(aes(x1, x2, z=rank, alpha=fun.type, group=fun.type),
                ##breaks=1:4,
                data=toplot, size=1, colour="black")+
-  scale_alpha_manual("ranking function", values=c(latent=1/3,learned=1))+
+  scale_alpha_manual("ranking function",
+                     values=c(truth=1/3, latent=1/3,learned=1))+
   facet_grid(.~fun)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
