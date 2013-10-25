@@ -16,7 +16,7 @@ for(norm in names(funs)){
   Xi <- c()
   Xip <- c()
   yi <- c()
-  for(i in 1:2000){
+  for(i in 1:20000){
     x <- runif(2,-2,2)
     delta <- delta.fun()
     xp <- x+delta
@@ -38,14 +38,13 @@ all.ranks <- data.frame()
 unused.err <- data.frame()
 data.list <- list()
 test.rank.list <- list()
-props <- seq(0.1, 0.9, by=0.8)
-N <- 100
+props <- seq(0.1, 0.9, by=0.1)
+N <- 400
 for(prop in props){
-  for(seed in 1:2){
-##for(N in c(50, 100)){
-##  for(seed in 1:2){
+  for(seed in 1:4){
     set.seed(seed)
     norm.list <- list()
+    test.rank.norms <- list()
     for(norm in names(pair.sets)){
       Pairs <- pair.sets[[norm]]
       is.zero <- Pairs$yi == 0
@@ -53,7 +52,6 @@ for(prop in props){
       not.equal <- which(!is.zero)
       set.list <- list()
       for(set.name in c("train", "validation", "test")){
-        ##print(length(equal))
         i <- c(sample(equal, N*prop), sample(not.equal, N*(1-prop)))
         equal <- equal[!equal %in% i]
         not.equal <- not.equal[!not.equal %in% i]
@@ -112,7 +110,7 @@ print(segPlot)
       kvals <- 2^seq(-7, 4, l=10)
       model.df <- expand.grid(C=Cvals, k.width=kvals)
       for(model.i in 1:nrow(model.df)){
-##      for(model.i in 1:2){
+      ##for(model.i in 1:2){
         model <- model.df[model.i,]
         Cval <- model$C
         k.width <- model$k.width
@@ -151,8 +149,7 @@ print(segPlot)
         fit <- models[[chosen]][[fit.name]]
         ## Evaluate the rank on the test points, for ROC analysis.
         test.ranks <- with(unused, cbind(Xi=fit$rank(Xi), Xip=fit$rank(Xip)))
-       test.rank.list[[as.character(prop)]][[as.character(seed)]][[fit.name]] <-
-         test.ranks
+       test.rank.norms[[norm]][[fit.name]] <- test.ranks
         ## Evaluate the rank on a grid, for drawing contour lines.
         r <- fit$rank(X.grid)
         rank.df <- rbind(rank.df, {
@@ -177,6 +174,8 @@ print(segPlot)
     theme(panel.margin=unit(0,"cm"))+
     facet_grid(.~what)
   print(normContour)
+    test.rank.list[[as.character(prop)]][[as.character(seed)]] <-
+      test.rank.norms
     data.list[[as.character(prop)]][[as.character(seed)]] <- norm.list
       ## if the optimal model occurs on the min/max of the validationed
       ## hyperparameters, then this is probably sub-optimal and we need to
