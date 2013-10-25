@@ -7,6 +7,11 @@ library(grid)
 
 load("simulation.proportion.RData")
 
+## matrix versions of the norm.
+funs <- list(l2=function(x)rowSums(x*x),
+             l1=function(x)rowSums(abs(x))^2,
+             linf=function(x)apply(abs(x), 1, max)^2)
+
 leg <- "learned\nfunction"
 classify <- function(x, thresh=1){
   stopifnot(is.numeric(thresh))
@@ -24,11 +29,13 @@ for(prop in names(tr)){
   for(seed in names(seed.list)){
     fit.list <- seed.list[[seed]]
     norm <- "linf"
+    latent <- funs[[norm]]
+    Pairs <- simulation.proportion$data[[prop]][[seed]][[norm]]$test
+    fit.list$latent <- with(Pairs, cbind(latent(Xi), latent(Xip)))
     for(fit.name in names(fit.list)){
       rank.mat <- fit.list[[fit.name]]
       rank.diff <- rank.mat[,2]-rank.mat[,1]
       thresh.vec <- c(0, sort(abs(rank.diff)))
-      Pairs <- simulation.proportion$data[[prop]][[seed]][[norm]]$test
       this.roc <- data.frame()
       info <- data.frame(fit.name, norm,
                          seed=as.integer(seed),
@@ -55,7 +62,8 @@ ggplot(roc, aes(FPR, TPR))+
   geom_path(aes(colour=fit.name, group=interaction(fit.name, seed)))+
   facet_wrap("prop")+
   theme_bw()+
-  theme(panel.margin=unit(0,"cm"))
+  theme(panel.margin=unit(0,"cm"))+
+  scale_colour_manual(leg,values=model.colors)
 auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
 ggplot(auc.stats, aes(prop, mean))+
@@ -68,10 +76,8 @@ ggplot(auc.stats, aes(prop, mean))+
   scale_colour_manual(leg,values=model.colors)+
   scale_fill_manual(leg,values=model.colors)+
   ylab("Area under the ROC curve")
-## matrix versions of the norm.
-funs <- list(l2=function(x)rowSums(x*x),
-             l1=function(x)rowSums(abs(x))^2,
-             linf=function(x)apply(abs(x), 1, max)^2)
+
+
 size.list <- simulation.proportion$data
 err <- simulation.proportion$err
 err$percent <- err$error / err$count * 100
