@@ -1,4 +1,4 @@
-HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-samples.tex figure-norm-level-curves.tex figure-simulation-roc.tex
+HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-samples.tex figure-norm-level-curves.tex figure-auc.tex
 	rm -f *.aux *.bbl
 	pdflatex HOCKING-svm-compare
 	bibtex HOCKING-svm-compare
@@ -22,7 +22,9 @@ figure-simulation-proportion.tex: figure-simulation-proportion.R colors.R simula
 	R --no-save < $<
 simulation.roc.RData: simulation.roc.R simulation.proportion.RData
 	R --no-save < $<
-figure-simulation-roc.tex: figure-simulation-roc.R simulation.roc.RData tikz.R colors.R
+figure-auc.tex: figure-auc.R simulation.roc.RData tikz.R colors.R
+	R --no-save < $<
+mslr.roc.RData: mslr.roc.R mslr.proportion.RData
 	R --no-save < $<
 
 # MSLR-WEB10K should contain Fold1, Fold2, ...

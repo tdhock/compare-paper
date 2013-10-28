@@ -716,33 +716,11 @@ the cost $C$ and the kernel $\kappa$. As with standard SVM for binary
 classification, these parameters can be tuned by minimizing the
 prediction error on a held-out validation set.
 
-% \begin{table}[b!]
-%   \centering
-%   \begin{tabular}{|a|c|c|c|}\hline
-%     \rowcolor{lightgray}
-%     \backslashbox{$\hat{y}$}{ $y$}
-%     &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
-%     \textbf{-1}&0  & FP & Inversion   	\\ \hline 
-%     \textbf{0} &FN& 0& FN\\ \hline
-%     \textbf{1} & Inversion & FP &0	\\ \hline
-%   \end{tabular}
-%   % \cellcolor{pastelblue}
-%   \caption{We use the zero-one loss to evaluate a predicted label
-%     $\hat y$ given the true label $y$. False positives (FP) occur 
-%     when predicting a significant difference $\hat y\in\{-1,1\}$ 
-%     when there is none $y=0$, and False Negatives (FN) are the opposite.
-%   Inversions occur when predicting the opposite of the true label
-%   $\hat y = -y$.}
-%   \label{tab:evaluation}
-% \end{table}
-
 \section{Results}
 \label{sec:results}
 
 The goal of our learning algorithm is to accurately predict a test set
-of labeled pairs (\ref{eq:min_c}). We use the zero-one loss for
-evaluating the learned comparison function on the test set.
-%(Table~\ref{tab:evaluation}).
+of labeled pairs (\ref{eq:min_c}). 
 We test the SVMcompare algorithm alongside two baseline models that
 use SVMrank \citep{ranksvm}. The differences between these algorithms
 are summarized in Table~\ref{tab:models}:
@@ -772,29 +750,70 @@ $2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
 the validation set, and then use the test set to estimate the
 generalization ability of the selected model.
 
+We use two evaluation metrics to judge the performance of the models
+on the test pairs: zero-one loss, and area under the ROC curve. Note
+that the ROC curves are calculated by first evaluating the learned
+ranking function $r(x)$ at each test point $x$, and then varying the
+threshold $\tau$ (\ref{eq:threshold}). For $\tau=0$ we have 100\%
+false positive rate and for $\tau=\infty$ we have 100\% false negative
+rate (Table~\ref{tab:evaluation}).
+
 \subsection{Simulation: norms in 2D}
 We used a simulation to visualize the learned nonlinear ranking
 functions in 2D, and to demonstrate that our model can achieve
 lower test error by learning from the equality $y_i=0$ pairs.
 %, when there are few inequality $y_i\in\{-1,1\}$ pairs. 
-We generated pairs
-$x_i,x_i'\in[-3,3]^2$ and noisy labels
+We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
 function (\ref{eq:threshold}), $r$ is the latent ranking function, and
 $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
-test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
-for $n\in\{50,\dots,800\}$. 
+test sets, each with the same number of pairs $n$ and the same
+proportion $\rho$ of equality pairs.
 
-In Figure~\ref{fig:norm-level-curves} we show the training set for
-$n=100$ pairs, and the level curves of the ranking functions learned
-by the SVMrank and SVMcompare models. It is clear that SVMcompare
-recovers a ranking function that is closer to the latent $r$.
+In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
+$\rho=1/2$ equality and inequality pairs. We show the training set and
+the level curves of the ranking functions learned by the SVMrank and
+SVMcompare models. It is clear that the rank model does not accurately
+recover the true ranking function $r(x)=||x||_1^2$, since it does not
+use the equality $y_i=0$ pairs. In contrast, the compare and rank2
+methods which exploit the equality $y_i=0$ pairs are able to recover a
+ranking function that is closer to the true $r$.
 
-In Figure~\ref{fig:simulation-samples} the test error of the proposed
-\SVMcompare\ model is clearly lower than that of the baseline SVMrank
-models, especially with more labeled pairs~$n$. 
+In Figure~\ref{fig:simulation-samples} we fixed the proportion of
+equality pairs $\rho=1/2$, varied the number of training pairs
+$n\in\{50,\dots, 800\}$, and tested three simulated ranking functions
+$r(x)=||x||^2_j$ for $j\in\{1,2,\infty\}$. In general, the test error
+of all models decreases as training set size $n$ increases. The model
+with the highest test error is the rank model, which does not use the
+equality $y_i=0$ pairs. The next best model is the rank2 model, which
+converts the equality $y_i=0$ pairs to inequality pairs and then
+trains SVMrank. The best model is the proposed \SVMcompare\ model,
+which achieves test error as good as the true ranking function in the
+case of $r(x)=||x||^2_2$.
 
 %\subsection{Learning to rank data}
+
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{|a|c|c|c|}\hline
+    \rowcolor{lightgray}
+    \backslashbox{$\hat{y}$}{ $y$}
+    &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
+    \textbf{-1}&0  & FP & Inversion   	\\ \hline 
+    \textbf{0} &FN& 0& FN\\ \hline
+    \textbf{1} & Inversion & FP &0	\\ \hline
+  \end{tabular}
+  % \cellcolor{pastelblue}
+  \caption{We use area under the ROC curve to evaluate predictions
+    $\hat y$ given the true label $y$. False positives (FP) occur 
+    when predicting a significant difference $\hat y\in\{-1,1\}$ 
+    when there is none $y=0$, and False Negatives (FN) are the opposite.
+    Inversions occur when predicting the opposite of the true label
+    $\hat y = -y$, 
+    % are infrequent in practice, 
+    but are not used for ROC analysis.}
+  \label{tab:evaluation}
+\end{table}
 
 \section{Conclusions and future work}
 \label{sec:conclusions}
@@ -823,9 +842,9 @@ Lacoste-Julien and Hang Li for helpful discussions.
     half equality (segments indicate two points of equal rank), and
     half inequality (arrows point to the higher
     rank). \textbf{others}: level curves of the learned ranking
-    functions. The rank and rank2 models do not directly model the
-    equality pairs, so SVMcompare recovers the latent
-    pattern better.}
+    functions. The rank model does not directly model the equality 
+    pairs, so the rank2 and compare models recover the true pattern
+    better.}
   \label{fig:norm-level-curves}
 \end{figure*}
 
