@@ -758,6 +758,28 @@ threshold $\tau$ (\ref{eq:threshold}). For $\tau=0$ we have 100\%
 false positive rate and for $\tau=\infty$ we have 100\% false negative
 rate (Table~\ref{tab:evaluation}).
 
+\begin{table}[b!]
+  \centering
+  \begin{tabular}{|a|c|c|c|}\hline
+    \rowcolor{lightgray}
+    \backslashbox{$\hat{y}$}{ $y$}
+    &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
+    \textbf{-1}&0  & FP & Inversion   	\\ \hline 
+    \textbf{0} &FN& 0& FN\\ \hline
+    \textbf{1} & Inversion & FP &0	\\ \hline
+  \end{tabular}
+  % \cellcolor{pastelblue}
+  \caption{We use area under the ROC curve to evaluate predictions
+    $\hat y$ given the true label $y$. False positives (FP) occur 
+    when predicting a significant difference $\hat y\in\{-1,1\}$ 
+    when there is none $y=0$, and False Negatives (FN) are the opposite.
+    Inversions occur when predicting the opposite of the true label
+    $\hat y = -y$, 
+    % are infrequent in practice, 
+    but are not used for ROC analysis.}
+  \label{tab:evaluation}
+\end{table}
+
 \subsection{Simulation: norms in 2D}
 We used a simulation to visualize the learned nonlinear ranking
 functions in 2D, and to demonstrate that our model can achieve
@@ -765,10 +787,11 @@ lower test error by learning from the equality $y_i=0$ pairs.
 %, when there are few inequality $y_i\in\{-1,1\}$ pairs. 
 We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
-function (\ref{eq:threshold}), $r$ is the latent ranking function, and
-$\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
-test sets, each with the same number of pairs $n$ and the same
-proportion $\rho$ of equality pairs.
+function (\ref{eq:threshold}), $r$ is the latent ranking function,
+$\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is the
+standard deviation. We picked train, validation, and test sets, each
+with the same number of pairs $n$ and the same proportion $\rho$ of
+equality pairs.
 
 In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
 $\rho=1/2$ equality and inequality pairs. We show the training set and
@@ -791,29 +814,24 @@ trains SVMrank. The best model is the proposed \SVMcompare\ model,
 which achieves test error as good as the true ranking function in the
 case of $r(x)=||x||^2_2$.
 
-%\subsection{Learning to rank data}
+In Figure~\ref{fig:auc} we fixed the number of training pairs $n=100$
+and varied the proportion $\rho$ of equality pairs for the three
+simulated squared norm ranking functions $r$. We use area under the
+ROC curve to evaluate the learned models, and all methods perform
+close to the optimal true ranking function when $r(x)=||x||^2_2$. For
+the other patterns, it is clear that all the methods perform similarly
+when there are mostly inequality pairs ($\rho=0.1$), since SVMrank was
+designed for this type of training data. In contrast, when there are
+mostly equality pairs ($\rho=0.9$), the compare and rank2 methods
+clearly outperform the rank method, which ignores the equality
+pairs. Although there is no difference between the rank2 and compare
+methods when $r(x)=||x||_1^2$, the compare method is slightly better
+when $r(x)=||x||_\infty^2$. Overall, it is clear that when the data
+contain equality pairs, it is advantageous to use a model such as the
+proposed SVMcompare method which learns from them directly as a part
+of the optimization problem.
 
-\begin{table}[b!]
-  \centering
-  \begin{tabular}{|a|c|c|c|}\hline
-    \rowcolor{lightgray}
-    \backslashbox{$\hat{y}$}{ $y$}
-    &\textbf{-1}&\textbf{0}&\textbf{1}\\ \hline
-    \textbf{-1}&0  & FP & Inversion   	\\ \hline 
-    \textbf{0} &FN& 0& FN\\ \hline
-    \textbf{1} & Inversion & FP &0	\\ \hline
-  \end{tabular}
-  % \cellcolor{pastelblue}
-  \caption{We use area under the ROC curve to evaluate predictions
-    $\hat y$ given the true label $y$. False positives (FP) occur 
-    when predicting a significant difference $\hat y\in\{-1,1\}$ 
-    when there is none $y=0$, and False Negatives (FN) are the opposite.
-    Inversions occur when predicting the opposite of the true label
-    $\hat y = -y$, 
-    % are infrequent in practice, 
-    but are not used for ROC analysis.}
-  \label{tab:evaluation}
-\end{table}
+%\subsection{Learning to rank data}
 
 \section{Conclusions and future work}
 \label{sec:conclusions}
@@ -861,13 +879,13 @@ Lacoste-Julien and Hang Li for helpful discussions.
 \end{figure*}
 
 \begin{figure*}[b!]
-  \input{figure-simulation-proportion}
+  \input{figure-auc}
   \vskip -1cm
   \caption{Area under the ROC curve (AUC) for 3 different simulated
     patterns $r(x)$ where $x\in\RR^2$. In each simulation we generated
     $n=400$ pairs, varying the percent of equality pairs. We plot mean
     and standard deviation of AUC over 4 test sets.}
-  \label{fig:simulation-proportion}
+  \label{fig:auc}
 \end{figure*}
 
 \end{document}

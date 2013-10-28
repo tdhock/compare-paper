@@ -30,7 +30,7 @@ auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
 auc.stats$label <- makelabel(auc.stats$norm)
 br <- c("latent", "truth", "compare", "rank2", "rank")
-boring <- ggplot(auc.stats, aes(prop*100, mean))+
+boring <- ggplot(auc.stats, aes(prop, mean))+
   geom_ribbon(aes(fill=fit.name,ymin=mean-sd,ymax=mean+sd), alpha=1/4)+
   geom_line(aes(colour=fit.name),lwd=2)+
   facet_grid(.~label)+
@@ -41,8 +41,8 @@ boring <- ggplot(auc.stats, aes(prop*100, mean))+
   scale_fill_manual(leg,values=model.colors,breaks=br)+
   ylab("Area under ROC curve")+
   scale_x_continuous("$\\rho =$ proportion of equality $y_i=0$ pairs",
-                     breaks=seq(0,100,by=20))
+                     breaks=seq(0,1,by=0.2))
 
-tikz("figure-simulation-proportion.tex",h=2)
+tikz("figure-auc.tex",h=2)
 print(boring)
 dev.off()
