@@ -13,6 +13,10 @@ auc <- rbind(simulation.roc$auc,
              mslr.roc$auc[,names(simulation.roc$auc)])
 auc <- simulation.roc$auc
 
+out.csv <- subset(auc, fit.name!="mslr")
+names(out.csv)[1] <- "model"
+write.csv(out.csv,file="CompareAUC.csv", row.names=FALSE, quote=FALSE)
+
 labels <- c(l1="||x||_1^2",
             l2="||x||_2^2",
             linf="||x||_\\infty^2")
@@ -28,6 +32,7 @@ leg <- "function"
 ##   scale_colour_manual(leg,values=model.colors)
 auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
+
 auc.stats$label <- makelabel(auc.stats$norm)
 br <- c("latent", "truth", "compare", "rank2", "rank")
 boring <- ggplot(auc.stats, aes(prop, mean))+
