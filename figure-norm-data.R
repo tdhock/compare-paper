@@ -37,7 +37,7 @@ tikz("figure-norm-data.tex", h=8,w=3)
 
 par(las=1, mar=c(2,1,0,1), mfrow=c(3,1), cex=1, omi=c(0,0,0,0))
 plot(X, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
-title(xlab="input feature 1", ylab="input feature 2", line=0.1)
+title(xlab="input feature $x_{i,1}$", ylab="input feature $x_{i,2}$", line=0.1)
 mtext("Original feature space $x\\in\\mathbb R^p$", 4, las=0)
 contour(levs, levs, m, col="grey50", add=TRUE, levels=1:10)
 pairLWD <- 2
@@ -87,7 +87,8 @@ Xi.square <- Xi*Xi
 Xip.square <- Xip*Xip
 X.square <- rbind(Xi.square, Xip.square)
 plot(X.square, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
-title(xlab="additional feature 1", ylab="additional feature 2", line=0.1)
+title(xlab="additional feature $x_{i,1}^2$",
+      ylab="additional feature $x_{i,2}^2$", line=0.1)
 mtext("Enlarged feature space $\\Phi(x)$", 4, las=0)
 
 text(5, 3/2, "$r(x)=w^\\intercal \\Phi(x)$", col="grey50", srt=-45)

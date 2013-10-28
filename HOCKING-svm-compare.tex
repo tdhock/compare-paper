@@ -195,6 +195,7 @@ problem \citep{rank-with-ties}, and the authors observed that modeling
 ties is more effective when there are more output values. A Bayesian
 model which can be applied to these data is TrueSkill
 \citep{trueskill}, a generalization of the Elo chess rating system.
+
 When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
 article we consider the case when inputs are continuous
@@ -204,7 +205,9 @@ Ranking data sets are often described not in terms of labeled pairs of
 inputs $(x_i, x_i', y_i)$ but instead single inputs $x_i$ with ordinal
 labels $y_i\in\{1,\dots,k\}$, where $k$ is the number of integral
 output values. In this case algorithms such as Support Vector Ordinal
-Regression are applicable \citep{ordinal}.
+Regression are applicable \citep{ordinal}. However, in this paper we
+consider a different learning problem, where we only have weak labels
+$y_i\in\{-1,0,1\}$ for pairs $x_i,x_i'$ of inputs.
 
 
 % Some related work appears in Table~\ref{tab:related}:
@@ -225,15 +228,14 @@ Regression are applicable \citep{ordinal}.
   \input{figure-norm-data}
   \vskip -0.5cm
   \caption{Geometric interpretation. \textbf{Top}: input feature pairs
-    $x_i,x_i'\in\RR^p$ are segments and arrows, colored using the
-    labels $y_i\in\{-1,0,1\}$. The level curves of the ranking
-    function $r(x)=||x||_2^2$ are grey, and differences
-    $|r(x)-r(x')|\leq 1$ are considered insignificant
-    ($y_i=0$). \textbf{Middle}: in the enlarged feature space, the
-    ranking function is linear: $r(x)=w^\intercal
-    \Phi(x)$. \textbf{Bottom}: two symmetric hyperplanes
-    $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are used to
-    classify the difference vectors.}
+    $x_i,x_i'\in\RR^p$ are segments for $y_i=0$ and arrows for
+    $y_i\in\{-1,1\}$. The level curves of the ranking function
+    $r(x)=||x||_2^2$ are grey, and differences $|r(x)-r(x')|\leq 1$
+    are considered insignificant ($y_i=0$). \textbf{Middle}: in the
+    enlarged feature space, the ranking function is linear:
+    $r(x)=w^\intercal \Phi(x)$. \textbf{Bottom}: two symmetric
+    hyperplanes $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are
+    used to classify the difference vectors.}
   \label{fig:norm-data}
 \end{figure}
 
@@ -258,8 +260,10 @@ quadratic program (QP):
   \label{eq:svmrank}
 \end{equation}
 where $I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
-labels. Note that the equality pairs $i\in I_0$ are not
-used in the optimization problem.
+labels. Note that (\ref{eq:svmrank}) is the same as Optimization
+Problem 1 (Ranking SVM), in the paper of \citet{ranksvm}. Note also
+that the equality $y_i=0$ pairs are not used in the optimization
+problem.
 
 \begin{figure*}[b!]
   \centering
@@ -275,10 +279,11 @@ used in the optimization problem.
   \label{fig:hard-margin}
 \end{figure*}
 
-After obtaining a weight vector $w\in\RR^p$ and ranking
-function $r$ by solving (\ref{eq:svmrank}), we define a threshold
-$\tau\in\RR^+$ and a thresholding function
-$t_\tau:\RR\rightarrow\{-1,0,1\}$
+After obtaining a weight vector $w\in\RR^p$ by solving
+(\ref{eq:svmrank}), we get a ranking function $r(x)\in\RR$, but we are
+not yet able to predict equality $y_i=0$ pairs. To do so, we extend
+SVMrank by we defining a threshold $\tau\in\RR^+$ and a thresholding
+function $t_\tau:\RR\rightarrow\{-1,0,1\}$
 \begin{equation}
   \label{eq:threshold}
   t_\tau(z) = 
@@ -308,9 +313,10 @@ training pairs:
 However, there are two potential problems with the learned comparison
 function $c_{\hat\tau}$. First, the equality pairs $i\in I_0$ are not
 used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
-threshold $\hat \tau$ is learned in a separate optimization step, which
-may be suboptimal. In the next section, we propose a new algorithm
-that fixes these potential problems.
+threshold $\hat \tau$ is learned in a separate optimization step,
+which may be suboptimal. In the next section, we propose a new
+algorithm that fixes these issues by directly using all the
+training pairs in a single learning problem.
 %Supplementary File for Online Publication
 \section{Support vector comparison machines}
 \label{sec:svm-compare}
@@ -701,13 +707,14 @@ $\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
 recovered using the stationary condition (\ref{eq:stationarity}). The
 learned comparison function remains the same (\ref{eq:compare_general}).
 
-The training procedure is summarized as
-Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
-\proc{KernelMatrix} computes the $2m\times 2m$ kernel matrix, and
-\proc{SVMdual} solves the SVM dual QP (\ref{eq:svm-dual}). There are
-two hyper-parameters to tune: the cost $C$ and the kernel $\kappa$. As
-with standard SVM for binary classification, these parameters can be
-tuned by minimizing the prediction error on a held-out validation set.
+The training procedure is summarized as Algorithm~\ref{alg:SVMcompare}.
+%(SVMcompare). 
+There are two sub-routines: \proc{KernelMatrix} computes
+the $2m\times 2m$ kernel matrix, and \proc{SVMdual} solves the SVM
+dual QP (\ref{eq:svm-dual}). There are two hyper-parameters to tune:
+the cost $C$ and the kernel $\kappa$. As with standard SVM for binary
+classification, these parameters can be tuned by minimizing the
+prediction error on a held-out validation set.
 
 % \begin{table}[b!]
 %   \centering

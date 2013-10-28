@@ -5,65 +5,14 @@ source("colors.R")
 
 library(grid)
 
-load("simulation.proportion.RData")
-
-## matrix versions of the norm.
-funs <- list(l2=function(x)rowSums(x*x),
-             l1=function(x)rowSums(abs(x))^2,
-             linf=function(x)apply(abs(x), 1, max)^2)
 labels <- c(l1="||x||_1^2",
             l2="||x||_2^2",
             linf="||x||_\\infty^2")
 makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
 leg <- "function"
-classify <- function(x, thresh=1){
-  stopifnot(is.numeric(thresh))
-  stopifnot(is.finite(thresh))
-  stopifnot(thresh >= 0)
-  stopifnot(length(thresh) == 1)
-  ifelse(x > thresh, 1L,
-         ifelse(x < -thresh, -1L, 0L))
-}
-tr <- simulation.proportion$test.rank
-roc <- data.frame()
-auc <- data.frame()
-for(prop in names(tr)){
-  seed.list <- tr[[prop]]
-  for(seed in names(seed.list)){
-    fit.list <- seed.list[[seed]]
-    norm <- "linf"
-    latent <- funs[[norm]]
-    Pairs <- simulation.proportion$data[[prop]][[seed]][[norm]]$test
-    fit.list$truth <- with(Pairs, cbind(latent(Xi), latent(Xip)))
-    for(fit.name in names(fit.list)){
-      rank.mat <- fit.list[[fit.name]]
-      rank.diff <- rank.mat[,2]-rank.mat[,1]
-      thresh.vec <- c(0, sort(abs(rank.diff)))
-      this.roc <- data.frame()
-      info <- data.frame(fit.name, norm,
-                         seed=as.integer(seed),
-                         prop=as.numeric(prop))
-      for(thresh in thresh.vec){
-        yhat <- classify(rank.diff, thresh)
-        err <- FpFnInv(Pairs$yi, yhat)
-        this.roc <- rbind(this.roc, data.frame(thresh, info, err))
-      }
-      this.roc$FPR <- with(this.roc, false.positive/equality)
-      this.roc$FNR <- with(this.roc, false.negative/inequality)
-      this.roc$TPR <- 1-this.roc$FNR
-      boxes <- ddply(this.roc, .(TPR), summarize, min=min(FPR), max=max(FPR))
-      ## ggplot()+
-      ##   geom_path(aes(FPR, TPR), data=this.roc)+
-      ##   geom_segment(aes(min,TPR,xend=max,yend=TPR),
-      ##                data=boxes,colour="red",lwd=2)
-      auc <- rbind(auc, data.frame(info, auc=sum(with(boxes, (max-min)*TPR))))
-      roc <- rbind(roc, this.roc)
-    }
-  }
-}
 ggplot(roc, aes(FPR, TPR))+
   geom_path(aes(colour=fit.name, group=interaction(fit.name, seed)))+
-  facet_wrap("prop")+
+  facet_grid(norm~prop)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
   scale_colour_manual(leg,values=model.colors)
