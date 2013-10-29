@@ -738,11 +738,10 @@ use SVMrank \citep{ranksvm}. The differences between these algorithms
 are summarized in Table~\ref{tab:models}:
 
 \begin{description}
-\item[rank] first ignores the equality pairs for learning SVMrank,
-  using only $|\mathcal I_1|+|\mathcal I_{-1}|$ pairs
-  (Section~\ref{sec:svmrank}). Then we use all $n$ pairs to learn a
-  threshold $\hat \tau$ via grid search for when to predict
-  $c(\mathbf x,\mathbf x')=0$.
+\item[rank] is described in Section~\ref{sec:svmrank}: first we use
+  $|\mathcal I_1|+|\mathcal I_{-1}|$ inequality pairs to learn
+  SVMrank, then we use all $n$ pairs to learn a threshold $\hat \tau$
+  for when to predict $c(\mathbf x,\mathbf x')=0$.
 \item[rank2] is another variant of SVMrank that treats each input pair
   as 2 inequality pairs. Since SVMrank can only use inequality pairs,
   we transform each equality pair $(\mathbf x_i,\mathbf x_i',0)$ into two
@@ -849,9 +848,22 @@ of the optimization problem.
 \section{Conclusions and future work}
 \label{sec:conclusions}
 
-We discussed an extension of SVM to comparison problems. Our results
-highlighted the importance of directly modeling the equality pairs
-($y_i=0$), and it will be interesting to see if the same results are
+We discussed the learning to compare problem, which has not yet been
+extensively studied in the machine learning literature. In
+Section~\ref{sec:lp-qp}, we proposed two different formulations for
+max-margin comparison, and proved Lemma~\ref{lemma:feasible}. It
+justifies our proposed SVMcompare algorithm, which uses a binary SVM
+dual QP solver to learn a nonlinear comparison function.
+
+Our results on simulated data clearly showed the importance of
+directly modeling the equality pairs, when they are present. We showed
+that when there are few equality pairs, as is the usual setup in
+learning to rank problems, the baseline SVMrank algorithm performs as
+well as our proposed SVMcompare algorithm. However, when there are
+many equality pairs, it is clearly advantageaous to use a model such
+as SVMcompare which directly learns from the equality pairs.
+
+For future work, it will be interesting to see if the same results are
 observed in learning to rank data sets. For scaling to very large data
 sets, it will be interesting to try algorithms based on smooth
 discriminative loss functions, such as stochastic gradient descent
