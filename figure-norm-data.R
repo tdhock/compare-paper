@@ -31,6 +31,7 @@ for(i in seq_along(levs)){
   }
 }
 
+yi.colors <- yi.colors[c("0","1","-1")]
 yi.col <- yi.colors[as.character(yi)]
 
 tikz("figure-norm-data.tex", h=8, w=3)
@@ -41,7 +42,7 @@ title(xlab="input feature $ x_{i,1}$",
       ylab="input feature $ x_{i,2}$", line=0.1)
 mtext("Original feature space $\\mathbf x\\in\\mathbb R^p$", 4, las=0)
 contour(levs, levs, m, col="grey50", add=TRUE, levels=1:10)
-pairLWD <- 2
+pairLWD <- 3
 segments(Xi[yi==0,1],
          Xi[yi==0,2],
          Xip[yi==0,1],

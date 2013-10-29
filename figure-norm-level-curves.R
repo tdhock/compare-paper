@@ -73,10 +73,12 @@ for(fun in plot.funs){
 }
 toplot$fun.type <- factor(ifelse(toplot$what=="latent", "truth", "learned"))
 br <- seq(-2,2,by=1)
+lwd <- 1
 p <- ggplot()+
-  geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=seg.df)+
+  geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=seg.df,lwd=lwd)+
   geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=arrow.df,
-               arrow=arrow(type="closed",length=unit(0.025,"in")))+
+               arrow=arrow(type="open",length=unit(0.05,"in")),
+               lwd=lwd)+
   geom_contour(aes(x1, x2, z=rank, alpha=fun.type, group=fun.type),
                ##breaks=1:4,
                data=toplot, size=1, colour="black")+
