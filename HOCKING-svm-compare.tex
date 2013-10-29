@@ -89,28 +89,29 @@
 
 \begin{abstract}
   In ranking problems, the goal is to learn a ranking function
-  $r(x)\in\RR$ from labeled pairs $x,x'$ of input points. In this
-  paper, we consider the related comparison problem, where the label
-  $y\in\{-1,0,1\}$ indicates which element of the pair is better, or
-  if there is no significant difference. We cast the learning problem
-  as a margin maximization, and show that it can be solved by
-  converting it to a standard SVM. We compare our algorithm to SVMrank
-  using simulated data.
+  $r(\mathbf x)\in\RR$ from labeled pairs $\mathbf x,\mathbf x'$ of
+  input points. In this paper, we consider the related comparison
+  problem, where the label $y\in\{-1,0,1\}$ indicates which element of
+  the pair is better, or if there is no significant difference. We
+  cast the learning problem as a margin maximization, and show that it
+  can be solved by converting it to a standard SVM. We compare our
+  algorithm to SVMrank in simulated nonlinear patterns.
 \end{abstract}
 
 \section{Introduction}
 
 In this paper we consider the supervised comparison problem. Assume
 that we have $n$ labeled training pairs and for each pair
-$i\in\{1,\dots,n\}$ we have input features $x_i,x_i'\in\RR^p$ and a
-label $y_i\in\{-1,0,1\}$ that indicates which element is better:
+$i\in\{1,\dots,n\}$ we have input features $\mathbf x_i,\mathbf
+x_i'\in\RR^p$ and a label $y_i\in\{-1,0,1\}$ that indicates which
+element is better:
 \begin{equation}
   \label{eq:z}
   y_i =
   \begin{cases}
-    -1 & \text{ if $x_i$ is better than $x'_i$},\\
-    0 & \text{ if $x_i$ is as good as $x'_i$},\\
-    1 & \text{ if $x'_i$ is better than $x_i$}.
+    -1 & \text{ if $\mathbf x_i$ is better than $\mathbf x'_i$},\\
+    0 & \text{ if $\mathbf x_i$ is as good as $\mathbf x'_i$},\\
+    1 & \text{ if $\mathbf x'_i$ is better than $\mathbf x_i$}.
   \end{cases}
 \end{equation}
 These data are geometrically represented by segments and arrows in the
@@ -132,7 +133,7 @@ as measured by the zero-one loss:
   \label{eq:min_c}
   \minimize_{c} 
   \sum_{i\in\text{test}}
-  I\left[ c(x_i, x_i')\neq y_i \right],
+  I\left[ c(\mathbf x_i, \mathbf x_i')\neq y_i \right],
 \end{equation}
 where $I$ is the indicator function.
 
@@ -147,11 +148,14 @@ where $I$ is the indicator function.
 %   since we only need to make a decision about exactly two items.
 % \end{itemize}
 
-The rest of this article is organized as follows. In
-Section~\ref{sec:related} we discuss links with related work on
-classification and ranking, then in Section~\ref{sec:svm-compare} we
-propose a new algorithm: \SVMcompare. We show results on simulated
-data in Section~\ref{sec:results} and discuss future work in
+The notation and organization of this article is as follows. We use
+bold uppercase letters for matrices such as $\mathbf X, \mathbf K$,
+and bold lowercase letters for their row vectors $\mathbf x_i,
+\mathbf k_i$. In Section~\ref{sec:related} we discuss links with
+related work on classification and ranking, then in
+Section~\ref{sec:svm-compare} we propose a new algorithm:
+\SVMcompare. We show results on simulated data in
+Section~\ref{sec:results} and discuss future work in
 Section~\ref{sec:conclusions}.
 
 \begin{table}[b!]
@@ -159,7 +163,7 @@ Section~\ref{sec:conclusions}.
   \begin{tabular}{|a|c|c|}\hline
     \rowcolor{lightgray}
     \backslashbox{Outputs}{Inputs}
-    &single items $x$&pairs $x,x'$\\ \hline
+    &single items $\mathbf x$&pairs $\mathbf x,\mathbf x'$\\ \hline
     $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
     $y\in\{-1,0,1\}$ &Reject option& this work\\ \hline
   \end{tabular}
@@ -184,30 +188,32 @@ $y\in\{-1,0,1\}$, where 0 signifies ``rejection'' or ``no guess''
 learning to rank problem \citep{learning-to-rank}, which is similar to
 the supervised comparison problem we consider in this paper. The main
 idea of learning to rank is to train on labeled pairs of possible
-documents $x_i,x_i'$ for the same search query. The labels are
-$y_i\in\{-1,1\}$, where $y_i=1$ means document $x_i'$ is more relevant
-than $x_i$ and $y_i=-1$ means the opposite. The SVMrank algorithm was
-proposed for this problem \citep{ranksvm}, and the algorithm we propose
-here is similar. The difference is that we also consider the case
-where both items/documents are judged to be equally good ($y_i=0$).  A
-boosting algorithm has been proposed for this ``ranking with ties''
-problem \citep{rank-with-ties}, and the authors observed that modeling
-ties is more effective when there are more output values. A Bayesian
-model which can be applied to these data is TrueSkill
-\citep{trueskill}, a generalization of the Elo chess rating system.
+documents $\mathbf x_i,\mathbf x_i'$ for the same search query. The
+labels are $y_i\in\{-1,1\}$, where $y_i=1$ means document $\mathbf
+x_i'$ is more relevant than $\mathbf x_i$ and $y_i=-1$ means the
+opposite. The SVMrank algorithm was proposed for this problem
+\citep{ranksvm}, and the algorithm we propose here is similar. The
+difference is that we also consider the case where both
+items/documents are judged to be equally good ($y_i=0$).  A boosting
+algorithm has been proposed for this ``ranking with ties'' problem
+\citep{rank-with-ties}, and the authors observed that modeling ties is
+more effective when there are more output values. A Bayesian model
+which can be applied to these data is TrueSkill \citep{trueskill}, a
+generalization of the Elo chess rating system.
 
 When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
-article we consider the case when inputs are continuous
-$x_i,x_i'\in\RR^p$.
+article we consider the case when inputs are real-valued vectors
+$\mathbf x_i,\mathbf x_i'\in\RR^p$.
 
 Ranking data sets are often described not in terms of labeled pairs of
-inputs $(x_i, x_i', y_i)$ but instead single inputs $x_i$ with ordinal
-labels $y_i\in\{1,\dots,k\}$, where $k$ is the number of integral
-output values. In this case algorithms such as Support Vector Ordinal
-Regression are applicable \citep{ordinal}. However, in this paper we
-consider a different learning problem, where we only have weak labels
-$y_i\in\{-1,0,1\}$ for pairs $x_i,x_i'$ of inputs.
+inputs $(\mathbf x_i, \mathbf x_i', y_i)$ but instead single inputs
+$\mathbf x_i$ with ordinal labels $y_i\in\{1,\dots,k\}$, where $k$ is
+the number of integral output values. In this case algorithms such as
+Support Vector Ordinal Regression are applicable
+\citep{ordinal}. However, in this paper we consider a different
+learning problem, where we only have weak labels $y_i\in\{-1,0,1\}$
+for pairs $\mathbf x_i,\mathbf x_i'$ of inputs.
 
 
 % Some related work appears in Table~\ref{tab:related}:
@@ -228,14 +234,15 @@ $y_i\in\{-1,0,1\}$ for pairs $x_i,x_i'$ of inputs.
   \input{figure-norm-data}
   \vskip -0.5cm
   \caption{Geometric interpretation. \textbf{Top}: input feature pairs
-    $x_i,x_i'\in\RR^p$ are segments for $y_i=0$ and arrows for
-    $y_i\in\{-1,1\}$. The level curves of the ranking function
-    $r(x)=||x||_2^2$ are grey, and differences $|r(x)-r(x')|\leq 1$
-    are considered insignificant ($y_i=0$). \textbf{Middle}: in the
-    enlarged feature space, the ranking function is linear:
-    $r(x)=w^\intercal \Phi(x)$. \textbf{Bottom}: two symmetric
-    hyperplanes $w^\intercal[\Phi(x_i')-\Phi(x_i)]\in\{-1,1\}$ are
-    used to classify the difference vectors.}
+    $\mathbf x_i,\mathbf x_i'\in\RR^p$ are segments for $y_i=0$ and
+    arrows for $y_i\in\{-1,1\}$. The level curves of the ranking
+    function $r(\mathbf x)=||\mathbf x||_2^2$ are grey, and
+    differences $|r(\mathbf x)-r(\mathbf x')|\leq 1$ are considered
+    insignificant ($y_i=0$). \textbf{Middle}: in the enlarged feature
+    space, the ranking function is linear: $r(\mathbf x)=\mathbf
+    w^\intercal \Phi(\mathbf x)$. \textbf{Bottom}: two symmetric
+    hyperplanes $\mathbf w^\intercal[\Phi(\mathbf x_i')-\Phi(\mathbf
+    x_i)]\in\{-1,1\}$ are used to classify the difference vectors.}
   \label{fig:norm-data}
 \end{figure}
 
@@ -251,15 +258,17 @@ primal problem for some cost parameter $C\in\RR^+$ is the following
 quadratic program (QP):
 \begin{equation}
   \begin{aligned}
-    \minimize_{w, \xi}\ \  & \frac 1 2 w^\intercal w 
-    + C \sum_{i\in I_1\cup I_{-1}} \xi_i \\
-    \text{subject to}\ \  & 
-    \forall i\in I_1\cup I_{-1},\ \xi_i \geq 0,\\
-&    \text{and }\xi_i \geq 1-w^\intercal(x_i'-x_i)y_i,
+    \minimize_{\mathbf w, \mathbf \xi}\ \ & \frac 1 2
+    \mathbf w^\intercal \mathbf w
+    + C \sum_{i\in \mathcal I_1\cup \mathcal I_{-1}} \xi_i \\
+    \text{subject to}\ \ &
+    \forall i\in \mathcal I_1\cup \mathcal I_{-1},\ \xi_i \geq 0,\\
+    & \text{and }\xi_i \geq 1-\mathbf w^\intercal(\mathbf x_i'-\mathbf
+    x_i)y_i,
   \end{aligned}
   \label{eq:svmrank}
 \end{equation}
-where $I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
+where $\mathcal I_y=\{i\mid y_i=y\}$ are the sets of indices for the different
 labels. Note that (\ref{eq:svmrank}) is the same as Optimization
 Problem 1 (Ranking SVM), in the paper of \citet{ranksvm}. Note also
 that the equality $y_i=0$ pairs are not used in the optimization
@@ -270,36 +279,37 @@ problem.
   \input{figure-hard-margin}
   \vskip -1cm
   \caption{The separable LP and QP comparison problems. \textbf{Left}:
-    the difference vectors $x'-x$ of the original data and the optimal
-    solution to the LP (\ref{eq:max-margin-lp}). \textbf{Middle}: for
-    the unscaled flipped data $\tilde x'-\tilde x$ (\ref{eq:tilde}),
-    the LP is not the same as the QP
-    (\ref{eq:max-margin-qp}). \textbf{Right}: in these scaled
-    data, the QP is equivalent to the LP.}
+    the difference vectors $\mathbf x'-\mathbf x$ of the original data
+    and the optimal solution to the LP
+    (\ref{eq:max-margin-lp}). \textbf{Middle}: for the unscaled
+    flipped data $\mathbf{\tilde x'}-\mathbf{ \tilde x}$
+    (\ref{eq:tilde}), the LP is not the same as the QP
+    (\ref{eq:max-margin-qp}). \textbf{Right}: in these scaled data,
+    the QP is equivalent to the LP.}
   \label{fig:hard-margin}
 \end{figure*}
 
-After obtaining a weight vector $w\in\RR^p$ by solving
-(\ref{eq:svmrank}), we get a ranking function $r(x)\in\RR$, but we are
-not yet able to predict equality $y_i=0$ pairs. To do so, we extend
-SVMrank by we defining a threshold $\tau\in\RR^+$ and a thresholding
-function $t_\tau:\RR\rightarrow\{-1,0,1\}$
+After obtaining a weight vector $\mathbf w\in\RR^p$ by solving SVMrank
+(\ref{eq:svmrank}), we get a ranking function $r(\mathbf x)\in\RR$,
+but we are not yet able to predict equality $y_i=0$ pairs. To do so,
+we extend SVMrank by we defining a threshold $\tau\in\RR^+$ and a
+thresholding function $t_\tau:\RR\rightarrow\{-1,0,1\}$
 \begin{equation}
   \label{eq:threshold}
-  t_\tau(z) = 
+  t_\tau(x) = 
   \begin{cases}
-    -1 & \text{ if } z < -\tau, \\
-    0 & \text{ if } |z| \leq \tau, \\
-    1 & \text{ if } z > \tau. \\
+    -1 & \text{ if } x < -\tau, \\
+    0 & \text{ if } |x| \leq \tau, \\
+    1 & \text{ if } x > \tau. \\
   \end{cases}
 \end{equation}
 A comparison function $c_\tau:\RR^p\times \RR^p\rightarrow \{-1, 0,
 1\}$ is defined as the thresholded difference of predicted ranks
 \begin{equation}
-  \label{eq:svmrank_c_t}
-  c_\tau(x, x') = 
+  \label{eq:compare_general}
+  c_\tau(\mathbf x, \mathbf x') = 
   t_\tau\big(
-  r(x') - r(x)
+  r(\mathbf x') - r(\mathbf x)
   \big).
 \end{equation}
 We can then use grid search to estimate an optimal threshold $\hat
@@ -308,10 +318,10 @@ training pairs:
 \begin{equation}
   \hat \tau = \argmin_{\tau}
   \sum_{i=1}^n
-  I\left[ c_\tau(x_i, x_i') \neq y_i \right].
+  I\left[ c_\tau(\mathbf x_i, \mathbf x_i') \neq y_i \right].
 \end{equation}
 However, there are two potential problems with the learned comparison
-function $c_{\hat\tau}$. First, the equality pairs $i\in I_0$ are not
+function $c_{\hat\tau}$. First, the equality pairs $i\in \mathcal I_0$ are not
 used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
 threshold $\hat \tau$ is learned in a separate optimization step,
 which may be suboptimal. In the next section, we propose a new
@@ -323,163 +333,164 @@ training pairs in a single learning problem.
 
 In this section we discuss new learning algorithms for comparison
 problems. In all cases, we will first learn a ranking function
-$r:\RR^p\rightarrow\RR$ and then a comparison function $c:\RR^p\times
-\RR^p\rightarrow\{-1,0,1\}$:
-\begin{equation}
-  \label{eq:compare_general}
-  c(x,x')=t_1\big( r(x') - r(x) \big),
-\end{equation}
-using the threshold
-function $t_1:\RR\rightarrow\{-1,0,1\}$ (\ref{eq:threshold}). 
-In other
-words, any small difference in ranks $|r(x')-r(x)|\leq 1$ is considered
-insignificant, and there are two decision boundaries
-$r(x')-r(x)\in\{-1,1\}$.
+$r:\RR^p\rightarrow\RR$ and then a comparison function
+$c_1:\RR^p\times \RR^p\rightarrow\{-1,0,1\}$
+(\ref{eq:compare_general}). In other words, a small rank difference
+$|r(\mathbf x')-r(\mathbf x)|\leq 1$ is considered insignificant, and
+there are two decision boundaries $r(\mathbf x')-r(\mathbf
+x)\in\{-1,1\}$.
 
 \subsection{LP and QP for separable data}
 \label{sec:lp-qp}
 
-To illustrate the nature of the max-margin comparison problem, in this
-section we assume that the training data are linearly separable. Later
-in Section~\ref{sec:kernelized-qp}, we propose an algorithm for
-learning a nonlinear function from non-separable data.
+In our learning setup, the best comparison function is the one with
+maximum margin. We will define the margin in two different ways, which
+correspond to the linear program (LP) and quadratic program (QP)
+discussed below. To illustrate the differences between these
+max-margin comparison problems, in this section we assume that the
+training data are linearly separable. Later in
+Section~\ref{sec:kernelized-qp}, we propose an algorithm for learning
+a nonlinear function from non-separable data.
 
-Using the following linear program (LP), we learn a linear ranking
-function $r(x)=w^\intercal x$ that maximizes the geometric margin
-$\mu$. As shown in the left panel of Figure~\ref{fig:hard-margin}, the
-geometric margin $\mu$ is the smallest distance from any difference
-vector $x_i'-x_i$ to a decision boundary $r(x)\in\{-1,1\}$. 
-%Letting $I_y=\{i\mid y_i=y\}$ be the sets of indices for the different labels, the
-The
- max margin LP is
-%In the following linear program (LP), we consider learning a linear
-%ranking function $r(x)=w^\intercal x$ that maximizes the margin $\mu$:
+Using the following linear program, we learn a linear ranking function
+$r(\mathbf x)=\mathbf w^\intercal \mathbf x$ that maximizes the
+geometric margin $\mu$. As shown in the left panel of
+Figure~\ref{fig:hard-margin}, the geometric margin $\mu$ is the
+smallest distance from any difference vector $\mathbf x_i'-\mathbf
+x_i$ to a decision boundary $r(\mathbf x)\in\{-1,1\}$. The max margin
+LP is
 \begin{eqnarray}
   \label{eq:max-margin-lp}
-  \maximize_{\mu\in\RR^+, w\in\RR^p}\ &&\hskip -0.5cm \mu \\
-\nonumber
-    \text{subject to}\ && \hskip -0.5cm \mu \leq 1-|w^\intercal (x_i' - x_i)|,\ 
-    \forall\  i\in I_0,\\
-\nonumber
-    &&\hskip -0.5cm
-\mu \leq -1 +  w^\intercal(x_i'-x_i)y_i,\ \forall\ i\in I_1\cup I_{-1}.
+  \maximize_{\mu\in\RR^+, \mathbf w\in\RR^p}\ &&\hskip -0.5cm \mu \\
+  \nonumber
+  \text{subject to}\ && \hskip -0.5cm \mu \leq
+  1-|\mathbf w^\intercal (\mathbf x_i' - \mathbf x_i)|,\ 
+  \forall\  i\in \mathcal I_0,\\
+  \nonumber
+  &&\hskip -0.5cm
+  \mu \leq -1 +  \mathbf w^\intercal(\mathbf x_i'-\mathbf x_i)y_i,
+  \ \forall\ i\in \mathcal I_1\cup \mathcal I_{-1}.
 \end{eqnarray}
 Note that finding a feasible point for this LP is a test of linear
 separability. If there are no feasible points then the data are not
 linearly separable. 
-% The geometric interpretation of the LP margin is
-% shown in the left panel of Figure~\ref{fig:hard-margin}. It is the
-% distance from any difference vector $x_i'-x_i$ to its nearest decision
-% boundary $r(x)\in\{-1,1\}$.
 
 Another way to formulate the comparison problem is by first performing
-a change of variables, and then solving a binary SVM QP. The idea is to
-maximize the margin between significant differences $y_i\in\{-1,1\}$
-and equality pairs $y_i=0$. Let $X_y,X_y'$ be the $|I_y|\times p$
-matrices formed by all the pairs $i\in I_y$. We define a new
-``flipped'' data set with $m=|I_1|+|I_{-1}|+2|I_0|$ pairs suitable for
-training a binary SVM:
+a change of variables, and then solving a binary SVM QP. The idea is
+to maximize the margin between significant differences
+$y_i\in\{-1,1\}$ and equality pairs $y_i=0$. Let $\mathbf X_y,\mathbf
+X_y'$ be the $|\mathcal I_y|\times p$ matrices formed by all the pairs
+$i\in \mathcal I_y$. We define a new ``flipped'' data set with
+$m=|\mathcal I_1|+|\mathcal I_{-1}|+2|\mathcal I_0|$ pairs suitable
+for training a binary SVM:
 \begin{equation}
 \label{eq:tilde}
-  \tilde X = \left[
+\mathbf{  \tilde X} = \left[
     \begin{array}{c}
-      X_1 \\
-      X_{-1}'\\
-      X_0\\
-      X_0'
+      \mathbf X_1 \\
+      \mathbf X_{-1}'\\
+      \mathbf X_0\\
+      \mathbf X_0'
     \end{array}
   \right],\ 
-  \tilde X' = \left[
+  \mathbf{\tilde X'} = \left[
     \begin{array}{c}
-      X_1' \\
-      X_{-1}\\
-      X_0'\\
-      X_0
+      \mathbf X_1' \\
+      \mathbf X_{-1}\\
+      \mathbf X_0'\\
+      \mathbf X_0
     \end{array}
   \right],\ 
-  \tilde y = \left[
+  \mathbf{\tilde y} = \left[
     \begin{array}{c}
-      1_{|I_1|} \\
-      1_{|I_{-1}|}\\
-      -1_{|I_0|}\\
-      -1_{|I_0|}
+      \mathbf 1_{|\mathcal I_1|} \\
+      \mathbf 1_{|\mathcal I_{-1}|}\\
+      \mathbf{-1}_{|\mathcal I_0|}\\
+      \mathbf{-1}_{|\mathcal I_0|}
     \end{array}
   \right],
 \end{equation}
-where $1_n$ is an $n$-vector of ones, $\tilde X,\tilde
-X'\in\RR^{m\times p}$ and $\tilde y\in\{-1,1\}^m$. Note that $\tilde
-y_i=-1$ implies no significant difference between $\tilde x_i$ and
-$\tilde x_i'$, and $\tilde y_i=1$ implies that $\tilde x_i'$ is better
-than $\tilde x_i$. We then learn an affine function
-$f(x)=\beta+u^\intercal x$ using a binary SVM QP (black lines in
-middle and right panels of Figure~\ref{fig:hard-margin}):
+where $\mathbf 1_n$ is an $n$-vector of ones, $\mathbf{\tilde
+  X},\mathbf{\tilde X'}\in\RR^{m\times p}$ and $\mathbf{\tilde
+  y}\in\{-1,1\}^m$. Note that $\tilde y_i=-1$ implies no significant
+difference between $\mathbf{\tilde x}_i$ and $\mathbf{\tilde x}_i'$,
+and $\tilde y_i=1$ implies that $\mathbf{\tilde x}_i'$ is better than
+$\mathbf{\tilde x}_i$. We then learn an affine function $f(\mathbf
+x)=\beta+\mathbf u^\intercal \mathbf x$ using a binary SVM QP (black
+lines in middle and right panels of Figure~\ref{fig:hard-margin}):
 \begin{eqnarray}
   \label{eq:max-margin-qp-tilde}
-  \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm
- u^\intercal u  \\
+  \minimize_{\mathbf u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm
+  \mathbf u^\intercal \mathbf u  \\
 \nonumber    \text{subject to}\ &&\hskip -0.5cm 
-    \tilde y_i (\beta + u^\intercal( \tilde x_i'-\tilde x_i) ) \geq 1,
+    \tilde y_i (\beta + 
+    \mathbf u^\intercal( \mathbf{\tilde x}_i'-\mathbf{\tilde x}_i) ) \geq 1,
     \ \forall i\in\{1,\dots,m\}.
 \end{eqnarray}
-Intuitively, the SVM QP learns a separator $f(x)=0$ between
+Intuitively, the SVM QP learns a separator $f(\mathbf x)=0$ between
 significant difference pairs $\tilde y_i=1$ and insignificant
 difference pairs $\tilde y_i=-1$. However, we want a comparison
-function that predicts $c(x,x')\in\{-1,0,1\}$. So we use the next
-Lemma to construct a ranking function $r(x)= \hat w^\intercal x$
-that is feasible for the original max margin comparison LP
-(\ref{eq:max-margin-lp}), and can be used with the comparison function
-(\ref{eq:compare_general}).
+function that predicts $c(\mathbf x,\mathbf x')\in\{-1,0,1\}$. So we
+use the next Lemma to construct a ranking function $r(\mathbf x)=
+\mathbf{\hat w}^\intercal \mathbf x$ that is feasible for the original
+max margin comparison LP (\ref{eq:max-margin-lp}), and can be used
+with the comparison function $c_1$ (\ref{eq:compare_general}).
 \begin{lemma}
-  Let $u\in\RR^p,\beta\in\RR$ be a solution of
-  (\ref{eq:max-margin-qp-tilde}). Then $\hat \mu = -1/\beta$
-  and $\hat w = -u/\beta$ are feasible for
+  Let $\mathbf u\in\RR^p,\beta\in\RR$ be a solution of
+  (\ref{eq:max-margin-qp-tilde}). Then $\hat \mu = -1/\beta$ and
+  $\mathbf{\hat w} = -\mathbf u/\beta$ are feasible for
   (\ref{eq:max-margin-lp}).
   \label{lemma:feasible}
 \end{lemma}
 \begin{proof}
-  Begin by assuming that we want to find a ranking function $r(x)=\hat
-  w^\intercal x = \gamma u^\intercal x$, where $\gamma\in\RR$ is a
-  scaling constant.  
-  Then consider that for all $x$ on the decision
-  boundary, we have
+  Begin by assuming that we want to find a ranking function $r(\mathbf
+  x)=\mathbf{\hat w}^\intercal \mathbf x = \gamma \mathbf u^\intercal
+  \mathbf x$, where $\gamma\in\RR$ is a scaling constant. Then
+  consider that for all $\mathbf x$ on the decision boundary, we have
   \begin{equation}
     \label{eq:dec-boundary-rank}
-    r(x) = \hat w^\intercal x = 1\text{ and } f(x)=u^\intercal x + \beta = 0.
+    r(\mathbf x) = \mathbf{\hat w}^\intercal \mathbf x = 1\text{ and } 
+    f(\mathbf x) = \mathbf u^\intercal \mathbf x + \beta = 0.
   \end{equation}
-  Taken together, it is clear that $\gamma=-1/\beta$ and thus $\hat w
-  = -u/\beta$. Consider for all $x$ on the margin we have 
+  Taken together, it is clear that $\gamma=-1/\beta$ and thus
+  $\mathbf{\hat w} = -\mathbf u/\beta$. Consider for all $\mathbf x$ on the
+  margin we have
   \begin{equation}
     \label{eq:margin-rank}
-    r(x) = \hat w^\intercal x = 1+\hat\mu\text{ and } f(x)=u^\intercal x + \beta= 1.
+    r(\mathbf x) = \mathbf{\hat w}^\intercal x = 1+\hat\mu\text{ and } 
+    f(\mathbf x) = \mathbf u^\intercal \mathbf x + \beta= 1.
   \end{equation}
   Taken together, these imply $\hat \mu=-1/\beta$. Now, by definition
   of the flipped data (\ref{eq:tilde}), we can re-write the max margin
   QP (\ref{eq:max-margin-qp-tilde}) as
 \begin{eqnarray}
   \label{eq:max-margin-qp}
-    \minimize_{u\in\RR^p, \beta\in\RR}\ &&\hskip -0.5cm u^\intercal u  \\
+    \minimize_{\mathbf u\in\RR^p, \beta\in\RR}\ &&
+    \hskip -0.5cm \mathbf u^\intercal \mathbf u  \\
     \text{subject to}\ &&\hskip -0.5cm
-    \nonumber \beta + |u^\intercal (x_i'-x_i)| \leq -1,\
-    \forall\  i\in I_0,\\
+    \nonumber \beta + |\mathbf u^\intercal (\mathbf x_i'-\mathbf x_i)| \leq -1,\
+    \forall\  i\in \mathcal I_0,\\
     &&\hskip -0.5cm
-\nonumber \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
+\nonumber \beta + \mathbf u^\intercal(\mathbf x_i'-\mathbf x_i)y_i \geq 1,
+\ \forall\ i \in \mathcal I_1\cup \mathcal I_{-1}.
 \end{eqnarray}
 By re-writing the constraints of (\ref{eq:max-margin-qp}) in terms of
-$\hat \mu$ and $\hat w$, we recover the same constraints as the max
-margin comparison LP (\ref{eq:max-margin-lp}). Thus $\hat \mu, \hat w$
-are feasible for (\ref{eq:max-margin-lp}).
+$\hat \mu$ and $\mathbf{\hat w}$, we recover the same constraints as
+the max margin comparison LP (\ref{eq:max-margin-lp}). Thus $\hat \mu,
+\mathbf{\hat w}$ are feasible for (\ref{eq:max-margin-lp}).
 \end{proof}
 
-One may also wonder: are $\hat \mu,\hat w$ optimal for the max margin
-comparison LP? In general, the answer is no, and we give one
-counterexample in the middle panel of
+One may also wonder: are $\hat \mu,\mathbf{\hat w}$ optimal for the
+max margin comparison LP? In general, the answer is no, and we give
+one counterexample in the middle panel of
 Figure~\ref{fig:hard-margin}. This is because the LP defines the
-margin in terms of ranking function values $r(x)=w^\intercal x$, but
-the QP defines the margin in terms of the size of the normal vector
-$||u||$, which depends on the scale of the inputs $x,x'$. However,
-when the input variables are scaled in a pre-processing step, we have
-observed that the solutions to the LP and QP are equivalent (right
-panel of Figure~\ref{fig:hard-margin}).
+margin in terms of ranking function values $r(\mathbf x)=\mathbf
+w^\intercal \mathbf x$, but the QP defines the margin in terms of the
+size of the normal vector $||\mathbf u||$, which depends on the scale
+of the inputs $\mathbf x,\mathbf x'$. However, when the input
+variables are scaled in a pre-processing step, we have observed that
+the solutions to the LP and QP are equivalent (right panel of
+Figure~\ref{fig:hard-margin}).
 
 Lemma~\ref{lemma:feasible} is very useful in practice. It means that a
 ranking function $r$ can be learned on comparison data by first
@@ -490,104 +501,106 @@ algorithm for comparison data.
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
 In this section, we assume the data are not separable, and want to
-learn a nonlinear ranking function. We define a positive
-definite kernel $\kappa:\RR^p\times \RR^p\rightarrow\RR$, which
-implicitly defines an enlarged set of features $\Phi(x)$ (middle panel
-of Figure~\ref{fig:norm-data}). As in (\ref{eq:max-margin-qp-tilde}),
-we learn a function $f(x)=\beta + u^\intercal \Phi(x)$ which is affine
-in the feature space. Let $\alpha,\alpha'\in\RR^m$ be coefficients
-such that $u=\sum_{i=1}^m \alpha_i \Phi(\tilde x_i) + \alpha_i'
-\Phi(\tilde x_i')$, and so we have
-%the learned function is thus
- $f(x) =\beta + \sum_{i=1}^m \alpha_i \kappa(\tilde x_i, x) +
-\alpha_i' \kappa(\tilde x_i', x)$. We then use Lemma~\ref{lemma:feasible} to
+learn a nonlinear ranking function. We define a positive definite
+kernel $\kappa:\RR^p\times \RR^p\rightarrow\RR$, which implicitly
+defines an enlarged set of features $\Phi(\mathbf x)$ (middle panel of
+Figure~\ref{fig:norm-data}). As in (\ref{eq:max-margin-qp-tilde}), we
+learn a function $f(\mathbf x)=\beta + \mathbf u^\intercal
+\Phi(\mathbf x)$ which is affine in the feature space. Let $\mathbf
+\alpha,\mathbf \alpha'\in\RR^m$ be coefficients such that $\mathbf
+u=\sum_{i=1}^m
+\alpha_i \Phi(\mathbf{\tilde x}_i) + 
+\alpha_i' \Phi(\mathbf{\tilde x}_i')$, and so we have
+ $f(\mathbf x) =\beta + \sum_{i=1}^m 
+ \alpha_i \kappa(\mathbf{\tilde x}_i, \mathbf x) +
+ \alpha_i' \kappa(\mathbf{\tilde x}_i', \mathbf x)$. 
+ We then use Lemma~\ref{lemma:feasible} to
 define the ranking function
 \begin{equation}
   \label{eq:kernelized_r}
-  r(x)= \frac{u^\intercal \Phi(x)}{-\beta} = %\frac{1}{-\beta}
+  r(\mathbf x)= \frac{\mathbf u^\intercal \Phi(\mathbf x)}{-\beta} = 
   \sum_{i=1}^m
-  \frac{\alpha_i \kappa(\tilde x_i, x) + \alpha_i'  \kappa(\tilde x_i', x)}
+  \frac{
+    \alpha_i \kappa(\mathbf{\tilde x}_i, \mathbf x) +
+    \alpha_i'  \kappa(\mathbf{\tilde x}_i', \mathbf x)}
 {-\beta}.
 \end{equation}
-% which implies the comparison function
-% \begin{equation}
-%   \label{eq:kernelized_c}
-%   c(x, x') =
-%   \begin{cases}
-%     -1 & \text{if } r(x') - r(x) < -1, \\
-%     0 & \text{if } |r(x') - r(x)| \leq 1, \\
-%     1 & \text{if } r(x') - r(x) > 1. \\
-%   \end{cases}
-% \end{equation}
 
-Let $K=[K_1\cdots K_m\ K_1'\cdots K_m']\in\RR^{2m\times 2m}$ be the
+Let $\mathbf K=[
+\mathbf k_1\cdots \mathbf k_m
+\ \mathbf k_1'\cdots \mathbf k_m']\in\RR^{2m\times 2m}$ be the
 kernel matrix, where for all pairs $i\in\{1, \dots, m\}$, the kernel
-vectors $K_i,K_i'\in\RR^{2m}$ are defined as
+vectors $\mathbf k_i,\mathbf k_i'\in\RR^{2m}$ are defined as
 \begin{equation}
-  K_i = \left[
+  \mathbf k_i = \left[
     \begin{array}{c}
-      \kappa(\tilde x_1, \tilde x_i)\\
+      \kappa(\mathbf{\tilde x}_1, \mathbf{\tilde x}_i)\\
       \vdots\\
-      \kappa(\tilde x_m, \tilde x_i)\\
-      \kappa(\tilde x_1', \tilde x_i)\\
+      \kappa(\mathbf{\tilde x}_m, \mathbf{\tilde x}_i)\\
+      \kappa(\mathbf{\tilde x}_1', \mathbf{\tilde x}_i)\\
       \vdots\\
-      \kappa(\tilde x_m', \tilde x_i)
+      \kappa(\mathbf{\tilde x}_m', \mathbf{\tilde x}_i)
     \end{array}
   \right],\ 
-  K_i' = \left[
+  \mathbf k_i' = \left[
     \begin{array}{c}
-      \kappa(\tilde x_1, \tilde x_i')\\
+      \kappa(\mathbf{\tilde x}_1, \mathbf{\tilde x}_i')\\
       \vdots\\
-      \kappa(\tilde x_m, \tilde x_i')\\
-      \kappa(\tilde x_1', \tilde x_i')\\
+      \kappa(\mathbf{\tilde x}_m, \mathbf{\tilde x}_i')\\
+      \kappa(\mathbf{\tilde x}_1', \mathbf{\tilde x}_i')\\
       \vdots\\
-      \kappa(\tilde x_m', \tilde x_i')
+      \kappa(\mathbf{\tilde x}_m', \mathbf{\tilde x}_i')
     \end{array}
   \right].
 \end{equation}
-Letting $a=[\alpha^\intercal\
+Letting $\mathbf a=[\alpha^\intercal\
 \alpha'^\intercal]^\intercal\in\RR^{2m}$, the norm of the affine
-function $f$ in the feature space is $u^\intercal u = a^\intercal K
-a$, and we can write the primal soft-margin comparison QP for some
-$C\in\RR^+$ as
+function $f$ in the feature space is $\mathbf u^\intercal \mathbf u =
+\mathbf a^\intercal \mathbf K \mathbf a$, and we can write the primal soft-margin
+comparison QP for some $C\in\RR^+$ as
 \begin{eqnarray}
-  \minimize_{a\in\RR^{2m},\xi\in\RR^m,\beta\in\RR}\ \ &&\hskip -0.5cm 
-  \frac 1 2 a^\intercal K a + C\sum_{i=1}^m \xi_i \\
+  \minimize_{\mathbf a\in\RR^{2m},\mathbf \xi\in\RR^m,\beta\in\RR}\ \ &&\hskip -0.5cm 
+  \frac 1 2 \mathbf a^\intercal \mathbf K \mathbf a + C\sum_{i=1}^m \xi_i \\
   \text{subject to}\ \ &&\hskip -0.5cm \nonumber
   \text{for all $i\in\{1,\dots,m\}$, }
   \xi_i \geq 0,\\
   &&\hskip -0.5cm \nonumber \text{and }
-  \xi_i \geq 1-\tilde y_i(\beta + a^\intercal (K_i'-K_i)).
+  \xi_i \geq 1-\tilde y_i(\beta + \mathbf a^\intercal (\mathbf k_i'-\mathbf k_i)).
 \end{eqnarray}
-Let $\lambda, v\in\RR^m$ be the dual variables, and $Y=\Diag(\tilde
-y)$ be the diagonal matrix of $m$ labels. Then the Lagrangian can be
-written as
+Let $\mathbf z, \mathbf v\in\RR^m$ be the dual variables, and
+$\mathbf Y=\Diag(\mathbf{\tilde y})$ be the diagonal matrix of $m$
+labels. Then the Lagrangian can be written as
 \begin{equation}
   \label{eq:lagrangian}
-  \mathcal L = \frac 1 2 a^\intercal K a + C\xi^\intercal 1_{m}\\
-  -\lambda^\intercal \xi + v^\intercal(1_m - \tilde y\beta - Y M^\intercal K a - \xi),
+  \mathcal L = \frac 1 2 \mathbf a^\intercal \mathbf K \mathbf a + 
+  C\mathbf \xi^\intercal\mathbf  1_{m}\\
+  -\mathbf z^\intercal \mathbf \xi
+  + \mathbf v^\intercal(\mathbf 1_m - \mathbf{\tilde y}\beta
+  - \mathbf Y \mathbf M^\intercal \mathbf K\mathbf  a - \xi),
 \end{equation}
-where $M=[-I_m \, I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving
-$\nabla_a \mathcal L=0$ results in the following stationary condition:
+where $\mathbf M=[-\mathbf I_m \, \mathbf
+I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving $\nabla_a \mathcal
+L=0$ results in the following stationary condition:
 \begin{equation}
   \label{eq:stationarity}
-  a = M Y v.
+  \mathbf a = \mathbf M \mathbf Y \mathbf v.
 \end{equation}
 The rest of the derivation of the dual comparison problem is the same
 as for the standard binary SVM. The resulting dual QP is
 \begin{equation}
   \begin{aligned}
     \label{eq:svm-dual}
-    \minimize_{v\in\RR^m}\ \ &
-    \frac 1 2 v^\intercal Y M^\intercal K M Y v - v^\intercal 1_m\\
+    \minimize_{\mathbf v\in\RR^m}\ \ &
+    \frac 1 2 \mathbf v^\intercal \mathbf Y \mathbf M^\intercal 
+    \mathbf K \mathbf M \mathbf Y \mathbf v - \mathbf v^\intercal \mathbf 1_m\\
     \text{subject to}\ \ &
     \sum_{i=1}^m v_i \tilde y_i = 0,\\
-&    \text{for all $i\in\{1,\dots,m\}$, } 0\leq v_i\leq C,
+    & \text{for all $i\in\{1,\dots,m\}$, } 0\leq v_i\leq C,
   \end{aligned}
 \end{equation}
 which is equivalent to the dual problem of a standard binary SVM with
-kernel $\tilde K = M^\intercal K M\in\RR^{m\times m}$ and labels
-$\tilde y\in\{-1,1\}^m$.
+kernel $\mathbf{\tilde K} = \mathbf M^\intercal \mathbf K \mathbf
+M\in\RR^{m\times m}$ and labels $\mathbf{\tilde y}\in\{-1,1\}^m$.
 
 
 \begin{algorithm}[b!]
@@ -595,51 +608,45 @@ $\tilde y\in\{-1,1\}^m$.
    \label{alg:SVMcompare}
 \begin{algorithmic}
   \STATE {\bfseries Input:} cost $C\in\RR^+$, kernel
-  $\kappa:\RR^p\times \RR^p \rightarrow \RR$, features $X,X'\in\RR^{n \times p}$,
-  labels $y\in\{-1,0,1\}^n$.
+  $\kappa:\RR^p\times \RR^p \rightarrow \RR$, features $\mathbf
+  X,\mathbf X'\in\RR^{n \times p}$, labels $\mathbf y\in\{-1,0,1\}^n$.
 
-  \STATE \makebox[0.5cm]{$\tilde X$} $\gets [$
-  \makebox[1cm]{$X_1^\intercal$}
-  \makebox[1cm]{$X_{-1}'^\intercal$}
-  \makebox[1cm]{$X_0^\intercal$}
-  \makebox[1cm]{$X_0'^\intercal$}
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}$} $\gets [$
+  \makebox[1cm]{$\mathbf X_1^\intercal$}
+  \makebox[1cm]{$\mathbf X_{-1}'^\intercal$}
+  \makebox[1cm]{$\mathbf X_0^\intercal$}
+  \makebox[1cm]{$\mathbf X_0'^\intercal$}
   $]^\intercal$.
 
-  \STATE \makebox[0.5cm]{$\tilde X'$} $\gets [$
-  \makebox[1cm]{$X_1'^\intercal$}
-  \makebox[1cm]{$X_{-1}^\intercal$}
-  \makebox[1cm]{$X_0'^\intercal$}
-  \makebox[1cm]{$X_0^\intercal$}
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}'$} $\gets [$
+  \makebox[1cm]{$\mathbf X_1'^\intercal$}
+  \makebox[1cm]{$\mathbf X_{-1}^\intercal$}
+  \makebox[1cm]{$\mathbf X_0'^\intercal$}
+  \makebox[1cm]{$\mathbf X_0^\intercal$}
   $]^\intercal$.
 
-  \STATE \makebox[0.5cm]{$\tilde y$} $\gets [$
-  \makebox[1cm]{$1_{|I_1|}^\intercal$}
-  \makebox[1cm]{$1_{|I_{-1}|}^\intercal$}
-  \makebox[1cm]{$-1_{|I_0|}^\intercal$}
-  \makebox[1cm]{$-1_{|I_0|}^\intercal$}
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde y}$} $\gets [$
+  \makebox[1cm]{$\mathbf 1_{|\mathcal I_1|}^\intercal$}
+  \makebox[1cm]{$\mathbf 1_{|\mathcal I_{-1}|}^\intercal$}
+  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
+  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
   $]^\intercal$.
 
-  \STATE $K \gets \proc{KernelMatrix}(\tilde X, \tilde X', \kappa)$.
+  \STATE $\mathbf K \gets \proc{KernelMatrix}(
+  \mathbf{\tilde X}, \mathbf{\tilde X'}, \kappa)$.
 
-  \STATE $M \gets [ -I_m\ I_m ]^\intercal$.
+  \STATE $\mathbf M \gets [ -\mathbf I_m\ \mathbf I_m ]^\intercal$.
 
-  \STATE $\tilde K \gets M^\intercal K M$.
+  \STATE $\mathbf{\tilde K} \gets \mathbf M^\intercal \mathbf  K \mathbf M$.
 
-  \STATE $v,\beta \gets \proc{SVMdual}(\tilde K, \tilde y, C)$.
-
-  % \STATE $\alpha_i \gets $ 
-  % \makebox[1cm][r]{$-\tilde y_i v_i$},
-  % $\forall i\in\{1,\dots, m\}$.
-
-  % \STATE $\alpha_i' \gets $
-  % \makebox[1cm][r]{$\tilde y_i v_i$},
-  % $\forall i\in\{1,\dots, m\}$.
+  \STATE $\mathbf v,\beta \gets \proc{SVMdual}(
+  \mathbf{\tilde K}, \mathbf{\tilde y}, C)$.
 
   \STATE $\textbf{sv}\gets\{i: v_i>0\}$.
   
-  \STATE {\bfseries Output:} Support vectors $\tilde
-  X_{\textbf{sv}},\tilde X_{\textbf{sv}}'$, labels $\tilde y_{\textbf{sv}}$,
-  bias~$\beta$, dual variables $v$.
+  \STATE {\bfseries Output:} Support vectors $\mathbf{\tilde
+    X}_{\textbf{sv}},\mathbf{\tilde X}_{\textbf{sv}}'$, labels
+  $\mathbf{\tilde y}_{\textbf{sv}}$, bias~$\beta$, dual variables $\mathbf v$.
 
    \end{algorithmic}
 \end{algorithm}
@@ -654,30 +661,30 @@ code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
   \begin{tabular}{r|cc|cc|}
 Input:&    \multicolumn{2}{c|}{equality pairs}
 &    \multicolumn{2}{c|}{inequality pairs}\\
-    & $|I_0|$ %$\tilde y_i= -1$
+    & $|\mathcal I_0|$ %$\tilde y_i= -1$
     & --- 
-    & $|I_1|+|I_{-1}|$ %$\tilde y_i=1$
+    & $|\mathcal I_1|+|\mathcal I_{-1}|$ %$\tilde y_i=1$
     & $\rightarrow$
     \\
     \hline
     rank 
     & 0 
     & 
-    & $|I_1|+|I_{-1}|$ 
+    & $|\mathcal I_1|+|\mathcal I_{-1}|$ 
     & $\rightarrow$ 
     \\
     \hline
     rank2 
-    & $2|I_0|$ 
+    & $2|\mathcal I_0|$ 
     & $\leftarrow \rightarrow$
-    & $2(|I_1|+|I_{-1}|)$ 
+    & $2(|\mathcal I_1|+|\mathcal I_{-1}|)$ 
     & $\rightarrow \rightarrow$
     \\
     \hline
     compare 
-    & $2|I_0|$ 
+    & $2|\mathcal I_0|$ 
     & --- --- 
-    & $|I_1|+|I_{-1}|$ 
+    & $|\mathcal I_1|+|\mathcal I_{-1}|$ 
     & $\rightarrow$\\
     \hline
   \end{tabular}
@@ -686,26 +693,26 @@ Input:&    \multicolumn{2}{c|}{equality pairs}
     function $r$.}
 \end{table}
 
-After obtaining optimal dual variables $v\in\RR^m$ as the solution of
+After obtaining optimal dual variables $\mathbf v\in\RR^m$ as the solution of
 (\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
 $\beta$ by analyzing the complementary slackness conditions.
 The learned ranking function can be quickly evaluated since the
-optimal $v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
+optimal $\mathbf v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
 of the support vectors. Since we need only $2|\textbf{sv}|$ kernel
 evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
 \begin{equation}
   \label{eq:r_sv}
-  r(x)= 
+  r(\mathbf x)= 
   \sum_{i\in \textbf{sv}}
   \tilde y_i v_i\left[ 
-    \kappa(\tilde x_i, x)
-    - \kappa(\tilde x_i', x)
+    \kappa(\mathbf{\tilde x}_i, \mathbf x)
+    - \kappa(\mathbf{\tilde x}_i', \mathbf x)
   \right]/\beta.
 \end{equation}
 Note that for all $i\in\{1,\dots,m\}$, the optimal primal variables
 $\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
 recovered using the stationary condition (\ref{eq:stationarity}). The
-learned comparison function remains the same (\ref{eq:compare_general}).
+learned comparison function $c_1$ remains the same (\ref{eq:compare_general}).
 
 The training procedure is summarized as Algorithm~\ref{alg:SVMcompare}.
 %(SVMcompare). 
@@ -727,22 +734,21 @@ are summarized in Table~\ref{tab:models}:
 
 \begin{description}
 \item[rank] first ignores the equality pairs for learning SVMrank,
-  using only $|I_1|+|I_{-1}|$ pairs (Section~\ref{sec:svmrank}). Then
-  we use all $n$ pairs to learn a threshold $\hat \tau$ via grid
-  search for when to predict $c(x,x')=0$.
+  using only $|\mathcal I_1|+|\mathcal I_{-1}|$ pairs
+  (Section~\ref{sec:svmrank}). Then we use all $n$ pairs to learn a
+  threshold $\hat \tau$ via grid search for when to predict
+  $c(\mathbf x,\mathbf x')=0$.
 \item[rank2] is another variant of SVMrank that treats each input pair
   as 2 inequality pairs. Since SVMrank can only use inequality pairs,
-  we transform each equality pair $(x_i,x_i',0)$ into two
-  opposite-facing inequality pairs $(x_i',x_i,1)$ and
-  $(x_i,x_i',1)$. To ensure equal weight for all input pairs in the
+  we transform each equality pair $(\mathbf x_i,\mathbf x_i',0)$ into two
+  opposite-facing inequality pairs $(\mathbf x_i',\mathbf x_i,1)$ and
+  $(\mathbf x_i,\mathbf x_i',1)$. 
+  To ensure equal weight for all input pairs in the
   cost function, we also duplicate each inequality pair, resulting in
   $2n$ pairs used to train SVMrank.
 \item[compare] is the SVMcompare model proposed in this paper, which
-  uses $m=n+|I_0|$ input pairs.
+  uses $m=n+|\mathcal I_0|$ input pairs.
 \end{description}
-% test the proposed SVMcompare model and a
-% baseline ranking model that ignores the equality $y_i=0$ pairs,
-% SVMrank \citep{ranksvm}. This simulation has two goals:
 
 In all cases, we fit a $10\times 10$ grid of models to the training
 set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian kernel width
@@ -753,10 +759,11 @@ generalization ability of the selected model.
 We use two evaluation metrics to judge the performance of the models
 on the test pairs: zero-one loss, and area under the ROC curve. Note
 that the ROC curves are calculated by first evaluating the learned
-ranking function $r(x)$ at each test point $x$, and then varying the
-threshold $\tau$ (\ref{eq:threshold}). For $\tau=0$ we have 100\%
-false positive rate and for $\tau=\infty$ we have 100\% false negative
-rate (Table~\ref{tab:evaluation}).
+ranking function $r(\mathbf x)$ at each test point $\mathbf x$, and
+then varying the threshold $\tau$ of the comparison function $c_\tau$
+(\ref{eq:compare_general}). For $\tau=0$ we have 100\% false positive
+rate and for $\tau=\infty$ we have 100\% false negative rate
+(Table~\ref{tab:evaluation}).
 
 \begin{table}[b!]
   \centering
@@ -782,51 +789,51 @@ rate (Table~\ref{tab:evaluation}).
 
 \subsection{Simulation: norms in 2D}
 We used a simulation to visualize the learned nonlinear ranking
-functions in 2D, and to demonstrate that our model can achieve
-lower test error by learning from the equality $y_i=0$ pairs.
-%, when there are few inequality $y_i\in\{-1,1\}$ pairs. 
-We generated pairs $x_i,x_i'\in[-3,3]^2$ and noisy labels
-$y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
-function (\ref{eq:threshold}), $r$ is the latent ranking function,
-$\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is the
-standard deviation. We picked train, validation, and test sets, each
-with the same number of pairs $n$ and the same proportion $\rho$ of
-equality pairs.
+functions in 2D, and to demonstrate that our model can achieve lower
+test error by learning from the equality $y_i=0$ pairs.  We generated
+pairs $\mathbf x_i,\mathbf x_i'\in[-3,3]^2$ and noisy labels
+$y_i=t_1[r(\mathbf x'_i)-r(\mathbf x_i)+\epsilon_i]$, where $t_1$ is
+the threshold function (\ref{eq:threshold}), $r$ is the latent ranking
+function, $\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is
+the standard deviation. We picked train, validation, and test sets,
+each with the same number of pairs $n$ and the same proportion $\rho$
+of equality pairs.
 
 In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
 $\rho=1/2$ equality and inequality pairs. We show the training set and
 the level curves of the ranking functions learned by the SVMrank and
 SVMcompare models. It is clear that the rank model does not accurately
-recover the true ranking function $r(x)=||x||_1^2$, since it does not
-use the equality $y_i=0$ pairs. In contrast, the compare and rank2
-methods which exploit the equality $y_i=0$ pairs are able to recover a
-ranking function that is closer to the true $r$.
+recover the true ranking function $r(\mathbf x)=||\mathbf x||_1^2$,
+since it does not use the equality $y_i=0$ pairs. In contrast, the
+compare and rank2 methods which exploit the equality $y_i=0$ pairs are
+able to recover a ranking function that is closer to the true $r$.
 
 In Figure~\ref{fig:simulation-samples} we fixed the proportion of
 equality pairs $\rho=1/2$, varied the number of training pairs
 $n\in\{50,\dots, 800\}$, and tested three simulated ranking functions
-$r(x)=||x||^2_j$ for $j\in\{1,2,\infty\}$. In general, the test error
-of all models decreases as training set size $n$ increases. The model
-with the highest test error is the rank model, which does not use the
-equality $y_i=0$ pairs. The next best model is the rank2 model, which
-converts the equality $y_i=0$ pairs to inequality pairs and then
-trains SVMrank. The best model is the proposed \SVMcompare\ model,
-which achieves test error as good as the true ranking function in the
-case of $r(x)=||x||^2_2$.
+$r(\mathbf x)=||\mathbf x||^2_j$ for $j\in\{1,2,\infty\}$. In general,
+the test error of all models decreases as training set size $n$
+increases. The model with the highest test error is the rank model,
+which does not use the equality $y_i=0$ pairs. The next best model is
+the rank2 model, which converts the equality $y_i=0$ pairs to
+inequality pairs and then trains SVMrank. The best model is the
+proposed SVMcompare model, which achieves test error as good as the
+true ranking function in the case of $r(\mathbf x)=||\mathbf x||^2_2$.
 
 In Figure~\ref{fig:auc} we fixed the number of training pairs $n=100$
 and varied the proportion $\rho$ of equality pairs for the three
 simulated squared norm ranking functions $r$. We use area under the
 ROC curve to evaluate the learned models, and all methods perform
-close to the optimal true ranking function when $r(x)=||x||^2_2$. For
-the other patterns, it is clear that all the methods perform similarly
-when there are mostly inequality pairs ($\rho=0.1$), since SVMrank was
-designed for this type of training data. In contrast, when there are
-mostly equality pairs ($\rho=0.9$), the compare and rank2 methods
-clearly outperform the rank method, which ignores the equality
-pairs. Although there is no difference between the rank2 and compare
-methods when $r(x)=||x||_1^2$, the compare method is slightly better
-when $r(x)=||x||_\infty^2$. Overall, it is clear that when the data
+close to the optimal true ranking function when $r(\mathbf
+x)=||\mathbf x||^2_2$. For the other patterns, it is clear that all
+the methods perform similarly when there are mostly inequality pairs
+($\rho=0.1$), since SVMrank was designed for this type of training
+data. In contrast, when there are mostly equality pairs ($\rho=0.9$),
+the compare and rank2 methods clearly outperform the rank method,
+which ignores the equality pairs. Although there is no difference
+between the rank2 and compare methods when $r(\mathbf x)=||\mathbf
+x||_1^2$, the compare method is slightly better when $r(\mathbf
+x)=||\mathbf x||_\infty^2$. Overall, it is clear that when the data
 contain equality pairs, it is advantageous to use a model such as the
 proposed SVMcompare method which learns from them directly as a part
 of the optimization problem.
@@ -855,12 +862,12 @@ Lacoste-Julien and Hang Li for helpful discussions.
   \centering
   \input{figure-norm-level-curves}
   \vskip -1cm
-  \caption{Application to a simulated pattern $r(x)=||x||_1^2$ where
-    $x\in\RR^2$. \textbf{Left}: the training data are $n=100$ pairs,
-    half equality (segments indicate two points of equal rank), and
-    half inequality (arrows point to the higher
-    rank). \textbf{others}: level curves of the learned ranking
-    functions. The rank model does not directly model the equality 
+  \caption{Application to a simulated pattern $r(\mathbf x)=||\mathbf
+    x||_1^2$ where $\mathbf x\in\RR^2$. \textbf{Left}: the training
+    data are $n=100$ pairs, half equality (segments indicate two
+    points of equal rank), and half inequality (arrows point to the
+    higher rank). \textbf{Others}: level curves of the learned ranking
+    functions. The rank model does not directly model the equality
     pairs, so the rank2 and compare models recover the true pattern
     better.}
   \label{fig:norm-level-curves}
@@ -869,8 +876,8 @@ Lacoste-Julien and Hang Li for helpful discussions.
 \begin{figure*}[b!]
   \input{figure-simulation-samples}
   \vskip -1cm
-  \caption{Test error for 3 different simulated patterns $r(x)$ where
-    $x\in\RR^2$. We randomly generated data sets with half equality
+  \caption{Test error for 3 different simulated patterns $r(\mathbf x)$ where
+    $\mathbf x\in\RR^2$. We randomly generated data sets with half equality
     and half inequality pairs, and plot test error as a function of
     training set size $n$ (a vertical line shows the data set which
     was used in Figure~\ref{fig:norm-level-curves}). Lines show mean
@@ -882,9 +889,10 @@ Lacoste-Julien and Hang Li for helpful discussions.
   \input{figure-auc}
   \vskip -1cm
   \caption{Area under the ROC curve (AUC) for 3 different simulated
-    patterns $r(x)$ where $x\in\RR^2$. In each simulation we generated
-    $n=400$ pairs, varying the proportion $\rho$ of equality pairs. We
-    plot mean and standard deviation of AUC over 4 test sets.}
+    patterns $r(\mathbf x)$ where $\mathbf x\in\RR^2$. In each
+    simulation we generated $n=400$ pairs, varying the proportion
+    $\rho$ of equality pairs. We plot mean and standard deviation of
+    AUC over 4 test sets.}
   \label{fig:auc}
 \end{figure*}
 

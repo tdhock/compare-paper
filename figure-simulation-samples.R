@@ -58,10 +58,12 @@ percents <-
         se=sd(percent)/sqrt(length(percent)))
 library(grid)
 percents$fit.name <- factor(percents$fit.name, names(model.colors))
-labels <- c(l1="||x||_1^2",
-            l2="||x||_2^2",
-            linf="||x||_\\infty^2")
-makelabel <- function(x)sprintf("$r(x) = %s$", labels[as.character(x)])
+labels <- c(l1="1",
+            l2="2",
+            linf="\\infty")
+makelabel <- function(x){
+  sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels[as.character(x)])
+}
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)
 indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.norm))

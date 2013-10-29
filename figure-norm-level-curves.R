@@ -47,7 +47,8 @@ basePlot <- ggplot(,aes(X1, X2))+
 segPlot <- basePlot+
   aes(xend=X1.1,yend=X2.1)+
   geom_segment(data=seg.df)+
-  geom_segment(data=arrow.df, arrow=arrow(type="closed",length=unit(0.05,"in")),
+  geom_segment(data=arrow.df,
+               arrow=arrow(type="closed",length=unit(0.075,"in")),
                color="red")
 print(segPlot)
 

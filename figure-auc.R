@@ -17,10 +17,10 @@ out.csv <- subset(auc, fit.name!="mslr")
 names(out.csv)[1] <- "model"
 write.csv(out.csv,file="CompareAUC.csv", row.names=FALSE, quote=FALSE)
 
-labels <- c(l1="||x||_1^2",
-            l2="||x||_2^2",
-            linf="||x||_\\infty^2")
-labels[] <- sprintf("$r(x) = %s$", labels)
+labels <- c(l1="1",
+            l2="2",
+            linf="\\infty")
+labels[] <- sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels)
 labels[["mslr"]] <- "MSLR"
 makelabel <- function(x)labels[as.character(x)]
 leg <- "function"

@@ -211,15 +211,17 @@ mplot <- ggplot()+
                        "LP constraint inactive",
                        "QP support vector"))+
   scale_linetype_manual(values=c(decision="solid",margin="dotted"),
-                        labels=c("decision $r(x)=\\pm 1$",
-                          "margin $r(x)=\\pm 1\\pm\\mu$"))+
+                        labels=c("decision $r(\\mathbf x)=\\pm 1$",
+                          "margin $r(\\mathbf x)=\\pm 1\\pm\\mu$"))+
   geom_text(aes(distance, angle, colour=factor(yi), label=label),
             data=lab.df, size=3)+
   facet_grid(.~set.name,scales="free",labeller=function(var,val){
-    c(one="original $x'-x$",
-      both="flipped $\\tilde x'-\\tilde x$",
-      scaled="scaled and flipped $\\tilde x'-\\tilde x$")[val]
-  })+
+    titles <-
+      c(one="original $\\mathbf x'-\\mathbf x$",
+        both="flipped $\\mathbf{\\tilde x'}-\\mathbf{\\tilde x}$",
+        scaled="scaled and flipped $\\mathbf{\\tilde x'}-\\mathbf{\\tilde x}$")
+    titles[val]
+  })+ 
   theme_bw()+
   ##geom_point(aes(distance, angle), data=model.sv, size=1, pch=1)+
   theme(panel.margin=unit(0,"cm"))+
