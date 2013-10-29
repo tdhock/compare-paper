@@ -33,12 +33,12 @@ for(i in seq_along(levs)){
 
 yi.col <- yi.colors[as.character(yi)]
 
-tikz("figure-norm-data.tex", h=8,w=3)
+tikz("figure-norm-data.tex", h=8, w=3)
 
-par(las=1, mar=c(2,1,0,1), mfrow=c(3,1), cex=1, omi=c(0,0,0,0))
+par(las=1, mar=c(2,1.2,0,1), mfrow=c(3,1), cex=1, omi=c(0,0,0,0))
 plot(X, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
-title(xlab="input feature $\\mathbf x_{i,1}$",
-      ylab="input feature $\\mathbf x_{i,2}$", line=0.1)
+title(xlab="input feature $ x_{i,1}$",
+      ylab="input feature $ x_{i,2}$", line=0.1)
 mtext("Original feature space $\\mathbf x\\in\\mathbb R^p$", 4, las=0)
 contour(levs, levs, m, col="grey50", add=TRUE, levels=1:10)
 pairLWD <- 2
@@ -88,11 +88,11 @@ Xi.square <- Xi*Xi
 Xip.square <- Xip*Xip
 X.square <- rbind(Xi.square, Xip.square)
 plot(X.square, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")
-title(xlab="additional feature $\\mathbf x_{i,1}^2$",
-      ylab="additional feature $\\mathbf x_{i,2}^2$", line=0.1)
+title(xlab="additional feature $ x_{i,1}^2$",
+      ylab="additional feature $ x_{i,2}^2$", line=0.1)
 mtext("Enlarged feature space $\\Phi(\\mathbf x)$", 4, las=0)
 
-text(5, 3/2, "$r(\\mathbf x)=w^\\intercal \\Phi(\\mathbf x)$",
+text(5, 3/2, "$r(\\mathbf x)=\\mathbf w^\\intercal \\Phi(\\mathbf x)$",
      col="grey50", srt=-45)
 
 levs <- seq(min(X.square),max(X.square),l=20)
@@ -140,7 +140,8 @@ text(1.2, -0.05, labels=sprintf("$\\Phi(\\mathbf x_{11})$",i), cex=0.8)
 X.diff <- Xip.square-Xi.square
 plot(X.diff, type="p", asp=1, xlab="", ylab="", xaxt="n", yaxt="n",
      pch=20, col=yi.col)
-title(xlab="difference feature 1", ylab="difference feature 2", line=0.1)
+title(xlab="difference feature ${x'}_{i,1}^2-x_{i,1}^2$",
+      ylab="difference feature ${x'}_{i,2}^2-x_{i,2}^2$", line=0.1)
 mtext("Difference of enlarged features $\\Phi(\\mathbf x')-\\Phi(\\mathbf x)$",
       4, las=0)
 abline(h=0,v=0, col="grey")
@@ -156,10 +157,10 @@ text(-0.8, 0.8, "$\\Phi(\\mathbf x_{11}')-\\Phi(\\mathbf x_{11})$", cex=0.8)
 
 text(1.2, 2.5, "$\\Phi(\\mathbf x_{1}')-\\Phi(\\mathbf x_{1})$", cex=0.8)
 
-text(0.2, -1, "$w^\\intercal [ \\Phi(\\mathbf x') - \\Phi(\\mathbf x) ] = -1$",
+text(0.2, -1, "$\\mathbf w^\\intercal [ \\Phi(\\mathbf x') - \\Phi(\\mathbf x) ] = -1$",
      cex=0.7, srt=-45)
 
-text(2.2, -1, "$w^\\intercal [ \\Phi(\\mathbf x') - \\Phi(\\mathbf x) ] = 1$",
+text(2.2, -1, "$\\mathbf w^\\intercal [ \\Phi(\\mathbf x') - \\Phi(\\mathbf x) ] = 1$",
      cex=0.7, srt=-45)
 
 dev.off()

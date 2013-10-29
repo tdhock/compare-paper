@@ -13,7 +13,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{stfloats}
 \usepackage{float}
-\newcommand{\SVMcompare}{SVMcompare}
+\newcommand{\sv}{\textsc{sv}}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
@@ -154,7 +154,7 @@ and bold lowercase letters for their row vectors $\mathbf x_i,
 \mathbf k_i$. In Section~\ref{sec:related} we discuss links with
 related work on classification and ranking, then in
 Section~\ref{sec:svm-compare} we propose a new algorithm:
-\SVMcompare. We show results on simulated data in
+SVMcompare. We show results on simulated data in
 Section~\ref{sec:results} and discuss future work in
 Section~\ref{sec:conclusions}.
 
@@ -185,15 +185,16 @@ option (Table~\ref{tab:related}). The classification with reject
 option problem is a version of binary classification with outputs
 $y\in\{-1,0,1\}$, where 0 signifies ``rejection'' or ``no guess''
 \citep{reject-option}. There are many algorithms for the supervised
-learning to rank problem \citep{learning-to-rank}, which is similar to
+learning to rank problem
+\citep{learning-to-rank,object-ranking-methods}, which is similar to
 the supervised comparison problem we consider in this paper. The main
 idea of learning to rank is to train on labeled pairs of possible
 documents $\mathbf x_i,\mathbf x_i'$ for the same search query. The
 labels are $y_i\in\{-1,1\}$, where $y_i=1$ means document $\mathbf
 x_i'$ is more relevant than $\mathbf x_i$ and $y_i=-1$ means the
 opposite. The SVMrank algorithm was proposed for this problem
-\citep{ranksvm}, and the algorithm we propose here is similar. The
-difference is that we also consider the case where both
+\citep{ranksvm}, and the algorithm we propose in this article is
+similar. The difference is that we also consider the case where both
 items/documents are judged to be equally good ($y_i=0$).  A boosting
 algorithm has been proposed for this ``ranking with ties'' problem
 \citep{rank-with-ties}, and the authors observed that modeling ties is
@@ -201,7 +202,7 @@ more effective when there are more output values. A Bayesian model
 which can be applied to these data is TrueSkill \citep{trueskill}, a
 generalization of the Elo chess rating system.
 
-When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
+A similar problem to the one we consider in this article is When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
 article we consider the case when inputs are real-valued vectors
 $\mathbf x_i,\mathbf x_i'\in\RR^p$.
@@ -322,7 +323,7 @@ training pairs:
 \end{equation}
 However, there are two potential problems with the learned comparison
 function $c_{\hat\tau}$. First, the equality pairs $i\in \mathcal I_0$ are not
-used to learn the weight vector $w$ in (\ref{eq:svmrank}). Second, the
+used to learn the weight vector $\mathbf w$ in (\ref{eq:svmrank}). Second, the
 threshold $\hat \tau$ is learned in a separate optimization step,
 which may be suboptimal. In the next section, we propose a new
 algorithm that fixes these issues by directly using all the
@@ -352,13 +353,12 @@ training data are linearly separable. Later in
 Section~\ref{sec:kernelized-qp}, we propose an algorithm for learning
 a nonlinear function from non-separable data.
 
-Using the following linear program, we learn a linear ranking function
-$r(\mathbf x)=\mathbf w^\intercal \mathbf x$ that maximizes the
-geometric margin $\mu$. As shown in the left panel of
-Figure~\ref{fig:hard-margin}, the geometric margin $\mu$ is the
-smallest distance from any difference vector $\mathbf x_i'-\mathbf
-x_i$ to a decision boundary $r(\mathbf x)\in\{-1,1\}$. The max margin
-LP is
+In the following linear program, we learn a linear ranking function
+$r(\mathbf x)=\mathbf w^\intercal \mathbf x$ that maximizes the margin
+$\mu$, defined in terms of ranking function values. The margin $\mu$
+is the smallest rank difference between a decision boundary $r(\mathbf
+x)\in\{-1,1\}$ and a difference vector $r(\mathbf x_i'-\mathbf
+x_i)$. The max margin LP is
 \begin{eqnarray}
   \label{eq:max-margin-lp}
   \maximize_{\mu\in\RR^+, \mathbf w\in\RR^p}\ &&\hskip -0.5cm \mu \\
@@ -457,7 +457,7 @@ with the comparison function $c_1$ (\ref{eq:compare_general}).
   margin we have
   \begin{equation}
     \label{eq:margin-rank}
-    r(\mathbf x) = \mathbf{\hat w}^\intercal x = 1+\hat\mu\text{ and } 
+    r(\mathbf x) = \mathbf{\hat w}^\intercal \mathbf x = 1+\hat\mu\text{ and } 
     f(\mathbf x) = \mathbf u^\intercal \mathbf x + \beta= 1.
   \end{equation}
   Taken together, these imply $\hat \mu=-1/\beta$. Now, by definition
@@ -579,7 +579,7 @@ labels. Then the Lagrangian can be written as
   - \mathbf Y \mathbf M^\intercal \mathbf K\mathbf  a - \xi),
 \end{equation}
 where $\mathbf M=[-\mathbf I_m \, \mathbf
-I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving $\nabla_a \mathcal
+I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving $\nabla_{\mathbf a} \mathcal
 L=0$ results in the following stationary condition:
 \begin{equation}
   \label{eq:stationarity}
@@ -604,7 +604,7 @@ M\in\RR^{m\times m}$ and labels $\mathbf{\tilde y}\in\{-1,1\}^m$.
 
 
 \begin{algorithm}[b!]
-   \caption{\SVMcompare}
+   \caption{SVMcompare}
    \label{alg:SVMcompare}
 \begin{algorithmic}
   \STATE {\bfseries Input:} cost $C\in\RR^+$, kernel
@@ -642,11 +642,11 @@ M\in\RR^{m\times m}$ and labels $\mathbf{\tilde y}\in\{-1,1\}^m$.
   \STATE $\mathbf v,\beta \gets \proc{SVMdual}(
   \mathbf{\tilde K}, \mathbf{\tilde y}, C)$.
 
-  \STATE $\textbf{sv}\gets\{i: v_i>0\}$.
+  \STATE $\sv \gets\{i: v_i>0\}$.
   
   \STATE {\bfseries Output:} Support vectors $\mathbf{\tilde
-    X}_{\textbf{sv}},\mathbf{\tilde X}_{\textbf{sv}}'$, labels
-  $\mathbf{\tilde y}_{\textbf{sv}}$, bias~$\beta$, dual variables $\mathbf v$.
+    X}_{\sv },\mathbf{\tilde X}_{\sv }'$, labels
+  $\mathbf{\tilde y}_{\sv }$, bias~$\beta$, dual variables $\mathbf v$.
 
    \end{algorithmic}
 \end{algorithm}
@@ -689,21 +689,26 @@ Input:&    \multicolumn{2}{c|}{equality pairs}
     \hline
   \end{tabular}
   \caption{\label{tab:models}
-    Summary of how the input pairs are used to learn the ranking 
-    function $r$.}
+    Summary of how the different algorithms 
+    use the input pairs to learn the ranking 
+    function $r$. Equality pairs are shown as ---  
+    segments and inequality pairs 
+    are shown as $\rightarrow$  arrows. For example, 
+    the rank2 algorithm converts each input equality pair
+    to two opposite-facing inequality pairs.}
 \end{table}
 
 After obtaining optimal dual variables $\mathbf v\in\RR^m$ as the solution of
 (\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
 $\beta$ by analyzing the complementary slackness conditions.
 The learned ranking function can be quickly evaluated since the
-optimal $\mathbf v$ is sparse. Let $\textbf{sv}=\{i: v_i > 0\}$ be the indices
-of the support vectors. Since we need only $2|\textbf{sv}|$ kernel
+optimal $\mathbf v$ is sparse. Let $\sv =\{i: v_i > 0\}$ be the indices
+of the support vectors. Since we need only $2|\sv |$ kernel
 evaluations, the ranking function (\ref{eq:kernelized_r}) becomes
 \begin{equation}
   \label{eq:r_sv}
   r(\mathbf x)= 
-  \sum_{i\in \textbf{sv}}
+  \sum_{i\in \sv }
   \tilde y_i v_i\left[ 
     \kappa(\mathbf{\tilde x}_i, \mathbf x)
     - \kappa(\mathbf{\tilde x}_i', \mathbf x)
@@ -788,16 +793,17 @@ rate and for $\tau=\infty$ we have 100\% false negative rate
 \end{table}
 
 \subsection{Simulation: norms in 2D}
-We used a simulation to visualize the learned nonlinear ranking
+We used a simulation to visualize the learned nonlinear ranking 
 functions in 2D, and to demonstrate that our model can achieve lower
-test error by learning from the equality $y_i=0$ pairs.  We generated
-pairs $\mathbf x_i,\mathbf x_i'\in[-3,3]^2$ and noisy labels
-$y_i=t_1[r(\mathbf x'_i)-r(\mathbf x_i)+\epsilon_i]$, where $t_1$ is
-the threshold function (\ref{eq:threshold}), $r$ is the latent ranking
-function, $\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is
-the standard deviation. We picked train, validation, and test sets,
-each with the same number of pairs $n$ and the same proportion $\rho$
-of equality pairs.
+test error than the baseline SVMrank model, by learning from the
+equality $y_i=0$ pairs.  We generated pairs $\mathbf x_i,\mathbf
+x_i'\in[-3,3]^2$ and noisy labels $y_i=t_1[r(\mathbf x'_i)-r(\mathbf
+x_i)+\epsilon_i]$, where $t_1$ is the threshold function
+(\ref{eq:threshold}), $r$ is the latent ranking function,
+$\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is the
+standard deviation. We picked train, validation, and test sets, each
+with the same number of pairs $n$ and the same proportion $\rho$ of
+equality pairs.
 
 In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
 $\rho=1/2$ equality and inequality pairs. We show the training set and
@@ -820,7 +826,7 @@ inequality pairs and then trains SVMrank. The best model is the
 proposed SVMcompare model, which achieves test error as good as the
 true ranking function in the case of $r(\mathbf x)=||\mathbf x||^2_2$.
 
-In Figure~\ref{fig:auc} we fixed the number of training pairs $n=100$
+In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$
 and varied the proportion $\rho$ of equality pairs for the three
 simulated squared norm ranking functions $r$. We use area under the
 ROC curve to evaluate the learned models, and all methods perform
