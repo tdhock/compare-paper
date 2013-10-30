@@ -38,3 +38,8 @@ mslr.proportion.RData: mslr.proportion.R svmlight.R small.folds.RData
 	R --no-save < $<
 mslr.samples.RData: mslr.samples.R svmlight.R small.folds.RData
 	R --no-save < $<
+# sushi data
+sushi.RData: sushi.R
+	R --no-save < $<
+prefectureList.RData: prefectureList.R sushi.RData
+	R --no-save < $<
