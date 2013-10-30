@@ -43,3 +43,5 @@ sushi.RData: sushi.R
 	R --no-save < $<
 prefectureList.RData: prefectureList.R sushi.RData
 	R --no-save < $<
+sushi.features.RData: sushi.features.R prefectureList.RData sushi.RData
+	R --no-save < $<
