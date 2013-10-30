@@ -210,7 +210,7 @@ mplot <- ggplot()+
                      labels=c("LP constraint active",
                        "LP constraint inactive",
                        "QP support vector"))+
-  scale_linetype_manual(values=c(decision="solid",margin="dotted"),
+  scale_linetype_manual("boundary",values=c(decision="solid",margin="dotted"),
                         labels=c("decision $r(\\mathbf x)=\\pm 1$",
                           "margin $r(\\mathbf x)=\\pm 1\\pm\\mu$"))+
   geom_text(aes(distance, angle, colour=factor(yi), label=label),
