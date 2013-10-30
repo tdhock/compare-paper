@@ -80,7 +80,7 @@ boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   scale_colour_manual(leg,values=model.colors)+
   scale_fill_manual(leg,values=model.colors)+
   ylab("percent incorrectly\npredicted test pairs")+
-  xlab("$n=$ number of labeled pairs in the training set")
+  xlab("$n=$ number of labeled pairs, half equality and half inequality")
 
 tikz("figure-simulation-samples.tex",h=2)
 print(boring)

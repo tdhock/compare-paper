@@ -29,7 +29,7 @@ point.df <- rbind(setdf(one$yi,Di,"one"),
                   setdf(yi.both,Di.both,"both"),
                   setdf(yi.both,both.scaled,"scaled"))
 svm.color <- "black"
-lp.color <- "grey50"
+lp.color <- "grey60"
 yi.colors[["2"]] <- svm.color #blue
 library(grid)
 p <- ggplot()+

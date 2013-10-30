@@ -94,8 +94,9 @@
   problem, where the label $y\in\{-1,0,1\}$ indicates which element of
   the pair is better, or if there is no significant difference. We
   cast the learning problem as a margin maximization, and show that it
-  can be solved by converting it to a standard SVM. We compare our
-  algorithm to SVMrank in simulated nonlinear patterns.
+  can be solved by converting it to a standard SVM. We use simulated
+  nonlinear patterns to show that our proposed SVMcompare algorithm
+  outperforms SVMrank when there are equality $y=0$ pairs.
 \end{abstract}
 
 \section{Introduction}
@@ -109,9 +110,12 @@ element is better:
   \label{eq:z}
   y_i =
   \begin{cases}
-    -1 & \text{ if $\mathbf x_i$ is better than $\mathbf x'_i$},\\
-    0 & \text{ if $\mathbf x_i$ is as good as $\mathbf x'_i$},\\
-    1 & \text{ if $\mathbf x'_i$ is better than $\mathbf x_i$}.
+    -1 &  r(\mathbf x_i)>r(\mathbf x_i')
+    \text{, $\mathbf x_i$ is better than $\mathbf x'_i$},\\
+    0 & r(\mathbf x_i) = r(\mathbf x_i')
+    \text{, $\mathbf x_i$ is as good as $\mathbf x'_i$},\\
+    1 & r(\mathbf x_i)<r(\mathbf x_i')
+    \text{, $\mathbf x'_i$ is better than $\mathbf x_i$}.
   \end{cases}
 \end{equation}
 These data are geometrically represented by segments and arrows in the
@@ -241,10 +245,8 @@ for pairs $\mathbf x_i,\mathbf x_i'$ of inputs.
 \subsection{SVMrank for comparing}
 \label{sec:svmrank}
 In this section we explain how to apply the existing SVMrank algorithm
-%of \citet{ranksvm} 
 to a comparison data set.
-
-The goal of the SVMrank algorithm is to learn a ranking function
+The goal of SVMrank is to learn a ranking function
 $r:\RR^p \rightarrow \RR$. When $r(x)=w^\intercal x$ is linear, the
 primal problem for some cost parameter $C\in\RR^+$ is the following
 quadratic program (QP):
@@ -284,7 +286,7 @@ problem.
 After obtaining a weight vector $\mathbf w\in\RR^p$ by solving SVMrank
 (\ref{eq:svmrank}), we get a ranking function $r(\mathbf x)\in\RR$,
 but we are not yet able to predict equality $y_i=0$ pairs. To do so,
-we extend SVMrank by we defining a threshold $\tau\in\RR^+$ and a
+we extend SVMrank by defining a threshold $\tau\in\RR^+$ and a
 thresholding function $t_\tau:\RR\rightarrow\{-1,0,1\}$
 \begin{equation}
   \label{eq:threshold}
@@ -517,6 +519,56 @@ define the ranking function
 {-\beta}.
 \end{equation}
 
+
+
+\begin{algorithm}[b!]
+   \caption{SVMcompare}
+   \label{alg:SVMcompare}
+\begin{algorithmic}
+  \STATE {\bfseries Input:} cost $C\in\RR^+$, kernel
+  $\kappa:\RR^p\times \RR^p \rightarrow \RR$, features $\mathbf
+  X,\mathbf X'\in\RR^{n \times p}$, labels $\mathbf y\in\{-1,0,1\}^n$.
+
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}$} $\gets [$
+  \makebox[1cm]{$\mathbf X_1^\intercal$}
+  \makebox[1cm]{$\mathbf X_{-1}'^\intercal$}
+  \makebox[1cm]{$\mathbf X_0^\intercal$}
+  \makebox[1cm]{$\mathbf X_0'^\intercal$}
+  $]^\intercal$.
+
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}'$} $\gets [$
+  \makebox[1cm]{$\mathbf X_1'^\intercal$}
+  \makebox[1cm]{$\mathbf X_{-1}^\intercal$}
+  \makebox[1cm]{$\mathbf X_0'^\intercal$}
+  \makebox[1cm]{$\mathbf X_0^\intercal$}
+  $]^\intercal$.
+
+  \STATE \makebox[0.5cm]{$\mathbf{\tilde y}$} $\gets [$
+  \makebox[1cm]{$\mathbf 1_{|\mathcal I_1|}^\intercal$}
+  \makebox[1cm]{$\mathbf 1_{|\mathcal I_{-1}|}^\intercal$}
+  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
+  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
+  $]^\intercal$.
+
+  \STATE $\mathbf K \gets \proc{KernelMatrix}(
+  \mathbf{\tilde X}, \mathbf{\tilde X'}, \kappa)$.
+
+  \STATE $\mathbf M \gets [ -\mathbf I_m\ \mathbf I_m ]^\intercal$.
+
+  \STATE $\mathbf{\tilde K} \gets \mathbf M^\intercal \mathbf  K \mathbf M$.
+
+  \STATE $\mathbf v,\beta \gets \proc{SVMdual}(
+  \mathbf{\tilde K}, \mathbf{\tilde y}, C)$.
+
+  \STATE $\sv \gets\{i: v_i>0\}$.
+  
+  \STATE {\bfseries Output:} Support vectors $\mathbf{\tilde
+    X}_{\sv },\mathbf{\tilde X}_{\sv }'$, labels
+  $\mathbf{\tilde y}_{\sv }$, bias~$\beta$, dual variables $\mathbf v$.
+
+   \end{algorithmic}
+\end{algorithm}
+
 Let $\mathbf K=[
 \mathbf k_1\cdots \mathbf k_m
 \ \mathbf k_1'\cdots \mathbf k_m']\in\RR^{2m\times 2m}$ be the
@@ -570,8 +622,9 @@ labels. Then the Lagrangian can be written as
   - \mathbf Y \mathbf M^\intercal \mathbf K\mathbf  a - \xi),
 \end{equation}
 where $\mathbf M=[-\mathbf I_m \, \mathbf
-I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$. Solving $\nabla_{\mathbf a} \mathcal
-L=0$ results in the following stationary condition:
+I_m]^\intercal\in\{-1,0,1\}^{2m\times m}$ and $\mathbf I_m$ is the
+identity matrix. Solving $\nabla_{\mathbf a} \mathcal L=0$ results in
+the following stationary condition:
 \begin{equation}
   \label{eq:stationarity}
   \mathbf a = \mathbf M \mathbf Y \mathbf v.
@@ -592,55 +645,6 @@ as for the standard binary SVM. The resulting dual QP is
 which is equivalent to the dual problem of a standard binary SVM with
 kernel $\mathbf{\tilde K} = \mathbf M^\intercal \mathbf K \mathbf
 M\in\RR^{m\times m}$ and labels $\mathbf{\tilde y}\in\{-1,1\}^m$.
-
-
-\begin{algorithm}[b!]
-   \caption{SVMcompare}
-   \label{alg:SVMcompare}
-\begin{algorithmic}
-  \STATE {\bfseries Input:} cost $C\in\RR^+$, kernel
-  $\kappa:\RR^p\times \RR^p \rightarrow \RR$, features $\mathbf
-  X,\mathbf X'\in\RR^{n \times p}$, labels $\mathbf y\in\{-1,0,1\}^n$.
-
-  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}$} $\gets [$
-  \makebox[1cm]{$\mathbf X_1^\intercal$}
-  \makebox[1cm]{$\mathbf X_{-1}'^\intercal$}
-  \makebox[1cm]{$\mathbf X_0^\intercal$}
-  \makebox[1cm]{$\mathbf X_0'^\intercal$}
-  $]^\intercal$.
-
-  \STATE \makebox[0.5cm]{$\mathbf{\tilde X}'$} $\gets [$
-  \makebox[1cm]{$\mathbf X_1'^\intercal$}
-  \makebox[1cm]{$\mathbf X_{-1}^\intercal$}
-  \makebox[1cm]{$\mathbf X_0'^\intercal$}
-  \makebox[1cm]{$\mathbf X_0^\intercal$}
-  $]^\intercal$.
-
-  \STATE \makebox[0.5cm]{$\mathbf{\tilde y}$} $\gets [$
-  \makebox[1cm]{$\mathbf 1_{|\mathcal I_1|}^\intercal$}
-  \makebox[1cm]{$\mathbf 1_{|\mathcal I_{-1}|}^\intercal$}
-  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
-  \makebox[1cm]{$-\mathbf 1_{|\mathcal I_0|}^\intercal$}
-  $]^\intercal$.
-
-  \STATE $\mathbf K \gets \proc{KernelMatrix}(
-  \mathbf{\tilde X}, \mathbf{\tilde X'}, \kappa)$.
-
-  \STATE $\mathbf M \gets [ -\mathbf I_m\ \mathbf I_m ]^\intercal$.
-
-  \STATE $\mathbf{\tilde K} \gets \mathbf M^\intercal \mathbf  K \mathbf M$.
-
-  \STATE $\mathbf v,\beta \gets \proc{SVMdual}(
-  \mathbf{\tilde K}, \mathbf{\tilde y}, C)$.
-
-  \STATE $\sv \gets\{i: v_i>0\}$.
-  
-  \STATE {\bfseries Output:} Support vectors $\mathbf{\tilde
-    X}_{\sv },\mathbf{\tilde X}_{\sv }'$, labels
-  $\mathbf{\tilde y}_{\sv }$, bias~$\beta$, dual variables $\mathbf v$.
-
-   \end{algorithmic}
-\end{algorithm}
 
 So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
 any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
@@ -710,8 +714,8 @@ $\alpha_i=-\tilde y_i v_i$ and $\alpha_i'=\tilde y_i v_i$ are
 recovered using the stationary condition (\ref{eq:stationarity}). The
 learned comparison function $c_1$ remains the same (\ref{eq:compare_general}).
 
-The training procedure is summarized as Algorithm~\ref{alg:SVMcompare}.
-%(SVMcompare). 
+The training procedure is summarized as
+Algorithm~\ref{alg:SVMcompare}, SVMcompare.
 There are two sub-routines: \proc{KernelMatrix} computes
 the $2m\times 2m$ kernel matrix, and \proc{SVMdual} solves the SVM
 dual QP (\ref{eq:svm-dual}). There are two hyper-parameters to tune:
@@ -722,11 +726,11 @@ prediction error on a held-out validation set.
 \section{Results}
 \label{sec:results}
 
-The goal of our learning algorithm is to accurately predict a test set
-of labeled pairs (\ref{eq:min_c}). 
-We test the SVMcompare algorithm alongside two baseline models that
-use SVMrank \citep{ranksvm}. The differences between these algorithms
-are summarized in Table~\ref{tab:models}:
+The goal of learning to compare is to accurately predict a test set of
+labeled pairs (\ref{eq:min_c}). We test the SVMcompare algorithm
+alongside two baseline models that use SVMrank \citep{ranksvm}. The
+differences between these algorithms are summarized in
+Table~\ref{tab:models}:
 
 \begin{description}
 \item[rank] is described in Section~\ref{sec:svmrank}: first we use
@@ -842,9 +846,10 @@ of the optimization problem.
 We discussed the learning to compare problem, which has not yet been
 extensively studied in the machine learning literature. In
 Section~\ref{sec:lp-qp}, we proposed two different formulations for
-max-margin comparison, and proved Lemma~\ref{lemma:feasible}. It
-justifies our proposed SVMcompare algorithm, which uses a binary SVM
-dual QP solver to learn a nonlinear comparison function.
+max-margin comparison, and proved their relationship in
+Lemma~\ref{lemma:feasible}. It justifies our proposed SVMcompare
+algorithm, which uses a binary SVM dual QP solver to learn a nonlinear
+comparison function.
 
 Our results on simulated data clearly showed the importance of
 directly modeling the equality pairs, when they are present. We showed
@@ -855,8 +860,8 @@ many equality pairs, it is clearly advantageaous to use a model such
 as SVMcompare which directly learns from the equality pairs.
 
 For future work, it will be interesting to see if the same results are
-observed in learning to rank data sets. For scaling to very large data
-sets, it will be interesting to try algorithms based on smooth
+observed in learning to rank data sets. For scaling to these very
+large data sets, we would like to try algorithms based on smooth
 discriminative loss functions, such as stochastic gradient descent
 with a logistic loss.
 
@@ -885,12 +890,13 @@ Lacoste-Julien and Hang Li for helpful discussions.
 \begin{figure*}[b!]
   \input{figure-simulation-samples}
   \vskip -1cm
-  \caption{Test error for 3 different simulated patterns $r(\mathbf x)$ where
-    $\mathbf x\in\RR^2$. We randomly generated data sets with half equality
-    and half inequality pairs, and plot test error as a function of
-    training set size $n$ (a vertical line shows the data set which
-    was used in Figure~\ref{fig:norm-level-curves}). Lines show mean
-    and shaded bands show standard deviation over 4 test sets.}
+  \caption{Test error for 3 different simulated patterns $r(\mathbf
+    x)$ where $\mathbf x\in\RR^2$. We randomly generated data sets
+    with $\rho=1/2$ equality and 1/2 inequality pairs, then plotted test
+    error as a function of data set size $n$ (a vertical line
+    shows the data set which was used in
+    Figure~\ref{fig:norm-level-curves}). Lines show mean and shaded
+    bands show standard deviation over 4 test sets.}
   \label{fig:simulation-samples}
 \end{figure*}
 

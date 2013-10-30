@@ -34,7 +34,7 @@ for(i in seq_along(levs)){
 yi.colors <- yi.colors[c("0","1","-1")]
 yi.col <- yi.colors[as.character(yi)]
 
-tikz("figure-norm-data.tex", h=8, w=3)
+tikz("figure-norm-data.tex", h=8, w=3.1)
 
 par(las=1, mar=c(2,1.2,0,1), mfrow=c(3,1), cex=1, omi=c(0,0,0,0))
 plot(X, type="n", asp=1, xlab="", ylab="", xaxt="n", yaxt="n")

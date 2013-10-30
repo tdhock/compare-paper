@@ -8,7 +8,7 @@ model.colors <-
   c(rank="skyblue",
     rank2="blue",
     compare="black",
-    truth="grey",
-    latent="grey") 
+    truth="grey80")
+model.colors[["latent"]] <- model.colors[["truth"]]
 
 
