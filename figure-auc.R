@@ -1,35 +1,32 @@
 works_with_R("3.0.2", plyr="1.8")
 
 load("simulation.roc.RData")
-load("mslr.roc.RData")
+load("sushi.roc.RData")
 
 source("tikz.R")
 source("colors.R")
 
 library(grid)
 
-mslr.roc$auc$norm <- "mslr"
+sushi.roc$auc$norm <- "sushi"
 auc <- rbind(simulation.roc$auc,
-             mslr.roc$auc[,names(simulation.roc$auc)])
-auc <- simulation.roc$auc
-
-out.csv <- subset(auc, fit.name!="mslr")
-names(out.csv)[1] <- "model"
-write.csv(out.csv,file="CompareAUC.csv", row.names=FALSE, quote=FALSE)
+             sushi.roc$auc[,names(simulation.roc$auc)])
 
 labels <- c(l1="1",
             l2="2",
             linf="\\infty")
 labels[] <- sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels)
-labels[["mslr"]] <- "MSLR"
+labels[["sushi"]] <- "sushi"
 makelabel <- function(x)labels[as.character(x)]
 leg <- "function"
-## ggplot(simulation.roc$roc, aes(FPR, TPR))+
-##   geom_path(aes(colour=fit.name, group=interaction(fit.name, seed)))+
-##   facet_grid(norm~prop)+
-##   theme_bw()+
-##   theme(panel.margin=unit(0,"cm"))+
-##   scale_colour_manual(leg,values=model.colors)
+ggplot(sushi.roc$roc, aes(FPR, TPR))+
+  geom_path(aes(colour=fit.name, group=interaction(fit.name, seed)))+
+  facet_grid(.~prop)+
+  theme_bw()+
+  theme(panel.margin=unit(0,"cm"))+
+  scale_colour_manual(leg,values=model.colors)+
+  coord_equal()+
+  geom_abline()
 auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
 
@@ -37,7 +34,7 @@ auc.stats$label <- makelabel(auc.stats$norm)
 br <- c("latent", "truth", "compare", "rank2", "rank")
 boring <- ggplot(auc.stats, aes(prop, mean))+
   geom_ribbon(aes(fill=fit.name,ymin=mean-sd,ymax=mean+sd), alpha=1/4)+
-  geom_line(aes(colour=fit.name),lwd=2)+
+  geom_line(aes(colour=fit.name), lwd=2)+
   facet_grid(.~label)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
