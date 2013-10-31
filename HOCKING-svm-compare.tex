@@ -76,9 +76,12 @@
 %\icmladdress{Unit\'e de Recherche en G\'enomique V\'eg\'etale INRA-CNRS-Universit\'e d'Evry Val d'Essonne, Evry, France}
 %\icmlauthor{Toby Dylan Hocking\footnotemark[1], 
 % Francis Bach}{toby.hocking@inria.fr, francis.bach@inria.fr}
-\aistatsauthor{Toby Dylan Hocking \And Supaporn Spanurattana \And Masashi Sugiyama}
-\aistatsaddress{Department of Computer Science, Tokyo Institute of
-  Technology, Tokyo 152-8552, Japan}
+
+%\aistatsauthor{Toby Dylan Hocking \And Supaporn Spanurattana \And Masashi Sugiyama}
+%\aistatsaddress{Department of Computer Science, Tokyo Institute of Technology, Tokyo 152-8552, Japan}
+
+\aistatsauthor{Anonymous authors}
+\aistatsaddress{Some school}
 
 % You may provide any keywords that you 
 % find helpful for describing your paper; these are used to populate 
@@ -121,14 +124,14 @@ element is better:
 These data are geometrically represented by segments and arrows in the
 top panel of Figure~\ref{fig:norm-data}. 
 
-Comparison data naturally
-arise when considering subjective human evaluations of pairs of
-items. For example, if I were to compare some
+Comparison data naturally arise when considering subjective human
+evaluations of pairs of items. For example, if I were to compare some
 pairs of movies I have watched, I would say \textit{Les Mis\'erables}
 is better than \textit{Star Wars}, and \textit{The Empire Strikes
-  Back} is as good as \textit{Star Wars}. Features $x_i,x_i'$ of the
-movies can be length in minutes, year of theatrical release,
-indicators for genre, actors/actresses, directors, etc.
+  Back} is as good as \textit{Star Wars}. Features $\mathbf
+x_i,\mathbf x_i'$ of the movies can be length in minutes, year of
+theatrical release, indicators for genre, actors/actresses, directors,
+etc.
 
 The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data,
@@ -200,19 +203,18 @@ problem.
 
 \subsection{Compare, reject, and rank}
 
-Comparison is similar to classification with a reject
-option and ranking (Table~\ref{tab:related}). The defining features of the
+Comparison is similar to classification with a reject option and
+ranking (Table~\ref{tab:related}). The defining features of the
 comparison problem that we study in this paper are that inputs are
 pairs $\mathbf x,\mathbf x'\in\RR^p$, and outputs $y\in\{-1,0,1\}$
-include the $y=0$ equality pairs or ties. 
-The statistics literature
+include the $y=0$ equality pairs or ties.  The statistics literature
 contains many probabilistic models for paired comparison experiments,
 some of which directly model ties \citep{davidson-ties}. Such models
 are concerned with accurately ranking a finite number of inputs
 $x\in\{1,\dots,t\}$, so are not directly applicable to the real-valued
-inputs $\mathbf x\in\RR^p$ we consider in this paper. The
-classification with reject option problem is a version of binary
-classification with outputs $y\in\{-1,0,1\}$, where 0 signifies
+inputs $\mathbf x\in\RR^p$ we consider in this paper. Another related
+problem is classification with rejection, a version of
+binary classification with outputs $y\in\{-1,0,1\}$, where 0 signifies
 ``rejection'' or ``no guess'' \citep{reject-option}.
 
 The supervised learning to rank problem has been extensively studied
@@ -225,8 +227,8 @@ was proposed for learning to rank \citep{ranksvm}, and the
 large-margin learning formulation we propose in this article is
 similar. The difference is that we also consider the case where both
 items/documents are judged to be equally good ($y_i=0$).  A boosting
-algorithm has been proposed for this ``ranking with ties'' problem
-\citep{rank-with-ties}, and the authors observed that modeling ties is
+algorithm for this ``ranking with ties'' problem was proposed by
+\citet{rank-with-ties}, who observed that modeling ties is
 more effective when there are more output values. Indeed, ranking data
 sets are often described not in terms of labeled pairs of inputs
 $(\mathbf x_i, \mathbf x_i', y_i)$ but instead single inputs $\mathbf
@@ -647,7 +649,7 @@ M\in\RR^{m\times m}$ and labels $\mathbf{\tilde y}\in\{-1,1\}^m$.
 So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
 any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
 interface in the \texttt{kernlab} package \citep{kernlab}, and our
-code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
+code is available in the \texttt{rankSVMcompare} package on Github.
 
 After obtaining optimal dual variables $\mathbf v\in\RR^m$ as the solution of
 (\ref{eq:svm-dual}), the SVM solver also gives us the optimal bias
@@ -868,9 +870,10 @@ large data sets, we would like to try algorithms based on smooth
 discriminative loss functions, such as stochastic gradient descent
 with a logistic loss.
 
-\textbf{Acknowledgements}: TDH was funded by KAKENHI 23120004, SS by a
-MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
-Lacoste-Julien and Hang Li for helpful discussions.
+\textbf{Acknowledgements}: 
+%TDH was funded by KAKENHI 23120004, SS by a
+%MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
+%Lacoste-Julien and Hang Li for helpful discussions.
 
 \bibliographystyle{abbrvnat}
 \bibliography{refs}
