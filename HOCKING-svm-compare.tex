@@ -155,12 +155,12 @@ data.
 
 The notation and organization of this article is as follows. We use
 bold uppercase letters for matrices such as $\mathbf X, \mathbf K$,
-and bold lowercase letters for their row vectors $\mathbf x_i,
-\mathbf k_i$. In Section~\ref{sec:related} we discuss links with
-related work on classification and ranking, then in
-Section~\ref{sec:svm-compare} we propose a new algorithm:
-SVMcompare. We show results on simulated data in
-Section~\ref{sec:results} and discuss future work in
+and bold lowercase letters for their row vectors $\mathbf x_i, \mathbf
+k_i$. In Section~\ref{sec:related} we discuss links with related work
+on classification and ranking, then in Section~\ref{sec:svm-compare}
+we propose a new algorithm: SVMcompare. We show results on 3
+illustrative simulated data sets and one real learning to rank sushi
+data set in Section~\ref{sec:results}, then discuss future work in
 Section~\ref{sec:conclusions}.
 
 \begin{table}[b!]
@@ -755,12 +755,6 @@ algorithms are summarized in Table~\ref{tab:models}:
   uses $m=n+|\mathcal I_0|$ input pairs.
 \end{description}
 
-In all cases, we fit a $10\times 10$ grid of models to the training
-set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian kernel width
-$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
-the validation set, and then use the test set to estimate the
-generalization ability of the selected model.
-
 We use two evaluation metrics to judge the performance of the models
 on the test pairs: zero-one loss, and area under the ROC curve. Note
 that the ROC curves are calculated by first evaluating the learned
@@ -793,7 +787,9 @@ rate and for $\tau=\infty$ we have 100\% false negative rate
 \end{table}
 
 \subsection{Simulation: norms in 2D}
-We used a simulation to visualize the learned nonlinear ranking 
+\label{sec:simulations}
+
+We used a simulation to visualize the learned nonlinear ranking
 functions in 2D, and to demonstrate that our model can achieve lower
 test error than the baseline SVMrank model, by learning from the
 equality $y_i=0$ pairs.  We generated pairs $\mathbf x_i,\mathbf
@@ -803,7 +799,11 @@ x_i)+\epsilon_i]$, where $t_1$ is the threshold function
 $\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is the
 standard deviation. We picked train, validation, and test sets, each
 with the same number of pairs $n$ and the same proportion $\rho$ of
-equality pairs.
+equality pairs. We fit a $10\times 10$ grid of models to the training
+set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian kernel width
+$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
+the validation set, and then use the test set to estimate the
+generalization ability of the selected model.
 
 In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
 $\rho=1/2$ equality and inequality pairs. We show the training set and
@@ -825,59 +825,6 @@ the rank2 model, which converts the equality $y_i=0$ pairs to
 inequality pairs and then trains SVMrank. The best model is the
 proposed SVMcompare model, which achieves test error as good as the
 true ranking function in the case of $r(\mathbf x)=||\mathbf x||^2_2$.
-
-In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$
-and varied the proportion $\rho$ of equality pairs for the three
-simulated squared norm ranking functions $r$. We use area under the
-ROC curve to evaluate the learned models, and all methods perform
-close to the optimal true ranking function when $r(\mathbf
-x)=||\mathbf x||^2_2$. For the other patterns, it is clear that all
-the methods perform similarly when there are mostly inequality pairs
-($\rho=0.1$), since SVMrank was designed for this type of training
-data. In contrast, when there are mostly equality pairs ($\rho=0.9$),
-the compare and rank2 methods clearly outperform the rank method,
-which ignores the equality pairs. Although there is no difference
-between the rank2 and compare methods when $r(\mathbf x)=||\mathbf
-x||_1^2$, the compare method is slightly better when $r(\mathbf
-x)=||\mathbf x||_\infty^2$. Overall, it is clear that when the data
-contain equality pairs, it is advantageous to use a model such as the
-proposed SVMcompare method which learns from them directly as a part
-of the optimization problem.
-
-%\subsection{Learning to rank data}
-
-\section{Conclusions and future work}
-\label{sec:conclusions}
-
-We discussed the learning to compare problem, which has not yet been
-extensively studied in the machine learning literature. In
-Section~\ref{sec:lp-qp}, we proposed two different formulations for
-max-margin comparison, and proved their relationship in
-Lemma~\ref{lemma:feasible}. It justifies our proposed SVMcompare
-algorithm, which uses a binary SVM dual QP solver to learn a nonlinear
-comparison function.
-
-Our results on simulated data clearly showed the importance of
-directly modeling the equality pairs, when they are present. We showed
-that when there are few equality pairs, as is the usual setup in
-learning to rank problems, the baseline SVMrank algorithm performs as
-well as our proposed SVMcompare algorithm. However, when there are
-many equality pairs, it is clearly advantageous to use a model such
-as SVMcompare which directly learns from the equality pairs.
-
-For future work, it will be interesting to see if the same results are
-observed in learning to rank data sets. For scaling to these very
-large data sets, we would like to try algorithms based on smooth
-discriminative loss functions, such as stochastic gradient descent
-with a logistic loss.
-
-\textbf{Acknowledgements}: 
-%TDH was funded by KAKENHI 23120004, SS by a
-%MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
-%Lacoste-Julien and Hang Li for helpful discussions.
-
-\bibliographystyle{abbrvnat}
-\bibliography{refs}
 
 \begin{figure*}[b!]
   \centering
@@ -919,6 +866,100 @@ with a logistic loss.
     sets.}
   \label{fig:auc}
 \end{figure*}
+
+In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$
+and varied the proportion $\rho$ of equality pairs for the three
+simulated squared norm ranking functions $r$. We use area under the
+ROC curve to evaluate the learned models, and all methods perform
+close to the optimal true ranking function when $r(\mathbf
+x)=||\mathbf x||^2_2$. For the other patterns, it is clear that all
+the methods perform similarly when there are mostly inequality pairs
+($\rho=0.1$), since SVMrank was designed for this type of training
+data. In contrast, when there are mostly equality pairs ($\rho=0.9$),
+the compare and rank2 methods clearly outperform the rank method,
+which ignores the equality pairs. Although there is no difference
+between the rank2 and compare methods when $r(\mathbf x)=||\mathbf
+x||_1^2$, the compare method is slightly better when $r(\mathbf
+x)=||\mathbf x||_\infty^2$. Overall, it is clear that when the data
+contain equality pairs, it is advantageous to use a model such as the
+proposed SVMcompare method which learns from them directly as a part
+of the optimization problem.
+
+\subsection{Learning to rank sushi data}
+
+We downloaded the sushi data set of \citet{object-ranking-methods}
+from \url{http://www.kamishima.net/sushi/}. We used the
+\texttt{sushi3b.5000.10.score} data, which consist of 100 different
+sushis rated by 5000 different people. Each person rated 10 sushis on
+a 5 point scale, which we convert to 5 preference pairs, for a total
+of 17,832 equality $y_i=0$ and 7,168 inequality $y_i\in\{-1,1\}$
+pairs. For each pair $i$ we have features $\mathbf x_i,\mathbf
+x_i'\in\RR^{14}$ consisting of 7 features of the sushi and 7 features
+of the person. Sushi features are style, major, minor, oily, eating
+frequency, price, and selling frequency. Person features are gender, age,
+time, birthplace and current home (we converted Japanese prefecture
+codes to latitude/longitude coordinates).
+
+As in the simulations of Section~\ref{sec:simulations}, we picked
+train, validation, and test sets, each with the same number of pairs
+$n$ and the same proportion $\rho$ of equality pairs. We fit a
+$10\times 7$ grid of models to the training set (cost parameter
+$C=10^{-1},\dots,10^4$, Gaussian kernel width $10^{-5},\dots,10^1$),
+select the model with minimal zero-one loss on the validation set, and
+then use the test set to estimate the generalization ability of the
+selected model.
+
+In Figure~\ref{fig:simulation-samples} we fixed the proportion of
+equality pairs $\rho=1/2$, varied the number of training pairs
+$n\in\{50,\dots, 800\}$, and calculated test error. The relative
+performance of the algorithms is the same as in the simulations: rank
+has the highest test error, rank2 does better, and the proposed
+SVMcompare algorithm has the lowest test error.
+
+In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$,
+varied the proportion $\rho$ of equality pairs, and calculated test
+AUC. The methods perform about the same for extreme values of
+$\rho\in\{0.1,0.9\}$, but the proposed SVMcompare algorithm has a
+higher AUC when the classes are balanced $\rho=1/2$.
+
+
+
+\section{Conclusions and future work}
+\label{sec:conclusions}
+
+We discussed the learning to compare problem, which has not yet been
+extensively studied in the machine learning literature. In
+Section~\ref{sec:lp-qp}, we proposed two different formulations for
+max-margin comparison, and proved their relationship in
+Lemma~\ref{lemma:feasible}. It justifies our proposed SVMcompare
+algorithm, which uses a binary SVM dual QP solver to learn a nonlinear
+comparison function.
+
+Our results on simulated data clearly showed the importance of
+directly modeling the equality pairs, when they are present. We showed
+that when there are few equality pairs, as is the usual setup in
+learning to rank problems, the baseline SVMrank algorithm performs as
+well as our proposed SVMcompare algorithm. However, when there are
+many equality pairs, it is clearly advantageous to use a model such
+as SVMcompare which directly learns from the equality pairs.
+
+For future work, it will be interesting to see if the same results are
+observed in learning to rank data from search engines. For scaling to
+these very large data sets, we would like to try algorithms based on
+smooth discriminative loss functions, such as stochastic gradient
+descent with a logistic loss.
+
+\textbf{Acknowledgements}: 
+%TDH was funded by KAKENHI 23120004, SS by a
+%MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
+%Lacoste-Julien and Hang Li for helpful discussions.
+
+
+
+\bibliographystyle{abbrvnat}
+\bibliography{refs}
+
+
 
 \end{document}
 
