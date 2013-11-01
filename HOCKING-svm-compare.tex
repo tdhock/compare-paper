@@ -98,8 +98,9 @@
   the pair is better, or if there is no significant difference. We
   cast the learning problem as a margin maximization, and show that it
   can be solved by converting it to a standard SVM. We use simulated
-  nonlinear patterns to show that our proposed SVMcompare algorithm
-  outperforms SVMrank when there are equality $y=0$ pairs.
+  nonlinear patterns and a real learning to rank sushi data set to
+  show that our proposed SVMcompare algorithm outperforms SVMrank when
+  there are equality $y=0$ pairs.
 \end{abstract}
 
 \section{Introduction}
@@ -897,7 +898,8 @@ with a logistic loss.
   \input{figure-simulation-samples}
   \vskip -1cm
   \caption{Test error for 3 different simulated patterns $r(\mathbf
-    x)$ where $\mathbf x\in\RR^2$. We randomly generated data sets
+    x)$ where $\mathbf x\in\RR^2$ and one real
+    sushi data set where $\mathbf x\in\RR^{14}$. We randomly generated data sets
     with $\rho=1/2$ equality and 1/2 inequality pairs, then plotted test
     error as a function of data set size $n$ (a vertical line
     shows the data set which was used in
@@ -910,10 +912,11 @@ with a logistic loss.
   \input{figure-auc}
   \vskip -1cm
   \caption{Area under the ROC curve (AUC) for 3 different simulated
-    patterns $r(\mathbf x)$ where $\mathbf x\in\RR^2$. In each
-    simulation we generated $n=400$ pairs, varying the proportion
-    $\rho$ of equality pairs. We plot mean and standard deviation of
-    AUC over 4 test sets.}
+    patterns $r(\mathbf x)$ where $\mathbf x\in\RR^2$ and one real
+    sushi data set where $\mathbf x\in\RR^{14}$. For each data set we
+    picked $n=400$ pairs, varying the proportion $\rho$ of equality
+    pairs. We plot mean and standard deviation of AUC over 4 test
+    sets.}
   \label{fig:auc}
 \end{figure*}
 

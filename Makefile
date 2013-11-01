@@ -51,3 +51,5 @@ sushi.proportion.RData: sushi.proportion.R sushi.pairs.RData svmlight.R
 	R --no-save < $<
 sushi.roc.RData: sushi.roc.R sushi.proportion.RData
 	R --no-save < $<
+sushi.samples.RData: sushi.samples.R svmlight.R sushi.pairs.RData
+	R --no-save < $<

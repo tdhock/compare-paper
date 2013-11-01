@@ -5,6 +5,7 @@ source("Nsamp.R")
 source("colors.R")
 
 load("simulation.samples.RData")
+load("sushi.samples.RData")
 
 ## matrix versions of the norm.
 funs <- list(l2=function(x)rowSums(x*x),
@@ -49,8 +50,13 @@ for(set.id in sets$set.id){
   train.df <- rbind(train.df, data.frame(pair.df, info))
 }
 bayes.df$fit.name <- "truth"
+sushi.err <- sushi.samples$error
+sushi.err$norm <- "sushi"
+sushi.err$set.id <- NA
+sushi.err$percent <- with(sushi.err, error/count*100)
 combined <- rbind(err[,names(bayes.df)],
-                  bayes.df)
+                  bayes.df,
+                  sushi.err[,names(bayes.df)])
 percents <-
   ddply(combined, .(N, fit.name, norm), summarize,
         mean=mean(percent),
@@ -62,7 +68,8 @@ labels <- c(l1="1",
             l2="2",
             linf="\\infty")
 makelabel <- function(x){
-  sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels[as.character(x)])
+  ifelse(x=="sushi", "sushi",
+  sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels[as.character(x)]))
 }
 percents$label <- makelabel(percents$norm)
 err$label <- makelabel(err$norm)

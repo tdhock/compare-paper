@@ -223,7 +223,7 @@ svmlight <- function
     fxdiff <- fnorm(Xip)-fnorm(Xi)
     ifelse(fxdiff < -thresh, -1L,
            ifelse(fxdiff > thresh, 1L, 0L))
-  },threshold=thresh,threshold.error=err.df,sv.df=sv.df)
+  },threshold=thresh,sv.df=sv.df)
 ### List of model fit results. You can do fit$rank(X) with a feature
 ### matrix X to get a vector of learned model predictions (numeric
 ### vector) or fit$compare(Xi, Xip) to get comparison values (integer
