@@ -10,7 +10,7 @@ figure-hard-margin.tex: figure-hard-margin.R tikz.R colors.R
 	R --no-save < $<
 simulation.samples.RData: simulation.samples.R svmlight.R
 	R --no-save < $<
-figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RData tikz.R Nsamp.R colors.R
+figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RData tikz.R Nsamp.R colors.R sushi.samples.RData
 	R --no-save < $<
 figure-norm-level-curves.tex: figure-norm-level-curves.R tikz.R simulation.samples.RData Nsamp.R colors.R
 	R --no-save < $<
@@ -22,7 +22,7 @@ figure-simulation-proportion.tex: figure-simulation-proportion.R colors.R simula
 	R --no-save < $<
 simulation.roc.RData: simulation.roc.R simulation.proportion.RData
 	R --no-save < $<
-figure-auc.tex: figure-auc.R simulation.roc.RData tikz.R colors.R
+figure-auc.tex: figure-auc.R simulation.roc.RData tikz.R colors.R sushi.roc.RData
 	R --no-save < $<
 mslr.roc.RData: mslr.roc.R mslr.proportion.RData
 	R --no-save < $<
