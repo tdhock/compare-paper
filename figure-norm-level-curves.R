@@ -86,7 +86,8 @@ p <- ggplot()+
                      values=c(truth=1/3, latent=1/3,learned=1))+
   facet_grid(.~fun)+
   theme_bw()+
-  theme(panel.margin=unit(0,"cm"))+
+  theme(panel.margin=unit(0,"cm"),
+        panel.grid=element_blank())+
   coord_equal()+
   ## geom_contour(aes(x1, x2, z=rank, colour=what, group=what),
   ##              data=toplot, size=1)+

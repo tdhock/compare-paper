@@ -224,7 +224,8 @@ mplot <- ggplot()+
   })+ 
   theme_bw()+
   ##geom_point(aes(distance, angle), data=model.sv, size=1, pch=1)+
-  theme(panel.margin=unit(0,"cm"))+
+  theme(panel.margin=unit(0,"cm"),
+        panel.grid=element_blank())+
   xlab("difference feature 1")+
   ylab("difference feature 2")+
   guides(colour="none")

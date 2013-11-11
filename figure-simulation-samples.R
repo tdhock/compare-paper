@@ -83,7 +83,8 @@ boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   ##geom_point(aes(N, error/count*100, colour=fit.name), data=err)+
   facet_grid(.~label)+
   theme_bw()+
-  theme(panel.margin=unit(0,"cm"))+
+  theme(panel.margin=unit(0,"cm"),
+        panel.grid=element_blank())+
   scale_colour_manual(leg,values=model.colors)+
   scale_fill_manual(leg,values=model.colors)+
   ylab("percent incorrectly\npredicted test pairs")+

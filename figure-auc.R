@@ -37,7 +37,8 @@ boring <- ggplot(auc.stats, aes(prop, mean))+
   geom_line(aes(colour=fit.name), lwd=2)+
   facet_grid(.~label)+
   theme_bw()+
-  theme(panel.margin=unit(0,"cm"))+
+  theme(panel.margin=unit(0,"cm"),
+        panel.grid=element_blank())+
   xlab("proportion of equality pairs")+
   scale_colour_manual(leg,values=model.colors,breaks=br)+
   scale_fill_manual(leg,values=model.colors,breaks=br)+
