@@ -1,12 +1,12 @@
 \documentclass{article}
-\usepackage{aistats2014} 
+\usepackage{fullpage}
+%\usepackage{icml2014}
 \usepackage{listings}
 \usepackage{clrscode}
 \usepackage[table]{xcolor}
 \usepackage{array}
 \usepackage{slashbox}
 \usepackage{multirow}
-%\usepackage{fullpage}
 \usepackage{tikz}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
@@ -14,6 +14,11 @@
 \usepackage{stfloats}
 \usepackage{float}
 \newcommand{\sv}{\textsc{sv}}
+
+\newcommand{\changed}[1]{
+  #1
+  %\textcolor{red}{#1}
+}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
@@ -44,7 +49,7 @@
 % For algorithms
 \usepackage{algorithm}
 \usepackage{algorithmic}
-\usepackage{hyperref}
+%\usepackage{hyperref}
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
 
@@ -63,8 +68,8 @@
 \definecolor{pastelblue}{RGB}{213,229,255}
 \newcolumntype{a}{>{\columncolor{lightgray}}c}
 
-\twocolumn[
-\aistatstitle{Support vector comparison machines}
+%\twocolumn[
+%\icmltitle{Support vector comparison machines}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
@@ -80,15 +85,19 @@
 %\aistatsauthor{Toby Dylan Hocking \And Supaporn Spanurattana \And Masashi Sugiyama}
 %\aistatsaddress{Department of Computer Science, Tokyo Institute of Technology, Tokyo 152-8552, Japan}
 
-\aistatsauthor{Anonymous authors}
-\aistatsaddress{Some school}
+%\icmlauthor{Anonymous authors}{foo@bar.com}
+%\icmladdress{Some school}
 
 % You may provide any keywords that you 
 % find helpful for describing your paper; these are used to populate 
 % the "keywords" metadata in the PDF but will not be shown in the document
 
-\vskip 0.3in
-]
+%\vskip 0.3in
+%]
+
+\title{Support vector comparison machines}
+\author{Toby Dylan Hocking, Supaporn Spanurattana, Masashi Sugiyama}
+\maketitle
 
 \begin{abstract}
   In ranking problems, the goal is to learn a ranking function
@@ -102,6 +111,9 @@
   show that our proposed SVMcompare algorithm outperforms SVMrank when
   there are equality $y=0$ pairs.
 \end{abstract}
+
+\tableofcontents
+\newpage
 
 \section{Introduction}
 
@@ -172,8 +184,7 @@ Section~\ref{sec:conclusions}.
     $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
     $y\in\{-1,0,1\}$ &Reject option& this work\\ \hline
   \end{tabular}
-  \caption{\label{tab:related} Comparison is similar to ranking 
-    and classification with reject option.}
+  \caption{\label{tab:related} Comparison (this work) is similar to previous work on ranking and classification with reject option.}
 \end{table}
 
 \section{Related work}
@@ -193,7 +204,7 @@ problem.
     $\mathbf x_i,\mathbf x_i'\in\RR^p$ are segments for $y_i=0$ and
     arrows for $y_i\in\{-1,1\}$. The level curves of the ranking
     function $r(\mathbf x)=||\mathbf x||_2^2$ are grey, and
-    differences $|r(\mathbf x)-r(\mathbf x')|\leq 1$ are considered
+    differences $|r(\mathbf x')-r(\mathbf x)|\leq 1$ are considered
     insignificant ($y_i=0$). \textbf{Middle}: in the enlarged feature
     space, the ranking function is linear: $r(\mathbf x)=\mathbf
     w^\intercal \Phi(\mathbf x)$. \textbf{Bottom}: two symmetric
@@ -219,8 +230,8 @@ binary classification with outputs $y\in\{-1,0,1\}$, where 0 signifies
 ``rejection'' or ``no guess'' \citep{reject-option}.
 
 The supervised learning to rank problem has been extensively studied
-in the machine learning literature \citep{learning-to-rank,
-  object-ranking-methods}, and is similar to the supervised comparison
+in the machine learning literature \citep{object-ranking-methods,
+  learning-to-rank}, and is similar to the supervised comparison
 problem we consider in this paper. A Bayesian model which can be
 applied to learning to rank is TrueSkill \citep{trueskill}, a
 generalization of the Elo chess rating system. The SVMrank algorithm
@@ -229,14 +240,23 @@ large-margin learning formulation we propose in this article is
 similar. The difference is that we also consider the case where both
 items/documents are judged to be equally good ($y_i=0$).  A boosting
 algorithm for this ``ranking with ties'' problem was proposed by
-\citet{rank-with-ties}, who observed that modeling ties is
-more effective when there are more output values. Indeed, ranking data
-sets are often described not in terms of labeled pairs of inputs
-$(\mathbf x_i, \mathbf x_i', y_i)$ but instead single inputs $\mathbf
-x_i$ with ordinal labels $y_i\in\{1,\dots,k\}$, where $k$ is the
-number of integral output values. In that case, one can use Support
-Vector Ordinal Regression \citep{ordinal}, which has a large-margin
-learning formulation similar to the one we propose in this paper.
+\citet{rank-with-ties}, who observed that modeling ties is more
+effective when there are more output values. 
+
+\changed{Ranking data sets are often described not in terms of
+  labeled pairs of inputs $(\mathbf x_i, \mathbf x_i', y_i)$ but
+  instead single inputs $\mathbf x_i$ with ordinal labels
+  $y_i\in\{1,\dots,k\}$, where $k$ is the number of integral output
+  values. Support Vector Ordinal Regression \citep{ordinal} has a
+  large-margin learning formulation specifically designed for these
+  data. Another approach is to first convert the inputs to a database
+  of labeled pairs, and then learn a ranking model such as the
+  SVMcompare model we propose in this paper. \citet{sv-survival}
+  observed that directly using a regression model gives better
+  performance than ranking models for survival data. However, in this
+  paper we limit ourselves to ranking models and focus on answering
+  the question, ``how can we train a model using the equality $y_i=0$
+  pairs when they are present?''}
 
 % When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 % problem is known as learning a relation \citep{relations}. In this
@@ -486,11 +506,15 @@ variables are scaled in a pre-processing step, we have observed that
 the solutions to the LP and QP are equivalent (right panel of
 Figure~\ref{fig:hard-margin}).
 
-Lemma~\ref{lemma:feasible} is very useful in practice. It means that a
-ranking function $r$ can be learned on comparison data by first
-solving a standard binary SVM, and then transforming the solution. We
-use this result in the next section to build a general support vector
-algorithm for comparison data.
+Lemma~\ref{lemma:feasible} establishes the fact that one can learn a
+ranking function $r$ and a corresponding comparison function $c_1$
+(\ref{eq:compare_general}) by solving either the LP
+(\ref{eq:max-margin-lp}) or the QP (\ref{eq:max-margin-qp}). To make
+corresponding learning problems for non-separable data, one can add
+slack variables to either the QP or the LP. In the next section, we
+pursue only the QP, since it leads to a dual problem with a sparse
+solution that can be solved by any standard SVM solver such as libsvm
+\citep{libsvm}.
 
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
@@ -685,6 +709,22 @@ prediction error on a held-out validation set.
 \section{Results}
 \label{sec:results}
 
+TODO: chess.com data.
+% Alors sinon le moyen tryhard et ce que j'ai moi c'est ca
+% https://shop.chessbase.com/en/products/mega_database_2014. C'est la
+% database de toutes les parties qui ont été joué depuis a peu pres le
+% debut des temps.
+% Elle est en torrent ici
+% http://thepiratebay.se/torrent/9381138/Chessbase_Mega_Database_2014_[German_English]
+% Pour l'ouvrir il faut chessbase, le logiciel reference. Il est en
+% torrent la http://thepiratebay.se/torrent/8443450/Chessbase_12
+% Et la il va trouver une base de toutes les parties et leurs resultats.
+% Juste les elos sont updates tous les quatre mois a peu pres donc c'est
+% pas les elos en live live mais bon c est deja bien.
+
+% > Ce qu'il veut c'est juste les resultats de rencontre entre joueurs. Un
+% > dump de la base de donnees de chess.com ca serait parfait...
+
 \begin{table}[b!]
   \centering
   \begin{tabular}{r|cc|cc|}
@@ -755,13 +795,19 @@ algorithms are summarized in Table~\ref{tab:models}:
   uses $m=n+|\mathcal I_0|$ input pairs.
 \end{description}
 
-We use two evaluation metrics to judge the performance of the models
-on the test pairs: zero-one loss, and area under the ROC curve. Note
-that the ROC curves are calculated by first evaluating the learned
-ranking function $r(\mathbf x)$ at each test point $\mathbf x$, and
-then varying the threshold $\tau$ of the comparison function $c_\tau$
-(\ref{eq:compare_general}). For $\tau=0$ we have 100\% false positive
-rate and for $\tau=\infty$ we have 100\% false negative rate
+For each experiment, there are train, validation, and test sets each
+drawn from the same set of examples. We fit a $10\times 10$ grid of
+models to the training set (cost parameter $C=10^{-3},\dots,10^3$,
+Gaussian kernel width $2^{-7},\dots,2^4$), and select the model using
+the validation set. We use two evaluation metrics to judge the
+performance of the models: zero-one loss and area under the ROC curve
+(AUC).
+
+Note that the ROC curves are calculated by first evaluating the
+learned ranking function $r(\mathbf x)$ at each test point $\mathbf
+x$, and then varying the threshold $\tau$ of the comparison function
+$c_\tau$ (\ref{eq:compare_general}). For $\tau=0$ we have 100\% false
+positive rate and for $\tau=\infty$ we have 100\% false negative rate
 (Table~\ref{tab:evaluation}).
 
 \begin{table}[b!]
@@ -786,45 +832,44 @@ rate and for $\tau=\infty$ we have 100\% false negative rate
   \label{tab:evaluation}
 \end{table}
 
-\subsection{Simulation: norms in 2D}
+\subsection{Simulation: squared norms in 2D}
 \label{sec:simulations}
 
 We used a simulation to visualize the learned nonlinear ranking
-functions in 2D, and to demonstrate that our model can achieve lower
-test error than the baseline SVMrank model, by learning from the
-equality $y_i=0$ pairs.  We generated pairs $\mathbf x_i,\mathbf
-x_i'\in[-3,3]^2$ and noisy labels $y_i=t_1[r(\mathbf x'_i)-r(\mathbf
-x_i)+\epsilon_i]$, where $t_1$ is the threshold function
-(\ref{eq:threshold}), $r$ is the latent ranking function,
-$\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is the
-standard deviation. We picked train, validation, and test sets, each
-with the same number of pairs $n$ and the same proportion $\rho$ of
-equality pairs. We fit a $10\times 10$ grid of models to the training
-set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian kernel width
-$2^{-7},\dots,2^4$), select the model with minimal zero-one loss on
-the validation set, and then use the test set to estimate the
-generalization ability of the selected model.
+functions in a $p=2$ dimensional feature space. We generated pairs
+$\mathbf x_i,\mathbf x_i'\in[-3,3]^2$ and noisy labels
+$y_i=t_1[r(\mathbf x'_i)-r(\mathbf x_i)+\epsilon_i]$, where $t_1$ is
+the threshold function (\ref{eq:threshold}), $r$ is the latent ranking
+function, $\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is
+the standard deviation. We picked train, validation, and test sets,
+each with the same number of pairs $n$ and the same proportion $\rho$
+of equality pairs. We selected the model with minimum zero-one loss on
+the validation set.
 
-In Figure~\ref{fig:norm-level-curves} we fixed $n=100$ pairs, with
-$\rho=1/2$ equality and inequality pairs. We show the training set and
-the level curves of the ranking functions learned by the SVMrank and
-SVMcompare models. It is clear that the rank model does not accurately
-recover the true ranking function $r(\mathbf x)=||\mathbf x||_1^2$,
-since it does not use the equality $y_i=0$ pairs. In contrast, the
-compare and rank2 methods which exploit the equality $y_i=0$ pairs are
-able to recover a ranking function that is closer to the true $r$.
+In Figure~\ref{fig:norm-level-curves} we defined the true ranking
+function $r(\mathbf x)=||\mathbf x||_1^2$, then picked $n=100$ pairs,
+with $\rho=1/2$ equality and inequality pairs. We show the training
+set and the level curves of the ranking functions learned by the
+SVMrank and SVMcompare models. It is clear that the true ranking
+function $r$ is not accurately recovered by the rank model, since it
+does not use the equality $y_i=0$ pairs. In contrast, the compare and
+rank2 methods which exploit the equality $y_i=0$ pairs are able to
+recover a ranking function that is closer to the true $r$.
 
-In Figure~\ref{fig:simulation-samples} we fixed the proportion of
-equality pairs $\rho=1/2$, varied the number of training pairs
-$n\in\{50,\dots, 800\}$, and tested three simulated ranking functions
-$r(\mathbf x)=||\mathbf x||^2_j$ for $j\in\{1,2,\infty\}$. In general,
-the test error of all models decreases as training set size $n$
-increases. The model with the highest test error is the rank model,
-which does not use the equality $y_i=0$ pairs. The next best model is
-the rank2 model, which converts the equality $y_i=0$ pairs to
-inequality pairs and then trains SVMrank. The best model is the
-proposed SVMcompare model, which achieves test error as good as the
-true ranking function in the case of $r(\mathbf x)=||\mathbf x||^2_2$.
+We also used the simulations to demonstrate that our model can achieve
+lower test error than the baseline SVMrank model, by learning from the
+equality $y_i=0$ pairs. In Figure~\ref{fig:simulation-samples} we
+fixed the proportion of equality pairs $\rho=1/2$, varied the number
+of training pairs $n\in\{50,\dots, 800\}$, and tested three simulated
+ranking functions $r(\mathbf x)=||\mathbf x||^2_j$ for
+$j\in\{1,2,\infty\}$. In general, the test error of all models
+decreases as training set size $n$ increases. The model with the
+highest test error is the rank model, which does not use the equality
+$y_i=0$ pairs. The next best model is the rank2 model, which converts
+the equality $y_i=0$ pairs to inequality pairs and then trains
+SVMrank. The best model is the proposed SVMcompare model, which
+achieves test error as good as the true ranking function in the case
+of $r(\mathbf x)=||\mathbf x||^2_2$.
 
 \begin{figure*}[b!]
   \centering
@@ -869,26 +914,27 @@ true ranking function in the case of $r(\mathbf x)=||\mathbf x||^2_2$.
 
 In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$
 and varied the proportion $\rho$ of equality pairs for the three
-simulated squared norm ranking functions $r$. We use area under the
-ROC curve to evaluate the learned models, and all methods perform
-close to the optimal true ranking function when $r(\mathbf
-x)=||\mathbf x||^2_2$. For the other patterns, it is clear that all
-the methods perform similarly when there are mostly inequality pairs
-($\rho=0.1$), since SVMrank was designed for this type of training
-data. In contrast, when there are mostly equality pairs ($\rho=0.9$),
-the compare and rank2 methods clearly outperform the rank method,
-which ignores the equality pairs. Although there is no difference
-between the rank2 and compare methods when $r(\mathbf x)=||\mathbf
-x||_1^2$, the compare method is slightly better when $r(\mathbf
-x)=||\mathbf x||_\infty^2$. Overall, it is clear that when the data
-contain equality pairs, it is advantageous to use a model such as the
-proposed SVMcompare method which learns from them directly as a part
-of the optimization problem.
+simulated squared norm ranking functions $r$. We select the model with
+maximum area under the validation set ROC curve, then use test set AUC
+to evaluate the learned models. All methods perform close to the
+optimal true ranking function when $r(\mathbf x)=||\mathbf
+x||^2_2$. For the other patterns, it is clear that all the methods
+perform similarly when there are mostly inequality pairs ($\rho=0.1$),
+since SVMrank was designed for this type of training data. In
+contrast, when there are mostly equality pairs ($\rho=0.9$), the
+compare and rank2 methods clearly outperform the rank method, which
+ignores the equality pairs. \changed{It is also clear that the rank2 and
+compare methods perform similarly in terms of test AUC.}
+
+\changed{Overall from the simulations, it is clear that when the data contain
+equality pairs, it is advantageous to use a model such as the proposed
+SVMcompare method which learns from them directly as a part of the
+optimization problem.}
 
 \subsection{Learning to rank sushi data}
 
 We downloaded the sushi data set of \citet{object-ranking-methods}
-from \url{http://www.kamishima.net/sushi/}. We used the
+from \texttt{http://www.kamishima.net/sushi/}. We used the
 \texttt{sushi3b.5000.10.score} data, which consist of 100 different
 sushis rated by 5000 different people. Each person rated 10 sushis on
 a 5 point scale, which we convert to 5 preference pairs, for a total
@@ -902,12 +948,10 @@ codes to latitude/longitude coordinates).
 
 As in the simulations of Section~\ref{sec:simulations}, we picked
 train, validation, and test sets, each with the same number of pairs
-$n$ and the same proportion $\rho$ of equality pairs. We fit a
-$10\times 7$ grid of models to the training set (cost parameter
-$C=10^{-1},\dots,10^4$, Gaussian kernel width $10^{-5},\dots,10^1$),
-select the model with minimal zero-one loss on the validation set, and
-then use the test set to estimate the generalization ability of the
-selected model.
+$n$ and the same proportion $\rho$ of equality pairs. We fit a grid of
+models to the training set, select the model with
+minimal zero-one loss on the validation set, and then use the test set
+to estimate the generalization ability of the selected model.
 
 In Figure~\ref{fig:simulation-samples} we fixed the proportion of
 equality pairs $\rho=1/2$, varied the number of training pairs
@@ -918,12 +962,15 @@ SVMcompare algorithm has the lowest test error.
 
 In Figure~\ref{fig:auc} we fixed the number of training pairs $n=400$,
 varied the proportion $\rho$ of equality pairs, and calculated test
-AUC. The methods perform about the same for extreme values of
-$\rho\in\{0.1,0.9\}$, but the proposed SVMcompare algorithm has a
-higher AUC when the classes are balanced $\rho=1/2$.
+AUC. \changed{Like in the $r(\mathbf x)=||\mathbf x||_2^2$ simulation,
+  test AUC is about the same for each of the models
+  considered. Perhaps this is because they are all able to learn a
+  nearly optimal ranking function for this problem.}
 
-
-
+\changed{Overall from the sushi data, it is clear that the proposed SVMcompare
+model performs better than the SVMrank methods in terms of test error,
+and it performs as well as the SVMrank methods in terms of test AUC.
+}
 \section{Conclusions and future work}
 \label{sec:conclusions}
 
@@ -933,16 +980,19 @@ Section~\ref{sec:lp-qp}, we proposed two different formulations for
 max-margin comparison, and proved their relationship in
 Lemma~\ref{lemma:feasible}. It justifies our proposed SVMcompare
 algorithm, which uses a binary SVM dual QP solver to learn a nonlinear
-comparison function.
+comparison function. \changed{In future work it will be interesting to explore
+the learning capability of a kernelized version of the LP
+(\ref{eq:max-margin-lp}) with slack variables added to the objective
+function.}
 
 Our experimental results on simulated and real data clearly showed the
 importance of directly modeling the equality pairs, when they are
-present. We showed that when there are few equality pairs, as is the
-usual setup in learning to rank problems, the baseline SVMrank
-algorithm performs as well as our proposed SVMcompare
-algorithm. However, when there are many equality pairs, it is clearly
-advantageous to use a model such as SVMcompare which directly learns
-from the equality pairs.
+present. We showed in Figure~\ref{fig:auc} that when there are few
+equality pairs, as is the usual setup in learning to rank problems,
+the baseline SVMrank algorithm performs as well as our proposed
+SVMcompare algorithm. However, when there are many equality pairs, it
+is clearly advantageous to use a model such as SVMcompare which
+directly learns from the equality pairs.
 
 For future work, it will be interesting to see if the same results are
 observed in learning to rank data from search engines. For scaling to
@@ -950,12 +1000,16 @@ these very large data sets, we would like to try algorithms based on
 smooth discriminative loss functions, such as stochastic gradient
 descent with a logistic loss.
 
-\textbf{Acknowledgements}: 
-%TDH was funded by KAKENHI 23120004, SS by a
-%MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
-%Lacoste-Julien and Hang Li for helpful discussions.
+%\newpage
+%\textbf{Acknowledgements}: 
+\section*{Acknowledgements}
+TDH was funded by KAKENHI 23120004, SS by a
+MEXT scholarship, and MS by KAKENHI 26700022. 
+%\newpage
+Thanks%!
+ to Simon Lacoste-Julien and Hang Li for helpful discussions.
 
-
+%\newpage
 
 \bibliographystyle{abbrvnat}
 \bibliography{refs}

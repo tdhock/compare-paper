@@ -1,5 +1,8 @@
-works_with_R("3.0.2", rankSVMcompare="2013.9.3", ggplot2="0.9.3.1")
+works_with_R("3.0.2", rankSVMcompare="2013.10.25", ggplot2="0.9.3.1",
+             doMC="1.3.2")
+registerDoMC()
 
+source("calc.roc.R")
 source("svmlight.R")
 
 funs <- list(l2=function(x)sum(x*x),
@@ -38,13 +41,12 @@ all.ranks <- data.frame()
 unused.err <- data.frame()
 data.list <- list()
 test.rank.list <- list()
-props <- seq(0.1, 0.9, by=0.1)
+props <- seq(0.1, 0.9, by=0.2)
 N <- 400
 for(prop in props){
   for(seed in 1:4){
     set.seed(seed)
     norm.list <- list()
-    test.rank.norms <- list()
     for(norm in names(pair.sets)){
       Pairs <- pair.sets[[norm]]
       is.zero <- Pairs$yi == 0
@@ -106,11 +108,9 @@ print(segPlot)
       Pair.sets <- norm.list[[norm]]
       err.df <- data.frame()
       Cvals <- 10^seq(-3,3,l=10)
-      models <- list()
       kvals <- 2^seq(-7, 4, l=10)
       model.df <- expand.grid(C=Cvals, k.width=kvals)
-      for(model.i in 1:nrow(model.df)){
-      ##for(model.i in 1:2){
+      models <- foreach(model.i=1:nrow(model.df))%dopar%{
         model <- model.df[model.i,]
         Cval <- model$C
         k.width <- model$k.width
@@ -118,46 +118,49 @@ print(segPlot)
         ##ker <- laplacedot(k.width)
         ## cat(sprintf("%4d / %4d C=%5.2f k.width=%5.2f\n",
         ##             model.i, nrow(model.df), Cval, k.width))
-        fits <- list(compare=softCompareQP(Pair.sets$train, ker, C=Cval),
+        list(compare=softCompareQP(Pair.sets$train, ker, C=Cval),
                      rank=svmlight(Pair.sets$train, Cval, k.width),
         rank2=svmlight(Pair.sets$train, Cval, k.width, equality="bothpairs"))
-        models[[model.i]] <- fits
-        for(fit.name in names(fits)){
+      }
+      ## Quantify their error on the train and validation sets.
+      err.df <- foreach(model.i=seq_along(models), .combine=rbind)%dopar%{
+        print(model.i)
+        fits <- models[[model.i]]
+        mInfo <- model.df[model.i,]
+        Cval <- mInfo$C
+        k.width <- mInfo$k.width
+        foreach(fit.name=names(fits), .combine=rbind)%do%{
           fit <- fits[[fit.name]]
-          for(set in c("train","validation")){
+          foreach(set=c("train","validation","test"), .combine=rbind)%do%{
             s <- Pair.sets[[set]]
+            rank.mat <- cbind(fit$rank(s$Xi), fit$rank(s$Xip))
+            roc.info <- calc.roc(rank.mat, s$yi)
             pred <- fit$predict(s$Xi, s$Xip)
             true <- s$yi
-            err.df <- rbind(err.df, {
-              data.frame(FpFnInv(true, pred),
-                         Cval, k.width, set, norm, fit.name)
-            })
+            data.frame(FpFnInv(true, pred), auc=roc.info$auc,
+                       Cval, k.width, set, fit.name)
           }
         }
       }
       ## train/validation error curves.
-      validation.big <- subset(err.df, set=="validation")
-      validation.dfs <- split(validation.big, validation.big$fit.name)
       f <- funs[[norm]]
       rank.df <- data.frame(X.grid, rank=apply(X.grid, 1, f), what="latent")
       chosen.df <- data.frame()
-      unused <- Pair.sets$test
-      for(fit.name in names(validation.dfs)){
-        validation.err <- validation.dfs[[fit.name]]
+      for(what in levels(err.df$fit.name)){
+        validation.err <- subset(err.df, what==fit.name & set=="validation")
+        test.err <- subset(err.df, what==fit.name & set=="test")
         chosen <- which.min(validation.err$error)
+        ## Select model with max AUC on validation set:
+        chosen <- which.max(validation.err$auc)
         chosen.df <- rbind(chosen.df, validation.err[chosen,])
-        fit <- models[[chosen]][[fit.name]]
-        ## Evaluate the rank on the test points, for ROC analysis.
-        test.ranks <- with(unused, cbind(Xi=fit$rank(Xi), Xip=fit$rank(Xip)))
-       test.rank.norms[[norm]][[fit.name]] <- test.ranks
+        fit <- models[[chosen]][[what]]
         ## Evaluate the rank on a grid, for drawing contour lines.
         r <- fit$rank(X.grid)
         rank.df <- rbind(rank.df, {
-          data.frame(X.grid, rank=r-min(r), what=fit.name)
+          data.frame(X.grid, rank=r-min(r), what)
         })
-        yhat <- with(unused, fit$predict(Xi, Xip))
         unused.err <- rbind(unused.err, {
-          data.frame(prop, seed, norm, fit.name, FpFnInv(unused$yi, yhat))
+          data.frame(prop, seed, norm, test.err[chosen,])
         })
       }
   overfitPlot <- ggplot(err.df, aes(log2(Cval), error, colour=fit.name))+
@@ -174,22 +177,18 @@ print(segPlot)
     theme(panel.margin=unit(0,"cm"))+
     facet_grid(.~what)
   print(normContour)
-    test.rank.list[[as.character(prop)]][[as.character(seed)]] <-
-      test.rank.norms
     data.list[[as.character(prop)]][[as.character(seed)]] <- norm.list
       ## if the optimal model occurs on the min/max of the validationed
       ## hyperparameters, then this is probably sub-optimal and we need to
       ## define a larger grid.
       ##stopifnot(! validation.err[chosen,"Cval"] %in% range(Cvals))
       ##stopifnot(! validation.err[chosen,"k.width"] %in% range(kvals))
-      
       all.ranks <- rbind(all.ranks, data.frame(rank.df, norm, seed, prop))
     } ## end norm
   }
 }
 
 simulation.proportion <-
-  list(rank=all.ranks, error=unused.err, data=data.list,
-       test.rank=test.rank.list)
+  list(rank=all.ranks, error=unused.err, data=data.list)
 
 save(simulation.proportion, file="simulation.proportion.RData")

@@ -36,11 +36,11 @@ for(prop in names(tr)){
       this.roc$TPR <- 1-this.roc$FNR
       boxes <- ddply(this.roc, .(TPR), summarize, min=min(FPR), max=max(FPR))
       ## Plot to verify AUC calculation from this ROC curve.
-      
-      ## ggplot()+
-      ##   geom_path(aes(FPR, TPR), data=this.roc)+
-      ##   geom_segment(aes(min,TPR,xend=max,yend=TPR),
-      ##                data=boxes,colour="red",lwd=2)
+      p <- ggplot()+
+        geom_path(aes(FPR, TPR), data=this.roc)+
+        geom_segment(aes(min,TPR,xend=max,yend=TPR),
+                     data=boxes,colour="red",lwd=2)
+      print(p)
       auc <- rbind(auc, data.frame(info, auc=sum(with(boxes, (max-min)*TPR))))
       roc <- rbind(roc, this.roc)
     }

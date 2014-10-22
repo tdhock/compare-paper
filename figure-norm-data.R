@@ -71,14 +71,17 @@ pch.arr <- 1
 points(Xi[lab.i,], pch=pch.arr)
 points(Xip[lab.i,], pch=pch.arr)
 ## y_20=-1, we label to the left.
-draw <- function(i, off){
-  text(Xi[i,,drop=FALSE]+off, labels=sprintf("$\\mathbf x_{%d}$",i))
+draw <- function(i, off, lab=""){
+  text(Xi[i,,drop=FALSE]+off, labels=sprintf("$\\mathbf x_{%d}%s$",i, lab))
   text(Xip[i,,drop=FALSE]+off, labels=sprintf("$\\mathbf x_{%d}'$",i))
 }
 draw(20,c(-1/4, -1/8))
 
 ## y_1=1, we label to the right.
 draw(1, c(1/4, 0))
+     paste0("=\\left[\\begin{array}{c}",
+            "x_{1,1} \\ x_{1,2}",
+            "\\end{array}\\right]")
 
 ## y_11=0, we label below.
 draw(11, c(0,-1/4))

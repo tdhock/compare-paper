@@ -1,16 +1,16 @@
 works_with_R("3.0.2", plyr="1.8")
 
-load("simulation.roc.RData")
-load("sushi.roc.RData")
+load("simulation.proportion.RData")
+load("sushi.proportion.RData")
 
 source("tikz.R")
 source("colors.R")
 
 library(grid)
 
-sushi.roc$auc$norm <- "sushi"
-auc <- rbind(simulation.roc$auc,
-             sushi.roc$auc[,names(simulation.roc$auc)])
+sushi.proportion$error$norm <- "sushi"
+auc <- rbind(simulation.proportion$error,
+             sushi.proportion$error[,names(simulation.proportion$error)])
 
 labels <- c(l1="1",
             l2="2",
@@ -19,14 +19,6 @@ labels[] <- sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels)
 labels[["sushi"]] <- "sushi"
 makelabel <- function(x)labels[as.character(x)]
 leg <- "function"
-ggplot(sushi.roc$roc, aes(FPR, TPR))+
-  geom_path(aes(colour=fit.name, group=interaction(fit.name, seed)))+
-  facet_grid(.~prop)+
-  theme_bw()+
-  theme(panel.margin=unit(0,"cm"))+
-  scale_colour_manual(leg,values=model.colors)+
-  coord_equal()+
-  geom_abline()
 auc.stats <- ddply(auc, .(fit.name, norm, prop), summarize,
                    mean=mean(auc), sd=sd(auc))
 

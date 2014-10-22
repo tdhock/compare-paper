@@ -16,13 +16,13 @@ figure-norm-level-curves.tex: figure-norm-level-curves.R tikz.R simulation.sampl
 	R --no-save < $<
 simulation.RData: simulation.R svmlight.R
 	R --no-save < $<
-simulation.proportion.RData: simulation.proportion.R
+simulation.proportion.RData: simulation.proportion.R calc.roc.R svmlight.R
 	R --no-save < $<
 figure-simulation-proportion.tex: figure-simulation-proportion.R colors.R simulation.proportion.RData
 	R --no-save < $<
 simulation.roc.RData: simulation.roc.R simulation.proportion.RData
 	R --no-save < $<
-figure-auc.tex: figure-auc.R simulation.roc.RData tikz.R colors.R sushi.roc.RData
+figure-auc.tex: figure-auc.R simulation.proportion.RData tikz.R colors.R sushi.proportion.RData
 	R --no-save < $<
 mslr.roc.RData: mslr.roc.R mslr.proportion.RData
 	R --no-save < $<
