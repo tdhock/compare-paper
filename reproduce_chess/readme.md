@@ -1,12 +1,11 @@
-For Reproduction of Chess Data Results
+#For Reproduction of Chess Data Results
 
-1. Loading Chessdatasets from Chessmetrics
+## 1. Loading Chessdatasets from Chessmetrics
 
 -Modify load.R, with correct date ranges
 
 Example:
 
-# Modify Date Ranges for your experiments
 train <- chess[chess$Month > 48.5 & chess$Month < 51.5,]
 
 trainM <- train$Month
