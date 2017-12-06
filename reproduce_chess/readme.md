@@ -5,19 +5,19 @@
 -Modify load.R, with correct date ranges
 
 Example:
-
+```R
 train <- chess[chess$Month > 48.5 & chess$Month < 51.5,]
 
 trainM <- train$Month
 test <- chess[chess$Month > 51.5 & chess$Month < 60.5,]
-
+```
 
 This would represent all matches player in year 5 with the train set containing 3 months and the test set containing 9 months
 
 You also must modify the last line.
-
+```R
 save.image("5_data.RData")
-
+```
 This will allow you to label your RData files containing the 12 month periods correctly.
 
 ## 2.  Run hyperparameter selection and test AUC calculation
@@ -53,8 +53,9 @@ This will generate a object in the form below, where the AUC value in	this objec
 In calc_ELO_AUC.R
 
 Change this to select the correct data file
+```R
 load("2_data.RData")
-
+```
 Run calc_ELO_AUC.R
 
 This will produce a RData object in the format
@@ -68,8 +69,9 @@ Where the AUC object in this object contains the test AUC
 In calc_Glicko_AUC.R
 
 Change this to select the correct data file
+```R
 load("2_data.RData")
-
+```
 Run calc_Glicko_AUC.R
 
 This will produce a RData object in the format
