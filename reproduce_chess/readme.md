@@ -1,6 +1,6 @@
-## For Reproduction of Chess Data Results
+# For Reproduction of Chess Data Results
 
-# 1. Loading Chessdatasets from Chessmetrics
+## 1. Loading Chessdatasets from Chessmetrics
 
 -Modify load.R, with correct date ranges
 
@@ -20,7 +20,7 @@ save.image("5_data.RData")
 
 This will allow you to label your RData files containing the 12 month periods correctly.
 
-2.  Run hyperparameter selection and test AUC calculation
+## 2.  Run hyperparameter selection and test AUC calculation
 
 3 Files exist for each kernal: CV_polydot.R, CV_vanilla.R and CV_rbf.R
 
@@ -34,7 +34,7 @@ This will generate a object in the form, where the AUC value in this object cont
 
 1_data.RData_polydot_AUC_aftrs
 
-3. Run hyperparameter selection and test AUC calculation while only considering ELO and Glicko score features
+## 3. Run hyperparameter selection and test AUC calculation while only considering ELO and Glicko score features
 
 3 Files exist for each kernal: CV_polydot_2.R, CV_vanilla_2.R and CV_rbf_2.R
 
@@ -48,7 +48,7 @@ This will generate a object in the form, where the AUC value in	this object cont
 
 1_data.RData_polydot_AUC_2ftrs
 
-4. Generate ELO scores
+## 4. Generate ELO scores
 
 In calc_ELO_AUC.R
 
@@ -63,7 +63,7 @@ This will produce a RData object in the format
 
 Where the AUC object in this object contains the test AUC
 
-4. Generate Glicko scores
+## 5. Generate Glicko scores
 
 In calc_Glicko_AUC.R
 
