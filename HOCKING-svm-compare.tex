@@ -1081,7 +1081,7 @@ For hyper-parameter selection, we used the first 3 months of each
 $\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and
 the remainder as the validation set.  We fit a grid of models for each
 linear, polynomial and gaussian kernel to the training set to select a
-model with the maximum AUC on the validation set.  For all kernels, the grid of cost parameters was $C=10^{-20},10^{18}, \dots,10^0$. For the gaussian kernel $\sigma = 10^{-1},10^{0},10^1$ and for the polynomial kernel degree $=1,2, \dots,3$.  We then used the selected hyper-parameters to train a
+model with the maximum AUC on the validation set.  For all kernels, the grid of cost parameters was $C=10^{-20},10^{18}, \dots,10^0$. For the gaussian kernel $\sigma = 10^{-1},10^{0},10^1$ and for the polynomial kernel degree $=1,2,3,4$.  We then used the selected hyper-parameters to train a
 model using the first four months (Jan-Apr) of each year, and we used
 the learned model to predict on the test set for that year
 (May-Dec). We then computed the test AUC for each of the eight years. 
@@ -1154,4 +1154,5 @@ Thanks to Simon Lacoste-Julien and Hang Li for helpful discussions.
 
 
 \end{document}
+
 
