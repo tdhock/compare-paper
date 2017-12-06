@@ -109,7 +109,7 @@
   can be solved by converting it to a standard SVM. We use simulated
   nonlinear patterns and a real learning to rank sushi data set to
   show that our proposed SVMcompare algorithm outperforms SVMrank when
-  there are equality $y=0$ pairs.
+  there are equality $y=0$ pairs.  In addition, we show that SVMcompare outperforms the ELO rating system when predicting the outcome of chess matches.
 \end{abstract}
 
 \tableofcontents
@@ -144,7 +144,8 @@ is better than \textit{Star Wars}, and \textit{The Empire Strikes
   Back} is as good as \textit{Star Wars}. Features $\mathbf
 x_i,\mathbf x_i'$ of the movies can be length in minutes, year of
 theatrical release, indicators for genre, actors/actresses, directors,
-etc.
+etc.  In many competetive games, such as chess, draws are also a common result between highly skilled players.  Features $\mathbf
+x_i,\mathbf x_i'$ for each player in a matchup could be generated from player statistics in these cases.  Comparison evaluation and ascertaining if enough describable difference exists in skill is important in determining outcomes in these cases.
 
 The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data,
@@ -899,7 +900,7 @@ of $r(\mathbf x)=||\mathbf x||^2_2$.
   \label{fig:simulation-samples}
 \end{figure*}
 
-\begin{figure*}[b!]
+\begin{figure*}[!ht]
   \input{figure-auc}
   \vskip -1cm
   \caption{Area under the ROC curve (AUC) for 3 different simulated
@@ -972,8 +973,24 @@ and it performs as well as the SVMrank methods in terms of test AUC.
 }
 
 \subsection{Chess data}
+Chess is a game between 2 players that results in a win, loss or a draw, with the most common outcome between highly ranked players in international tournaments being a draw.  We wished to predict outcomes of tournament chess matches by learning player statistics.  The main statistic to quantify player rankings in FIDE (Fédération Internationale des Échecs) competitions is the ELO score.  The ELO rating system is a method for calculating relative skill levels of players in competitor vs. competitor games and was intially proposed in \citet{elo_score}.  Given 2 player's ratings the probability of win and loss can be computed.  The Glicko rating system as proposed in \citet{GLICKO} provides a more complex alternate.
 
-TODO
+We downloaded the chess match dataset from Chessmetrics, containing 1.8 million games played over the 11-year period from 1999-2009 by 54205 chess players.  We used the first eight years of data, split into 8, 12-month periods as separate train-test scenarios.  For each pair \textit{i}, we had features $\mathbf x_i,\mathbf
+x_i'\in\RR^{16}$ 
+consisting and both player's ELO scores, Glicko scores, if the player had the initial move, the percentage of instances where a player either lost to a lower ranked player, or won against a higher ranked player, the average score difference of opponents, win/loss/draw/games played raw values and percentages in addition to various other statistics.  ELO scores were initially set at 1200 for all players and FIDE rules were applied to score calculations.  ELO and Glicko scores were updated after every match using the PlayerRateings package from \citet{play-raitings}.  We removed all matches containing a player who had less than 10 matches against other players in the train set, to prevent our data set from containing player's with very little information.   We also removed all matches that contained a player's first match from the train set as we would have no information about this player.
+
+For hyper parameter selection, we used the first 3 months of each 12-month period.  We preformed cross validation splits of the first  $\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and the remainder as the validation set.  We fit a grid of models for each linear, polynomial and Gaussian kernel to the training set to select a model with the maximum AUC on the validation set.  We then tested these models using the first 4 months of each 12-month period as a training set and the next 8 months as the testing set and computed the AUC for each of the 8 periods.  We also preformed hyper parameter selection and testing using the same method for datasets containing only ELO and Glicko features and also computed the AUC for these datasets.
+
+We then computed AUC values using either the ELO or Glicko scores only on the same 4 month/8 month train/test splits.  As shown in Figure 6, the median for the linear and polynomial SVM kernels preforms better than benchmark ELO and Glicko scoring systems.  Additionally, linear and polynomial SVM models using only ELO and Glicko features preform worse than using ELO scores for predictions.  This suggests that additional features computed in our model were relevant in learning models that preformed better than ELO scores.
+
+Overall, given chess match data, it is clear that the proposed SVMcompare model preforms better than using probabilities generated from FIDE ELO scores in prediction of chess match outcomes.
+
+\begin{figure*}[!b]
+	\includegraphics[width=120mm]{AUC_chess.pdf}
+	\centering
+	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in blue show AUC from model using only ELO and Glicko features and plots in red are AUC values from models using all computed features.}
+	\label{fig2}
+\end{figure*}
 
 \section{Conclusions and future work}
 \label{sec:conclusions}
@@ -998,6 +1015,8 @@ SVMcompare algorithm. However, when there are many equality pairs, it
 is clearly advantageous to use a model such as SVMcompare which
 directly learns from the equality pairs.
 
+Out results also indicate that the proposed model preforms better when determining outcomes of chess matches than the current FIDE ELO player ranking system and that incorporating additional features into out model gives an increase in accuracy.
+
 For future work, it will be interesting to see if the same results are
 observed in learning to rank data from search engines. For scaling to
 these very large data sets, we would like to try algorithms based on
@@ -1007,7 +1026,7 @@ descent with a logistic loss.
 %\newpage
 %\textbf{Acknowledgements}: 
 \section*{Acknowledgements}
-TDH was funded by KAKENHI 23120004, SS by a
+DV was funded by NSERC operating grant. TDH was funded by KAKENHI 23120004, SS by a
 MEXT scholarship, and MS by KAKENHI 26700022. 
 %\newpage
 Thanks%!
