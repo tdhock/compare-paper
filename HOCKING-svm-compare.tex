@@ -300,7 +300,7 @@ in the machine learning literature \citep{object-ranking-methods,
   learning-to-rank}, and is similar to the supervised comparison
 problem we consider in this paper. There are several Bayesian models
 which can be applied to learning to rank, such as TrueSkill
-\citep{trueskill} and GLICKO \citep{GLICKO}, which are generalizations
+\citep{trueskill} and Glicko \citep{Glicko}, which are generalizations
 of the Elo chess rating system. The SVMrank algorithm was
 proposed for learning to rank \citep{ranksvm}, and the large-margin
 learning formulation we propose in this article is similar. The
@@ -1052,7 +1052,7 @@ intially proposed by \citet{elo_score}.
 % Given two player's ratings the probability of win and loss for each can
 % be computed.  
 The Glicko rating system 
-provides a more complex alternative \citep{GLICKO}.
+provides a more complex alternative \citep{Glicko}.
 
 We downloaded the chess match dataset from Chessmetrics, containing
 1.8 million games played over the 11-year period from 1999-2009 by
@@ -1076,11 +1076,27 @@ initially set at 1200 for all players and FIDE rules were applied to
 score calculations.  ELO and Glicko scores were updated after every
 match using the PlayerRatings R package  \citep{play-raitings}.  
 
-For hyper parameter selection, we used the first 3 months of each 12-month period.  We preformed cross validation splits of the first  $\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and the remainder as the validation set.  We fit a grid of models for each linear, polynomial and gaussian kernel to the training set to select a model with the maximum AUC on the validation set.  We then tested these models using the first 4 months of each 12-month period as a training set and the next 8 months as the testing set and computed the AUC for each of the 8 periods.  We also preformed hyper parameter selection and testing using the same method for datasets containing only ELO and Glicko features.
+For hyper-parameter selection, we used the first 3 months of each
+12-month period.  We performed cross validation splits of the first
+$\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and
+the remainder as the validation set.  We fit a grid of models for each
+linear, polynomial and gaussian kernel to the training set to select a
+model with the maximum AUC on the validation set.  TODO: what were the
+parameter grids? We then used the selected hyper-parameters to train a
+model using the first four months (Jan-Apr) of each year, and we used
+the learned model to predict on the test set for that year
+(May-Dec). We then computed the test AUC for each of the eight years. 
 
-We then computed AUC values using either the ELO or Glicko scores only on the same 4 month/8 month train/test splits.  As shown in Figure 6, the median for the linear and polynomial SVM kernels preforms better than benchmark ELO and Glicko scoring systems.  Additionally, linear and polynomial SVM models using only ELO and Glicko features preform worse than using only ELO scores for predictions.  This suggests that additional features computed in our model were relevant in learning models that preformed better than ELO scores.
+As shown in Figure 6, the linear and polynomial SVM kernels have
+higher test AUC than the ELO and Glicko scoring systems.
+Additionally, linear and polynomial SVM models trained using only ELO
+and Glicko features perform worse than using all features. This
+suggests that the additional features computed in our model were
+relevant in learning models that performed better than ELO scores.
 
-Overall, given chess match data, it is clear that the proposed SVMcompare model preforms better than using probabilities generated from FIDE ELO scores in prediction of chess match outcomes.
+Overall, our analysis of the chess match data suggest that the
+proposed SVMcompare model performs better than the existing
+state-of-the-art ELO and Glicko scores.
 
 \begin{figure*}[!b]
 	\includegraphics[width=120mm]{AUC_chess.pdf}
@@ -1112,7 +1128,10 @@ SVMcompare algorithm. However, when there are many equality pairs, it
 is clearly advantageous to use a model such as SVMcompare which
 directly learns from the equality pairs.
 
-Out results also indicate that the proposed model preforms better when determining outcomes of chess matches than the current FIDE ELO player ranking system and that incorporating additional features into out model gives an increase in accuracy.
+Out results also indicate that the proposed model performs better for
+predicting outcomes of chess matches than the current FIDE ELO player
+ranking system, and that incorporating additional features into out
+model gives an increase in accuracy.
 
 For future work, it will be interesting to see if the same results are
 observed in learning to rank data from search engines. For scaling to
