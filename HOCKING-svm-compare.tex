@@ -15,6 +15,9 @@
 \usepackage{float}
 \newcommand{\sv}{\textsc{sv}}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
 \newcommand{\changed}[1]{
   #1
   %\textcolor{red}{#1}
@@ -117,8 +120,43 @@
 
 \section{Introduction}
 
-In this paper we consider the supervised comparison problem. Assume
-that we have $n$ labeled training pairs and for each pair
+In the supervised learning to rank problem \citep{learning-to-rank}, we are
+given labeled pairs of items $\mathbf x,\mathbf x'$, where the label
+$y\in\{-1,1\}$ indicates which item in the pair should be ranked
+higher. The goal is to learn a ranking function $r(\mathbf x)\in\RR$
+which outputs a real-valued rank for each item. In this paper we
+consider a related problem in which the expanded label space
+$y\in\{-1,0,1\}$ includes the $y=0$ label which indicates that there
+should be no rank difference. In this context the goal is to learn a
+comparison function $c(\mathbf x, \mathbf x')\in\{-1,0,1\}$.
+
+Comparison data naturally arise from competitive two-player games in which
+the space of possible outcomes includes a draw (neither player wins).
+In games such as chess, draws are a common result between highly
+skilled players. To accurately predict the outcome of such games, it
+is thus important to learn a model that can predict a draw. 
+% Features
+% $\mathbf x_i,\mathbf x_i'$ for each player in a matchup could be
+% generated from player statistics in these cases. 
+% Comparison
+% evaluation and ascertaining if enough describable difference exists in
+% skill is important in determining outcomes in these cases.
+
+Comparison data also result when considering subjective human
+evaluations of pairs of items. For example, if each item is a movie, a
+person might say that \textit{Les Mis\'erables} is better than
+\textit{Star Wars}, and \textit{The Empire Strikes Back} is as good as
+\textit{Star Wars}. Another example is rating food items such as
+wine, in which a person may prefer one wine to another, but not be
+able to perceive a difference between two other wines. In this
+context, it is important to use a model which can predict no
+difference between two items.
+% Features $\mathbf x_i,\mathbf x_i'$ of the movies
+% can be length in minutes, year of theatrical release, indicators for
+% genre, actors/actresses, directors, etc.
+
+More formally, assume
+that we have a training sample of $n$ labeled pairs. For each pair
 $i\in\{1,\dots,n\}$ we have input features $\mathbf x_i,\mathbf
 x_i'\in\RR^p$ and a label $y_i\in\{-1,0,1\}$ that indicates which
 element is better:
@@ -134,18 +172,12 @@ element is better:
     \text{, $\mathbf x'_i$ is better than $\mathbf x_i$}.
   \end{cases}
 \end{equation}
-These data are geometrically represented by segments and arrows in the
-top panel of Figure~\ref{fig:norm-data}. 
 
-Comparison data naturally arise when considering subjective human
-evaluations of pairs of items. For example, if I were to compare some
-pairs of movies I have watched, I would say \textit{Les Mis\'erables}
-is better than \textit{Star Wars}, and \textit{The Empire Strikes
-  Back} is as good as \textit{Star Wars}. Features $\mathbf
-x_i,\mathbf x_i'$ of the movies can be length in minutes, year of
-theatrical release, indicators for genre, actors/actresses, directors,
-etc.  In many competetive games, such as chess, draws are also a common result between highly skilled players.  Features $\mathbf
-x_i,\mathbf x_i'$ for each player in a matchup could be generated from player statistics in these cases.  Comparison evaluation and ascertaining if enough describable difference exists in skill is important in determining outcomes in these cases.
+These data are geometrically represented in the top panel of
+Figure~\ref{fig:norm-data}. Pairs with equality labels $y_i=0$ are
+represented as line segments, and pairs with inequality labels
+$y_i=\{-1,1\}$ are represented as arrows pointing to the item with the
+higher rank.
 
 The goal of learning is to find a comparison function $c:\RR^p \times
 \RR^p \rightarrow \{-1,0,1\}$ which generalizes to a test set of data,
@@ -187,7 +219,7 @@ Section~\ref{sec:conclusions}.
     $y\in\{-1,1\}$ &SVM  & SVMrank   	\\ \hline 
     $y\in\{-1,0,1\}$ & - & \textbf{This work: SVMcompare}\\ \hline
   \end{tabular}
-  \caption{\label{tab:related} Comparison (this work) is similar to previous work on ranking and classification with reject option.}
+  \caption{\label{tab:related} Our proposed SVM for comparison is similar to previous SVM algorithms for ranking and binary classification.}
 \end{table}
 
 \section{Related work}
@@ -972,12 +1004,45 @@ model performs better than the SVMrank methods in terms of test error,
 and it performs as well as the SVMrank methods in terms of test AUC.
 }
 
-\subsection{Chess data}
-Chess is a game between 2 players that results in a win, loss or a draw, with the most common outcome between highly ranked players in international tournaments being a draw.  We wished to predict outcomes of tournament chess matches by learning player statistics.  The main statistic to quantify player rankings in FIDE (Fédération Internationale des Échecs) competitions is the ELO score.  The ELO rating system is a method for calculating relative skill levels of players in competitor vs. competitor games and was intially proposed in \citet{elo_score}.  Given 2 player's ratings the probability of win and loss for each can be computed.  The Glicko rating system as proposed in \citet{GLICKO} provides a more complex alternate.
+\subsection{SVMcompare predict outcomes of chess games more accurately than ELO}
 
-We downloaded the chess match dataset from Chessmetrics, containing 1.8 million games played over the 11-year period from 1999-2009 by 54205 chess players.  We used the first eight years of data, split into 8, 12-month periods as separate train-test scenarios.  For each pair \textit{i}, we had features $\mathbf x_i,\mathbf
-x_i'\in\RR^{16}$ 
-consisting and both player's ELO scores, Glicko scores, if the player had the initial move, the percentage of instances where a player either lost to a lower ranked player, or won against a higher ranked player, the average score difference of opponents, win/loss/draw/games played raw values and percentages in addition to various other statistics.  ELO scores were initially set at 1200 for all players and FIDE rules were applied to score calculations.  ELO and Glicko scores were updated after every match using the PlayerRateings package from \citet{play-raitings}.  We removed all matches containing a player who had less than 10 matches against other players in the train set, to prevent our data set from containing player's with very little information.   We also removed all matches that contained a player's first match from the train set as we would have no information about this player.
+In this section, we show that our SVMcompare algorithm can be used for
+highly accurate prediction of the outcome of chess matches. Chess is a
+game between 2 players that results in a win, loss or a draw, with the
+most common outcome between highly ranked players in international
+tournaments being a draw. We wished to predict outcomes of tournament
+chess matches by learning a comparison function using features based
+on player statistics.  The main statistic to quantify player rankings
+in FIDE (Fédération Internationale des Échecs) competitions is the ELO
+score.  The ELO rating system is a method for calculating relative
+skill levels of players in competitor versus competitor games was
+intially proposed by \citet{elo_score}.
+% Given two player's ratings the probability of win and loss for each can
+% be computed.  
+The Glicko rating system 
+provides a more complex alternative \citep{GLICKO}.
+
+We downloaded the chess match dataset from Chessmetrics, containing
+1.8 million games played over the 11-year period from 1999-2009 by
+54205 chess players.  For each of the years 1999-2006, we consider the
+first four months (Jan-Apr) as a train set, and the last eight months
+as a test set (May-Dec). 
+We
+removed all matches containing a player who had less than 10 matches
+against other players in the train set, to prevent our data set from
+containing players with very little information.  We also removed all
+matches that contained a players first match from the train set as we
+would have no information about this player.
+For each match $i$, we computed features
+$\mathbf x_i,\mathbf x_i'\in\RR^{16}$ consisting of ELO
+scores, Glicko scores, if the player had the initial move, the
+percentage of instances where a player either lost to a lower ranked
+player, or won against a higher ranked player, the average score
+difference of opponents, win/loss/draw/games played raw values and
+percentages in addition to various other statistics. ELO scores were
+initially set at 1200 for all players and FIDE rules were applied to
+score calculations.  ELO and Glicko scores were updated after every
+match using the PlayerRatings R package  \citep{play-raitings}.  
 
 For hyper parameter selection, we used the first 3 months of each 12-month period.  We preformed cross validation splits of the first  $\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and the remainder as the validation set.  We fit a grid of models for each linear, polynomial and gaussian kernel to the training set to select a model with the maximum AUC on the validation set.  We then tested these models using the first 4 months of each 12-month period as a training set and the next 8 months as the testing set and computed the AUC for each of the 8 periods.  We also preformed hyper parameter selection and testing using the same method for datasets containing only ELO and Glicko features.
 
