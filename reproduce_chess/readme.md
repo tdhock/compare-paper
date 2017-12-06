@@ -1,6 +1,6 @@
-#For Reproduction of Chess Data Results
+## For Reproduction of Chess Data Results
 
-## 1. Loading Chessdatasets from Chessmetrics
+# 1. Loading Chessdatasets from Chessmetrics
 
 -Modify load.R, with correct date ranges
 
