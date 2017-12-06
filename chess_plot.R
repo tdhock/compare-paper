@@ -71,6 +71,6 @@ p <- ggplot(four_AUC,aes(x=reorder(as.factor(kern),Median),y=Final_AUC,fill=Feat
 
 library(tikzDevice)
 
-tikz("chess_fig.tex", width=3.5, height=5.5)
+tikz("chess_fig.tex", width=5.5, height=3.5)
 p 
 dev.off()
