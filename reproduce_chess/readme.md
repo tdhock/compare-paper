@@ -30,7 +30,7 @@ Example
 
 R CMD BATCH -1_data.RData CV_polydot.R
 
-This will generate a object in the form, where the AUC value in this object contains the test AUC and FINAL_AUC$ROC contains the ROC curve
+This will generate a object in the form below, where the AUC value in this object contains the test AUC and FINAL_AUC$ROC contains the ROC curve. kern.params contains the optimal hyperparameters.
 
 1_data.RData_polydot_AUC_aftrs
 
@@ -44,7 +44,7 @@ Example
 
 R CMD BATCH -1_data.RData CV_polydot_2.R
 
-This will generate a object in the form, where the AUC value in	this object contains the test AUC and FINAL_AUC$ROC contains the ROC curve
+This will generate a object in the form below, where the AUC value in	this object contains the test AUC and FINAL_AUC$ROC contains the ROC curve. kern.params contains the optimal hyperparameters.
 
 1_data.RData_polydot_AUC_2ftrs
 
