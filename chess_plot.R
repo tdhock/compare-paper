@@ -65,9 +65,12 @@ med_four <- med
 
 colnames(four_AUC)[2] <- "Features"
 
-p <- ggplot(four_AUC,aes(x=reorder(as.factor(kern),Median),y=Final_AUC,fill=Features)) + geom_boxplot(outlier.shape = NA)+ geom_jitter(shape=16,size=5, position=position_jitter(0.2),aes(y = Final_AUC,color=Features))  + coord_flip() + xlab("Model") + ylab("AUC") + theme_bw() 
+four_AUC <- four_AUC[!duplicated(four_AUC),]
 
-pdf("AUC_chess.pdf", width=20, height=15)
-p + theme(text=element_text(family = "CM Roman",size = 24))
+p <- ggplot(four_AUC,aes(x=reorder(as.factor(kern),Median),y=Final_AUC,fill=Features)) + geom_boxplot(outlier.shape = NA)+ geom_jitter(shape=16, position=position_jitter(0.2),aes(y = Final_AUC,color=Features))  + coord_flip() + xlab("Model") + ylab("AUC") + theme_bw() + theme(legend.position="bottom") + theme(legend.key.size = unit(1,"line")) + theme(text=element_text(size = 10)) + scale_color_manual(values=c("#000000", "#000000","#323299","#56B4E9")) + scale_fill_manual(values=c("#000000", "#ffffff","#323299","#56B4E9")) 
+
+library(tikzDevice)
+
+tikz("chess_fig.tex", width=3.5, height=3.5)
+p 
 dev.off()
-
