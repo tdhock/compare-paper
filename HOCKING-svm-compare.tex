@@ -1,5 +1,5 @@
-\documentclass{article}
-\usepackage{fullpage}
+\documentclass[twoside,11pt]{article} 
+\usepackage{jmlr2e} 
 %\usepackage{icml2014}
 \usepackage{listings}
 \usepackage{clrscode}
@@ -10,7 +10,7 @@
 \usepackage{tikz}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb}
 \usepackage{stfloats}
 \usepackage{float}
 \newcommand{\sv}{\textsc{sv}}
@@ -22,11 +22,11 @@
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
-\newtheorem{proposition}{Proposition}
+%\newtheorem{proposition}{Proposition}
 
-\newtheorem{definition}{Definition}
+%\newtheorem{definition}{Definition}
 \newtheorem{theo}{Theorem}    % numérotés par section
-\newtheorem{lemma}{Lemma}
+%\newtheorem{lemma}{Lemma}
 
 \newcommand{\RR}{\mathbb R}
 \newcommand{\NN}{\mathbb N}
@@ -50,12 +50,12 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 %\usepackage{hyperref}
-\newcommand{\theHalgorithm}{\arabic{algorithm}}
+%\newcommand{\theHalgorithm}{\arabic{algorithm}}
 
 
 %\icmltitlerunning{Support vector comparison machines}
 
-\begin{document}
+
 
 % \begin{ekeywords}
 %   support vector machine, quadratic program, linear program, ranking,
@@ -95,9 +95,41 @@
 %\vskip 0.3in
 %]
 
-\title{Support vector comparison machines} \author{David Venuto, Toby
-  Dylan Hocking, Supaporn Spanurattana, Masashi Sugiyama}
+\jmlrheading{1}{2017}{1-48}{12/17}{?}{Support vector comparison machines}{Venuto, Hocking, Spanurattana, Sugiyama}
+
+% Short headings should be running head and authors last names
+
+\ShortHeadings{Support vector comparison machines}{Venuto, Hocking, Spanurattana, Sugiyama}
+%\firstpageno{?}
+
+\begin{document}
+	
+	\title{Support vector comparison machines}
+	
+	\author{\name David Venuto \email david.venuto@mail.mcgill.ca \\
+		\addr Department of Human Genetics\\
+		McGill University \\
+		Montreal, QC, H3A 0G4,Canada
+		\AND
+		\name Toby Dylan Hocking \email toby.hocking@mcgill.ca \\
+		\addr Department of Human Genetics\\
+		McGill University \\
+		Montreal, QC, H3A 0G4,Canada
+		\AND
+		\name Supaporn Spanurattana \email ?@k.u-tokyo.ac.jp \\
+		\addr Department of Computer Science\\
+		Tokyo Institute of Technology,  \\
+		Tokyo 152-8552, Japan
+		\AND
+		\name Masashi Sugiyama \email sugi@k.u-tokyo.ac.jp \\
+		\addr Department of Computer Science\\
+		Tokyo Institute of Technology,  \\
+		Tokyo 152-8552, Japan}
+	
+	\editor{?}
+	
 \maketitle
+
 
 \begin{abstract}
   In ranking problems, the goal is to learn a ranking function
@@ -989,7 +1021,7 @@ Overall, given chess match data, it is clear that the proposed SVMcompare model 
 	\includegraphics[width=120mm]{AUC_chess.pdf}
 	\centering
 	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in blue show AUC from model using only ELO and Glicko features and plots in red are AUC values from models using all computed features.}
-	\label{fig2}
+	\label{fig6}
 \end{figure*}
 
 \section{Conclusions and future work}
