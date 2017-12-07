@@ -267,14 +267,16 @@ problem.
   \centering
   \input{figure-norm-data}
   \vskip -0.5cm
-  \caption{Geometric interpretation of paired comparison data and the decision boundaries of our support vector machine classifier. \textbf{Top}: input feature pairs
+  \caption{Geometric interpretation. \textbf{Top}: input feature pairs
     $\mathbf x_i,\mathbf x_i'\in\RR^p$ are segments for $y_i=0$ and
-    arrows for $y_i\in\{-1,1\}$. The level curves in grey show the ranking
-    function $r(\mathbf x)=||\mathbf x||_2^2$ used to generate the labels $y_i$ in this noiseless simulation. \textbf{Middle}: in the enlarged feature
+    arrows for $y_i\in\{-1,1\}$. The level curves of the ranking
+    function $r(\mathbf x)=||\mathbf x||_2^2$ are grey, and
+    differences $|r(\mathbf x')-r(\mathbf x)|\leq 1$ are considered
+    insignificant ($y_i=0$). \textbf{Middle}: in the enlarged feature
     space, the ranking function is linear: $r(\mathbf x)=\mathbf
     w^\intercal \Phi(\mathbf x)$. \textbf{Bottom}: two symmetric
     hyperplanes $\mathbf w^\intercal[\Phi(\mathbf x_i')-\Phi(\mathbf
-    x_i)]\in\{-1,1\}$ in the difference space are the decision boundaries.}
+    x_i)]\in\{-1,1\}$ are used to classify the difference vectors.}
   \label{fig:norm-data}
 \end{figure}
 
@@ -1075,10 +1077,10 @@ score calculations.  ELO and Glicko scores were updated after every
 match using the PlayerRatings R package  \citep{play-raitings}.  
 
 For hyper-parameter selection, we used the first 3 months of each
-12-month period.  We performed cross validation splits of the first
+12-month period.  This was done for computational speed reasons.  We performed cross validation splits of the first
 $\{0.50,0.75,0.80,0.85\}$ matches in the set as our training set and
 the remainder as the validation set.  We fit a grid of models for each
-linear, polynomial and gaussian kernel to the training set to select a
+linear, polynomial and Gaussian kernel to the training set to select a
 model with the maximum AUC on the validation set.  For all kernels,
 the grid of cost parameters was
 $C\in\{10^{-20},10^{-18}, \dots,10^0\}$. The Gaussian kernel width was
@@ -1088,20 +1090,19 @@ $1,2,3,4$.
 We then used the selected hyper-parameters to train a
 model using the first four months (Jan-Apr) of each year, and we used
 the learned model to predict on the test set for that year
-(May-Dec). We then computed the test AUC for each of the eight years. Since their are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (0.5).  We calculated the baseline AUC for each dataset by calculating the TPR and FPR by predicting the most common class (a draw in all 8 sets). 
+(May-Dec). We then computed the test AUC for each of the eight years. Since there are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (0.5).  We calculated the baseline AUC for each dataset by calculating the TPR and FPR by predicting the most common positive class in each dataset.  In our baseline, to maximize the FPR, we set $\tau = 0$ which results in every observation being predicted as a negative class (0).  By predicting every observation as the most common positive class, we have maximized the TPR without learning.  Since we have 2 distinct positive classes, it is highly unlikely that our TPR will be 1.0 through this method.
 
 As shown in Figure~\ref{fig:chess}, the linear and polynomial SVM kernels have
 higher test AUC than the ELO and Glicko scoring systems.
 Additionally, linear and polynomial SVM models trained using only ELO
-and Glicko features perform worse than using all features. This
-suggests that the additional features computed in our model were
-relevant in learning models that performed better than ELO scores.
+and Glicko features perform worse than models using all features.  This suggests that the additional features computed in our model were
+relevant in learning models that performed better than ELO scores.  Models using a combination of ELO and Glicko features obtain an AUC that appears to be the median of the Glicko and ELO AUC values.  The model appears to be learning a combination of these features and therefore obtains an AUC intermediate of ELO and Glicko scores only.  The Gaussian kernel also preforms poorly with respect to the linear and polynomial kernels.  This is probably because the data appears to be linear separable since the linear kernel preforms best and the most common degree selected in the polynomial kernel is 1.
 
-Overall, our analysis of the chess match data suggest that the
+Overall, our analysis of the chess match data suggests that the
 proposed SVMcompare model performs better than the existing
 state-of-the-art ELO and Glicko scores.
 
-\begin{figure*}[!b]
+\begin{figure*}[]
 	\centering
 	\input{chess_fig}	
 	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in black show the baseline AUC calculated by predicting the most common label.  The plots in dark blue are AUC values obtained from using Glicko or ELO scores only.  The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features.}
