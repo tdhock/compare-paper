@@ -1083,10 +1083,12 @@ model with the maximum AUC on the validation set.  For all kernels,
 the grid of cost parameters was
 $C\in\{10^{-20},10^{-18}, \dots,10^0\}$. The Gaussian kernel width was
 $10^{-1},10^{0},10^1$ and the polynomial kernel degree was
-$1,2,3,4$.  We then used the selected hyper-parameters to train a
+$1,2,3,4$.  
+
+We then used the selected hyper-parameters to train a
 model using the first four months (Jan-Apr) of each year, and we used
 the learned model to predict on the test set for that year
-(May-Dec). We then computed the test AUC for each of the eight years.
+(May-Dec). We then computed the test AUC for each of the eight years. Since their are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (0.5).  We calculated the baseline AUC for each dataset by calculating the TPR and FPR by predicting the most common class (a draw in all 8 sets). 
 
 As shown in Figure~\ref{fig:chess}, the linear and polynomial SVM kernels have
 higher test AUC than the ELO and Glicko scoring systems.
@@ -1102,7 +1104,7 @@ state-of-the-art ELO and Glicko scores.
 \begin{figure*}[!b]
 	\centering
 	\input{chess_fig}	
-	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in light blue show AUC from model using only ELO and Glicko features and plots in dark blue are AUC values from models using all computed features.}
+	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in black show the baseline AUC calculated by predicting the most common label.  The plots in dark blue are AUC values obtained from using Glicko or ELO scores only.  The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features.}
 	\label{fig:chess}
 \end{figure*}
 

@@ -46,8 +46,12 @@ four_AUC <- rbind(four_AUC,GLIKO_4M)
 four_AUC[four_AUC$kern == "Vanilla",2] <- "Linear SVM"
 four_AUC[four_AUC$kern == "rbf",2] <- "Gaussian SVM"
 four_AUC[four_AUC$kern == "polydot",2] <- "Poynomial SVM"
-four_AUC[four_AUC$ftrs == "aftrs",4] <- "All Features"
-four_AUC[four_AUC$ftrs == "2ftrs",4] <- "Only Glicko and ELO Score"
+four_AUC[four_AUC$ftrs == "aftrs",4] <- "16 (All Features)"
+four_AUC[four_AUC$ftrs == "2ftrs",4] <- "2 (Only Glicko and ELO Score)"
+four_AUC[four_AUC$kern == "Baseline",4] <- "0"
+four_AUC[four_AUC$kern == "ELO",4] <- "1"
+four_AUC[four_AUC$kern == "Glicko",4] <- "1"
+
 
 med <- aggregate(four_AUC,by=list(four_AUC$kern,four_AUC$ftrs),FUN=median)
 med$kern <- NULL
@@ -65,7 +69,9 @@ colnames(four_AUC)[2] <- "Features"
 
 four_AUC <- four_AUC[!duplicated(four_AUC),]
 
-p <- ggplot(four_AUC,aes(x=reorder(as.factor(kern),Median),y=Final_AUC,fill=Features)) + geom_boxplot(outlier.shape = NA)+ geom_jitter(shape=16, position=position_jitter(0.2),aes(y = Final_AUC,color=Features))  + coord_flip() + xlab("Model") + ylab("AUC") + theme_bw() + theme(legend.position="bottom") + theme(legend.key.size = unit(1,"line")) + theme(text=element_text(size = 10)) + scale_color_manual(values=c("#000000", "#000000","#323299","#56B4E9")) + scale_fill_manual(values=c("#000000", "#ffffff","#323299","#56B4E9")) 
+four_AUC$Features <- factor(four_AUC$Features,levels = c("0","1","2 (Only Glicko and ELO Score)","16 (All Features)"))
+
+p <- ggplot(four_AUC,aes(x=reorder(as.factor(kern),Median),y=Final_AUC,fill=Features)) + geom_boxplot(outlier.shape = NA)+ geom_point(shape=16, aes(y = Final_AUC,color=Features))  + coord_flip() + xlab("Model") + ylab("AUC") + theme_bw() + theme(legend.position="bottom") + theme(legend.key.size = unit(1,"line")) + theme(text=element_text(size = 10)) + scale_color_manual(values=c("#000000","#000000","#56B4E9","#000000")) + scale_fill_manual(values=c("#000000","#4c4ca6","#56B4E9","#ffffff"))
 
 library(tikzDevice)
 
