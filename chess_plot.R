@@ -1,6 +1,4 @@
 library(ggplot2)
-library(fontcm)
-font_import()
 
 four_AUC <- read.table("AUC_table.txt",stringsAsFactors = FALSE,header = TRUE)
 
