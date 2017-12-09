@@ -125,9 +125,8 @@
 		Tokyo 152-8552, Japan
 		\AND
 		\name Masashi Sugiyama \email sugi@k.u-tokyo.ac.jp \\
-		\addr Department of Computer Science\\
-		Tokyo Institute of Technology,  \\
-		Tokyo 152-8552, Japan}
+		\addr RIKEN Center for Advanced Intelligence Project and The University of Tokyo,  \\
+		Tokyo 103-0027, Japan}
 	
 	\editor{?}
 	
@@ -139,7 +138,7 @@
   $r(\mathbf x)\in\RR$ from labeled pairs $\mathbf x,\mathbf x'$ of
   input points. In this paper, we consider the related comparison
   problem, where the label $y\in\{-1,0,1\}$ indicates which element of
-  the pair is better, or if there is no significant difference. We
+  the pair is better ($y = -1$ or $1$), or if there is no significant difference ($y=0$). We
   cast the learning problem as a margin maximization, and show that it
   can be solved by converting it to a standard SVM. We use simulated
   nonlinear patterns and a real learning to rank sushi data set to
@@ -190,7 +189,7 @@ difference between two items.
 More formally, assume
 that we have a training sample of $n$ labeled pairs. For each pair
 $i\in\{1,\dots,n\}$ we have input features $\mathbf x_i,\mathbf
-x_i'\in\RR^p$ and a label $y_i\in\{-1,0,1\}$ that indicates which
+x_i'\in\RR^p$, where $p$ is a positive integer, and a label $y_i\in\{-1,0,1\}$ that indicates which
 element is better:
 \begin{equation}
   \label{eq:z}
@@ -236,8 +235,8 @@ and bold lowercase letters for their row vectors $\mathbf x_i, \mathbf
 k_i$. In Section~\ref{sec:related} we discuss links with related work
 on classification and ranking, then in Section~\ref{sec:svm-compare}
 we propose a new algorithm: SVMcompare. We show results on 3
-illustrative simulated data sets and one real learning to rank sushi
-data set in Section~\ref{sec:results}, then discuss future work in
+illustrative simulated data sets and two real learning to rank sushi
+data set and chess datasets in Section~\ref{sec:results}, then discuss future work in
 Section~\ref{sec:conclusions}.
 
 
@@ -284,7 +283,7 @@ problem.
 
 In ranking problems, each training example is a pair of
 inputs/features $\mathbf x,\mathbf x'\in\RR^p$, and a corresponding
-label/output $y_i\{-1,1\}$, which indicates which of the two inputs
+label/output $y_in\{-1,1\}$, which indicates which of the two inputs
 should be ranked higher (Table~\ref{tab:related}). In the comparison
 problem that we study in this paper, outputs $y\in\{-1,0,1\}$ include
 the $y=0$ equality pairs or ties, which indicate that the two inputs
@@ -332,11 +331,11 @@ output values.
 
 \subsection{SVMrank for comparing}
 \label{sec:svmrank}
-In this section we explain how to apply the existing SVMrank algorithm
+In this subsection we explain how to apply the existing SVMrank algorithm
 to a comparison data set.  The goal of SVMrank is to learn a ranking
 function $r:\RR^p \rightarrow \RR$. When $r(\mathbf x)=\mathbf
-w^\intercal \mathbf x$ is linear, the primal problem for some cost
-parameter $C\in\RR^+$ is the following quadratic program (QP):
+w^\intercal \mathbf x$ (where $^\top$ denotes the transpose) is linear, the primal problem for some cost
+parameter $C\in\RR^+$, where \mathbb{R}^+ is a set of all non-negative real numbers., is the following quadratic program (QP):
 \begin{equation}
   \begin{aligned}
     \minimize_{\mathbf w, \mathbf \xi}\ \ & \frac 1 2
@@ -428,10 +427,10 @@ In our learning setup, the best comparison function is the one with
 maximum margin. We will define the margin in two different ways, which
 correspond to the linear program (LP) and quadratic program (QP)
 discussed below. To illustrate the differences between these
-max-margin comparison problems, in this section we assume that the
+max-margin comparison problems, in this subsection we assume that the
 training data are linearly separable. Later in
 Section~\ref{sec:kernelized-qp}, we propose an algorithm for learning
-a nonlinear function from non-separable data.
+a nonlinear function from non linearly-separable data.
 
 In the following linear program, we learn a linear ranking function
 $r(\mathbf x)=\mathbf w^\intercal \mathbf x$ that maximizes the margin
@@ -513,7 +512,7 @@ difference pairs $\tilde y_i=1$ and insignificant difference pairs
 $\tilde y_i=-1$ (middle and right panels of
 Figure~\ref{fig:hard-margin}). However, we want a comparison function
 that predicts $c(\mathbf x,\mathbf x')\in\{-1,0,1\}$. So we use the
-next Lemma to construct a ranking function $r(\mathbf x)= \mathbf{\hat
+next lemma to construct a ranking function $r(\mathbf x)= \mathbf{\hat
   w}^\intercal \mathbf x$ that is feasible for the original max margin
 comparison LP (\ref{eq:max-margin-lp}), and can be used with the
 comparison function~$c_1$ (\ref{eq:compare_general}).
@@ -578,15 +577,15 @@ Lemma~\ref{lemma:feasible} establishes the fact that one can learn a
 ranking function $r$ and a corresponding comparison function $c_1$
 (\ref{eq:compare_general}) by solving either the LP
 (\ref{eq:max-margin-lp}) or the QP (\ref{eq:max-margin-qp}). To make
-corresponding learning problems for non-separable data, one can add
-slack variables to either the QP or the LP. In the next section, we
+corresponding learning problems for non linearly-separable data, one can add
+slack variables to either the QP or the LP. In the next subsection, we
 pursue only the QP, since it leads to a dual problem with a sparse
 solution that can be solved by any standard SVM solver such as libsvm
 \citep{libsvm}.
 
 \subsection{Kernelized QP for non-separable data}
 \label{sec:kernelized-qp}
-In this section, we assume the data are not separable, and want to
+In this subsection, we assume the data are not linearly separable, and want to
 learn a nonlinear ranking function. We define a positive definite
 kernel $\kappa:\RR^p\times \RR^p\rightarrow\RR$, which implicitly
 defines an enlarged set of features $\Phi(\mathbf x)$ (middle panel of
@@ -598,8 +597,8 @@ u=\sum_{i=1}^m
 \alpha_i \Phi(\mathbf{\tilde x}_i) + 
 \alpha_i' \Phi(\mathbf{\tilde x}_i')$, and so we have
  $f(\mathbf x) =\beta + \sum_{i=1}^m 
- \alpha_i \kappa(\mathbf{\tilde x}_i, \mathbf x) +
- \alpha_i' \kappa(\mathbf{\tilde x}_i', \mathbf x)$. 
+ (\alpha_i \kappa(\mathbf{\tilde x}_i, \mathbf x) +
+ \alpha_i' \kappa(\mathbf{\tilde x}_i', \mathbf x))$. 
  We then use Lemma~\ref{lemma:feasible} to
 define the ranking function
 \begin{equation}
@@ -1038,7 +1037,7 @@ and it performs as well as the SVMrank methods in terms of test AUC.
 
 \subsection{SVMcompare predict outcomes of chess games more accurately than ELO}
 
-In this section, we show that our SVMcompare algorithm can be used for
+In this ubsection, we show that our SVMcompare algorithm can be used for
 highly accurate prediction of the outcome of chess matches. Chess is a
 game between 2 players that results in a win, loss or a draw, with the
 most common outcome between highly ranked players in international
@@ -1054,16 +1053,17 @@ intially proposed by \citet{elo_score}.
 The Glicko rating system 
 provides a more complex alternative \citep{Glicko}.
 
-We downloaded the chess match dataset from Chessmetrics, containing
-1.8 million games played over the 11-year period from 1999-2009 by
-54205 chess players.  For each of the years 1999-2006, we consider the
-first four months (Jan-Apr) as a train set, and the last eight months
-as a test set (May-Dec). 
+We downloaded the chess match dataset from Chessmetrics\footnotemark, containing
+1.8 million games played over the 11-year period from 1999--2009 by
+54205 chess players.  For each of the years 1999--2006, we consider the
+first four months (Jan--Apr) as a train set, and the last eight months
+as a test set (May--Dec). 
+\footnotetext{http://www.chessmetrics.com/cm/}
 We
 removed all matches containing a player who had less than 10 matches
 against other players in the train set, to prevent our data set from
 containing players with very little information.  We also removed all
-matches that contained a players first match from the train set as we
+matches that contained a player's first match from the train set as we
 would have no information about this player.
 For each match $i$, we computed features
 $\mathbf x_i,\mathbf x_i'\in\RR^{16}$ consisting of ELO
@@ -1088,9 +1088,9 @@ $10^{-1},10^{0},10^1$ and the polynomial kernel degree was
 $1,2,3,4$.  
 
 We then used the selected hyper-parameters to train a
-model using the first four months (Jan-Apr) of each year, and we used
+model using the first four months (Jan--Apr) of each year, and we used
 the learned model to predict on the test set for that year
-(May-Dec). We then computed the test AUC for each of the eight years. Since there are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (0.5). In our baseline calculation, we obtain a FPR and TPR of 0 by predicting every observation as a negative class (0).  By predicting every observation as the most common positive class, we have obtained the maximum TPR without any learning.  We then obtain the FPR given all observations are predicted to be the most common positive prediction.  Since we have 2 distinct positive classes, it is highly unlikely that our TPR and FPR will be 1.0 through this method.
+(May--Dec). We then computed the test AUC for each of the eight years. Since there are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (not 0.5). In our baseline calculation, we obtain a FPR and TPR of 0 by predicting every observation as a negative class (0).  By predicting every observation as the most common positive class, we have obtained the maximum TPR without any learning.  We then obtain the FPR given all observations are predicted to be the most common positive prediction.  Since we have 2 distinct positive classes, it is highly unlikely that our TPR and FPR will be 1.0 through this method.
 
 As shown in Figure~\ref{fig:chess}, the linear and polynomial SVM kernels have
 higher test AUC than the ELO and Glicko scoring systems.
