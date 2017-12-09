@@ -335,7 +335,7 @@ In this subsection we explain how to apply the existing SVMrank algorithm
 to a comparison data set.  The goal of SVMrank is to learn a ranking
 function $r:\RR^p \rightarrow \RR$. When $r(\mathbf x)=\mathbf
 w^\intercal \mathbf x$ (where $^\top$ denotes the transpose) is linear, the primal problem for some cost
-parameter $C\in\RR^+$, where $\mathbb{R}^+$ is a set of all non-negative real numbers, is the following quadratic program (QP):
+parameter $C\in\RR^+$ (where $\mathbb{R}^+$ is a set of all non-negative real numbers) is the following quadratic program (QP):
 \begin{equation}
   \begin{aligned}
     \minimize_{\mathbf w, \mathbf \xi}\ \ & \frac 1 2
