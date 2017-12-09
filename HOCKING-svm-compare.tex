@@ -998,7 +998,7 @@ optimization problem.}
 \subsection{Learning to rank sushi data}
 
 We downloaded the sushi data set of \citet{object-ranking-methods}
-from kamishima\footnotemark. We used the
+from kamishima\footnote{http://www.kamishima.net/sushi/}. We used the
 \texttt{sushi3b.5000.10.score} data, which consist of 100 different
 sushis rated by 5000 different people. Each person rated 10 sushis on
 a 5 point scale, which we convert to 5 preference pairs, for a total
@@ -1009,7 +1009,6 @@ of the person. Sushi features are style, major, minor, oily, eating
 frequency, price, and selling frequency. Person features are gender, age,
 time, birthplace and current home (we converted Japanese prefecture
 codes to latitude/longitude coordinates).
-\footnotetext{http://www.kamishima.net/sushi/}
 As in the simulations of Section~\ref{sec:simulations}, we picked
 train, validation, and test sets, each with the same number of pairs
 $n$ and the same proportion $\rho$ of equality pairs. We fit a grid of
@@ -1054,12 +1053,11 @@ intially proposed by \citet{elo_score}.
 The Glicko rating system 
 provides a more complex alternative \citep{Glicko}.
 
-We downloaded the chess match dataset from Chessmetrics\footnotemark, containing
+We downloaded the chess match dataset from Chessmetrics\footnote{http://www.chessmetrics.com/cm/}, containing
 1.8 million games played over the 11-year period from 1999--2009 by
 54205 chess players.  For each of the years 1999--2006, we consider the
 first four months (Jan--Apr) as a train set, and the last eight months
 as a test set (May--Dec). 
-\footnotetext{http://www.chessmetrics.com/cm/}
 We
 removed all matches containing a player who had less than 10 matches
 against other players in the train set, to prevent our data set from
