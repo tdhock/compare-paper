@@ -335,7 +335,7 @@ In this subsection we explain how to apply the existing SVMrank algorithm
 to a comparison data set.  The goal of SVMrank is to learn a ranking
 function $r:\RR^p \rightarrow \RR$. When $r(\mathbf x)=\mathbf
 w^\intercal \mathbf x$ (where $^\top$ denotes the transpose) is linear, the primal problem for some cost
-parameter $C\in\RR^+$, where \mathbb{R}^+ is a set of all non-negative real numbers., is the following quadratic program (QP):
+parameter $C\in\RR^+$, where $\mathbb{R}^+$ is a set of all non-negative real numbers, is the following quadratic program (QP):
 \begin{equation}
   \begin{aligned}
     \minimize_{\mathbf w, \mathbf \xi}\ \ & \frac 1 2
@@ -997,7 +997,7 @@ optimization problem.}
 \subsection{Learning to rank sushi data}
 
 We downloaded the sushi data set of \citet{object-ranking-methods}
-from \texttt{http://www.kamishima.net/sushi/}. We used the
+from kamishima\footnotemark. We used the
 \texttt{sushi3b.5000.10.score} data, which consist of 100 different
 sushis rated by 5000 different people. Each person rated 10 sushis on
 a 5 point scale, which we convert to 5 preference pairs, for a total
@@ -1008,7 +1008,7 @@ of the person. Sushi features are style, major, minor, oily, eating
 frequency, price, and selling frequency. Person features are gender, age,
 time, birthplace and current home (we converted Japanese prefecture
 codes to latitude/longitude coordinates).
-
+\footnotetext{http://www.kamishima.net/sushi/}
 As in the simulations of Section~\ref{sec:simulations}, we picked
 train, validation, and test sets, each with the same number of pairs
 $n$ and the same proportion $\rho$ of equality pairs. We fit a grid of
