@@ -215,21 +215,24 @@ mplot <- ggplot()+
                           "margin $r(\\mathbf x)=\\pm 1\\pm\\mu$"))+
   geom_text(aes(distance, angle, colour=factor(yi), label=label),
             data=lab.df, size=3)+
-  facet_grid(.~set.name,scales="free",labeller=function(var,val){
+  facet_grid(.~set.name,scales="free",labeller=function(df){
     titles <-
       c(one="original $\\mathbf x'-\\mathbf x$",
         both="flipped $\\mathbf{\\tilde x'}-\\mathbf{\\tilde x}$",
         scaled="scaled and flipped $\\mathbf{\\tilde x'}-\\mathbf{\\tilde x}$")
-    titles[val]
+    df$set.name <- titles[paste(df$set.name)]
+    df
   })+ 
   theme_bw()+
   ##geom_point(aes(distance, angle), data=model.sv, size=1, pch=1)+
-  theme(panel.margin=unit(0,"cm"),
-        panel.grid=element_blank())+
+  theme(
+    panel.margin=unit(0,"cm"),
+    legend.position="bottom",
+    panel.grid=element_blank())+
   xlab("difference feature 1")+
   ylab("difference feature 2")+
   guides(colour="none")
 print(mplot)
-tikz("figure-hard-margin.tex",h=2.8)
+tikz("figure-hard-margin.tex", w=6, h=3.8)
 print(mplot)
 dev.off()

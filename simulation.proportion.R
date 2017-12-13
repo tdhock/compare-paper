@@ -1,8 +1,8 @@
 works_with_R("3.0.2", rankSVMcompare="2013.10.25", ggplot2="0.9.3.1",
              doMC="1.3.2")
+library(kernlab)
 registerDoMC()
 
-source("calc.roc.R")
 source("svmlight.R")
 
 funs <- list(l2=function(x)sum(x*x),
@@ -37,8 +37,9 @@ for(norm in names(funs)){
 }
 lapply(pair.sets, with, table(yi))
 ## pairs per set, so N/2 equality and N/2 inequality pairs per set.
-all.ranks <- data.frame()
-unused.err <- data.frame()
+
+all.ranks <- list()
+unused.err <- list()
 data.list <- list()
 test.rank.list <- list()
 props <- seq(0.1, 0.9, by=0.2)
@@ -54,13 +55,18 @@ for(prop in props){
       not.equal <- which(!is.zero)
       set.list <- list()
       for(set.name in c("train", "validation", "test")){
-        i <- c(sample(equal, N*prop), sample(not.equal, N*(1-prop)))
+        i <- if(set.name=="test"){
+          ## always use the same test set.
+          c(equal[1:(N*prop)], not.equal[N*(1-prop)])
+        }else{
+          c(sample(equal, N*prop), sample(not.equal, N*(1-prop)))
+        }
         equal <- equal[!equal %in% i]
         not.equal <- not.equal[!not.equal %in% i]
-        set.list[[set.name]] <- 
-          list(Xi=Pairs$Xi[i,],
-               Xip=Pairs$Xip[i,],
-               yi=Pairs$yi[i])
+        set.list[[set.name]] <- list(
+          Xi=Pairs$Xi[i,],
+          Xip=Pairs$Xip[i,],
+          yi=Pairs$yi[i])
       }
       norm.list[[norm]] <- set.list
     }
@@ -159,9 +165,8 @@ print(segPlot)
         rank.df <- rbind(rank.df, {
           data.frame(X.grid, rank=r-min(r), what)
         })
-        unused.err <- rbind(unused.err, {
-          data.frame(prop, seed, norm, test.err[chosen,])
-        })
+        unused.err.list[[paste(prop, seed, norm)]] <- data.frame(
+          prop, seed, norm, test.err[chosen,])
       }
   overfitPlot <- ggplot(err.df, aes(log2(Cval), error, colour=fit.name))+
     geom_line(aes(group=interaction(set, fit.name), linetype=set))+
@@ -183,7 +188,8 @@ print(segPlot)
       ## define a larger grid.
       ##stopifnot(! validation.err[chosen,"Cval"] %in% range(Cvals))
       ##stopifnot(! validation.err[chosen,"k.width"] %in% range(kvals))
-      all.ranks <- rbind(all.ranks, data.frame(rank.df, norm, seed, prop))
+      all.ranks.list[[paste(prop, seed, norm)]] <- data.frame(
+        rank.df, norm, seed, prop)
     } ## end norm
   }
 }
