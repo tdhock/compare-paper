@@ -119,7 +119,7 @@
 		McGill University \\
 		Montreal, QC, H3A 0G4, Canada
 		\AND
-		\name Supaporn Spanurattana \email ?@k.u-tokyo.ac.jp \\
+		\name Lakjaree Spanurattana \email sphanurattana@k.u-tokyo.ac.jp \\
 		\addr Department of Computer Science\\
 		Tokyo Institute of Technology,  \\
 		Tokyo 152-8552, Japan
@@ -165,7 +165,7 @@ comparison function $c(\mathbf x, \mathbf x')\in\{-1,0,1\}$.
 Comparison data naturally arise from competitive two-player games in which
 the space of possible outcomes includes a draw (neither player wins).
 In games such as chess, draws are a common result between highly
-skilled players. To accurately predict the outcome of such games, it
+skilled players \citep{elo_score}. To accurately predict the outcome of such games, it
 is thus important to learn a model that can predict a draw. 
 % Features
 % $\mathbf x_i,\mathbf x_i'$ for each player in a matchup could be
@@ -226,7 +226,7 @@ pairwise zero-one loss function \citep{learning-to-rank}. Learning to
 rank has been extensively studied, resulting in state-of-the-art
 algorithms such as SVMrank \citep{ranksvm}. However, we are interested
 in learning to compare with equality $y_i=0$ pairs, which to our
-knowledge has only been studied by \citet{rank-with-ties}. In this
+knowledge has only been studied by \citet{rank-with-ties} where various paired comparison models were used and trained by gradient boosting.  Paired comparison models for predicting ties included the Bradely-Terry Model \citep{bt}, Thurstone-Mosteller Model \citep{tm} and General Linear Models with  with a tie calling threshold. In this
 article we propose SVMcompare, a support vector algorithm for these
 data.
 
@@ -284,7 +284,7 @@ problem.
 
 In ranking problems, each training example is a pair of
 inputs/features $\mathbf x,\mathbf x'\in\RR^p$, and a corresponding
-label/output $y_in\{-1,1\}$, which indicates which of the two inputs
+label/output $y_i\in\{-1,1\}$, which indicates which of the two inputs
 should be ranked higher (Table~\ref{tab:related}). In the comparison
 problem that we study in this paper, outputs $y\in\{-1,0,1\}$ include
 the $y=0$ equality pairs or ties, which indicate that the two inputs
@@ -301,7 +301,7 @@ in the machine learning literature \citep{object-ranking-methods,
 problem we consider in this paper. There are several Bayesian models
 which can be applied to learning to rank, such as TrueSkill
 \citep{trueskill} and Glicko \citep{Glicko}, which are generalizations
-of the Elo chess rating system. The SVMrank algorithm was
+of the Elo chess rating system \citep{elo_score}. The SVMrank algorithm was
 proposed for learning to rank \citep{ranksvm}, and the large-margin
 learning formulation we propose in this article is similar. The
 difference is that we also consider the case where both inputs are
@@ -412,7 +412,7 @@ training pairs in a single learning problem.
   \label{fig:hard-margin}
 \end{figure*}
 
-In this section we propose new learning algorithms for comparison
+In this section we discuss new learning algorithms for comparison
 problems. In all cases, we will first learn a ranking function
 $r:\RR^p\rightarrow\RR$ and then a comparison function
 $c_1:\RR^p\times \RR^p\rightarrow\{-1,0,1\}$
@@ -863,7 +863,7 @@ algorithms are summarized in Table~\ref{tab:models}:
 \end{description}
 
 For each experiment, there are train, validation, and test sets each
-drawn from the same set of examples. We fit a $10\times 10$ grid of
+drawn from the same data set of examples. We fit a $10\times 10$ grid of
 models to the training set (cost parameter $C=10^{-3},\dots,10^3$,
 Gaussian kernel width $2^{-7},\dots,2^4$), and select the model using
 the validation set. We use two evaluation metrics to judge the
@@ -891,7 +891,7 @@ positive rate and for $\tau=\infty$ we have 100\% false negative rate
   \caption{We use area under the ROC curve to evaluate predictions
     $\hat y$ given the true label $y$. False positives (FP) occur 
     when predicting a significant difference $\hat y\in\{-1,1\}$ 
-    when there is none $y=0$. False Negatives (FN) occur when
+    when there is none ($y=0$). False Negatives (FN) occur when
     a labeled difference $y\in\{-1,1\}$ is incorrectly predicted.}
   \label{tab:evaluation}
 \end{table}
@@ -904,7 +904,7 @@ functions in a $p=2$ dimensional feature space. We generated pairs
 $\mathbf x_i,\mathbf x_i'\in[-3,3]^2$ and noisy labels
 $y_i=t_1[r(\mathbf x'_i)-r(\mathbf x_i)+\epsilon_i]$, where $t_1$ is
 the threshold function (\ref{eq:threshold}), $r$ is the latent ranking
-function, $\epsilon_i\sim N(0, \sigma)$ is noise, and $\sigma=1/4$ is
+function, $\epsilon_i\sim N(\mu\ = 0, \sigma)$ is noise, and $\sigma=1/4$ is
 the standard deviation. We picked train, validation, and test sets,
 each with the same number of pairs $n$ and the same proportion $\rho$
 of equality pairs. We selected the model with minimum zero-one loss on
@@ -929,7 +929,7 @@ ranking functions $r(\mathbf x)=||\mathbf x||^2_j$ for
 $j\in\{1,2,\infty\}$. In general, the test error of all models
 decreases as training set size $n$ increases. The model with the
 highest test error is the rank model, which does not use the equality
-$y_i=0$ pairs. The next best model is the rank2 model, which converts
+$y_i=0$ pairs. The next worst model is the rank2 model, which converts
 the equality $y_i=0$ pairs to inequality pairs and then trains
 SVMrank. The best model is the proposed SVMcompare model, which
 achieves test error as good as the true ranking function in the case
