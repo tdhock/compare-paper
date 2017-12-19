@@ -174,7 +174,7 @@ is thus important to learn a model that can predict a draw.
 % evaluation and ascertaining if enough describable difference exists in
 % skill is important in determining outcomes in these cases.
 
-Comparison data also result when considering subjective human
+Comparison data also results when considering subjective human
 evaluations of pairs of items. For example, if each item is a movie, a
 person might say that \textit{Les Mis\'erables} is better than
 \textit{Star Wars}, and \textit{The Empire Strikes Back} is as good as
@@ -226,8 +226,7 @@ pairwise zero-one loss function \citep{learning-to-rank}. Learning to
 rank has been extensively studied, resulting in state-of-the-art
 algorithms such as SVMrank \citep{ranksvm}. However, we are interested
 in learning to compare with equality $y_i=0$ pairs, which to our
-knowledge has only been studied by \citet{rank-with-ties} where various paired comparison models were used and trained by gradient boosting.  Paired comparison models for predicting ties included the Bradely-Terry Model \citep{bt}, Thurstone-Mosteller Model \citep{tm} and General Linear Models with  with a tie calling threshold. In this
-article we propose SVMcompare, a support vector algorithm for these
+knowledge has only been studied by \citet{rank-with-ties} where various paired comparison models were used and trained by gradient boosting.  Paired comparison models for predicting ties included the Bradley-Terry Model \citep{bt}, Thurstone-Mosteller Model \citep{tm} and General Linear Models with a tie calling threshold.  The Bradley-Terry model, which does not accommodate ties, can be extended to accommodate ties in paired comparisons directly \citep{bt-tie}. In this article we propose SVMcompare, a support vector algorithm for these
 data.
 
 The notation and organization of this article is as follows. We use
@@ -774,7 +773,7 @@ the cost $C$ and the kernel $\kappa$. As with standard SVM for binary
 classification, these parameters can be tuned by minimizing the
 prediction error on a held-out validation set.
 
-\section{Results}
+\section{Comparison to SVMrank in sushi and simulated data sets}
 \label{sec:results}
 
 % Alors sinon le moyen tryhard et ce que j'ai moi c'est ca
@@ -1035,13 +1034,12 @@ model performs better than the SVMrank methods in terms of test error,
 and it performs as well as the SVMrank methods in terms of test AUC.
 }
 
-\subsection{SVMcompare predict outcomes of chess games more accurately than ELO}
+\section{SVMcompare predict outcomes of chess games more accurately than ELO}
 
-In this ubsection, we show that our SVMcompare algorithm can be used for
+In this section, we show that our SVMcompare algorithm can be used for
 highly accurate prediction of the outcome of chess matches. Chess is a
-game between 2 players that results in a win, loss or a draw, with the
-most common outcome between highly ranked players in international
-tournaments being a draw. We wished to predict outcomes of tournament
+game between 2 players that results in a win, loss or a draw, with draws being very common between highly ranked players in international
+tournaments. We wished to predict outcomes of tournament
 chess matches by learning a comparison function using features based
 on player statistics.  The main statistic to quantify player rankings
 in FIDE (Fédération Internationale des Échecs) competitions is the ELO
@@ -1053,6 +1051,8 @@ intially proposed by \citet{elo_score}.
 The Glicko rating system 
 provides a more complex alternative \citep{Glicko}.
 
+\subsection{Data source and processing}
+
 We downloaded the chess match dataset from Chessmetrics\footnote{http://www.chessmetrics.com/cm/}, containing
 1.8 million games played over the 11-year period from 1999--2009 by
 54205 chess players.  For each of the years 1999--2006, we consider the
@@ -1063,7 +1063,7 @@ removed all matches containing a player who had less than 10 matches
 against other players in the train set, to prevent our data set from
 containing players with very little information.  We also removed all
 matches that contained a player's first match from the train set as we
-would have no information about this player.
+would have no information about this player.  Before pre-processing, 30.9\% of matches were a draw and 69.1\% of matches resulted in a win or loss.  After pre-processing, the median percentage of draws and win-loss results was 44.7\% and 55.3\% respectively over each of the 8 datasets.
 For each match $i$, we computed features
 $\mathbf x_i,\mathbf x_i'\in\RR^{16}$ consisting of ELO
 scores, Glicko scores, if the player had the initial move, the
@@ -1074,6 +1074,8 @@ percentages in addition to various other statistics. ELO scores were
 initially set at 1200 for all players and FIDE rules were applied to
 score calculations.  ELO and Glicko scores were updated after every
 match using the PlayerRatings R package  \citep{play-raitings}.  
+
+\subsection{Cross-validation experiment setup}
 
 For hyper-parameter selection, we used the first 3 months of each
 12-month period.  This was done for computational speed reasons.  We performed cross validation splits of the first
@@ -1089,22 +1091,33 @@ $1,2,3,4$.
 We then used the selected hyper-parameters to train a
 model using the first four months (Jan--Apr) of each year, and we used
 the learned model to predict on the test set for that year
-(May--Dec). We then computed the test AUC for each of the eight years. Since there are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the baseline AUC is non-standard (not 0.5). In our baseline calculation, we obtain a FPR and TPR of 0 by predicting every observation as a negative class (0).  By predicting every observation as the most common positive class, we have obtained the maximum TPR without any learning.  We then obtain the FPR given all observations are predicted to be the most common positive prediction.  Since we have 2 distinct positive classes, it is highly unlikely that our TPR and FPR will be 1.0 through this method.
+(May--Dec). We then computed the test AUC for each of the eight years. Since there are 3 labels $y\in\{-1,0,1\}$ corresponding to $\{$win, draw, loss$\}$ respectively, the trivial AUC is non-standard (not 0.5). In our trivial calculation, we obtain a FPR and TPR of 0 by predicting every observation as a negative class ($y=0$).  By predicting every observation as the most common positive class, we have obtained the maximum TPR without use any features.  Our predictions for the trivial model are therefore calculated with:
+\begin{equation}c_{\tau}(x)=
+\begin{cases} 1 &
+\text{ if } |
+\mathcal I_{-1}|<|\mathcal I_1| \\ -1
+& \text{ otherwise.} 
+
+\end{cases}
+\end{equation}
+  We then obtain the FPR given all observations are predicted to be the most common positive prediction.  Since we have 2 distinct positive classes, it is highly unlikely that our TPR and FPR will be 1.0 through this method.
+
+\subsection{Results and discussion}
 
 As shown in Figure~\ref{fig:chess}, the linear and polynomial SVM kernels have
 higher test AUC than the ELO and Glicko scoring systems.
 Additionally, linear and polynomial SVM models trained using only ELO
 and Glicko features perform worse than models using all features.  This suggests that the additional features computed in our model were
-relevant in learning models that performed better than ELO scores.  Models using a combination of ELO and Glicko features obtain an AUC that appears to be the median of the Glicko and ELO AUC values.  The model appears to be learning a combination of these features and therefore obtains an AUC intermediate of ELO and Glicko scores only.  The Gaussian kernel also preforms poorly with respect to the linear and polynomial kernels.  This is probably because the data appears to be linear separable since the linear kernel preforms best and the most common degree selected in the polynomial kernel is 1.
+relevant in learning models that performed better than ELO scores.  Models using a combination of ELO and Glicko features obtain an AUC that appears to be the median of the Glicko and ELO AUC values.  The model appears to be learning a combination of these features and therefore obtains an AUC intermediate of ELO and Glicko scores only.  The Gaussian kernel also preforms with a lower AUC with respect to the linear and polynomial kernels.  The fact that the linear kernel is more accurate than the Gaussian kernel suggests that the pattern is linear in the features we have computed.
 
 Overall, our analysis of the chess match data suggests that the
-proposed SVMcompare model performs better than the existing
+proposed SVMcompare model performs with a higher AUC than the existing
 state-of-the-art ELO and Glicko scores.
 
 \begin{figure*}[b!]
 	\centering
 	\input{chess_fig}	
-	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and baseline.  The plots in black show the baseline AUC calculated by predicting the most common positive label.  The plots in dark blue are AUC values obtained from using Glicko or ELO scores only.  The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features.}
+	\caption{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods.  All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and trivial model.  The plots in black show the trivial AUC calculated by predicting the most common positive label.  The plots in dark blue are AUC values obtained from using Glicko or ELO scores only.  The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features.}
 	\label{fig:chess}
 \end{figure*}
 
@@ -1149,6 +1162,11 @@ DV was funded by an NSERC operating grant. TDH was funded by KAKENHI 23120004, S
 MEXT scholarship, and MS by KAKENHI 17H01760. 
 %\newpage
 Thanks to Simon Lacoste-Julien and Hang Li for helpful discussions.
+
+\section*{Reproducible Research Statement}
+The informations and scripts used to produce the results in this paper are at :
+
+https://github.com/tdhock/compare-paper
 
 %\newpage
 
