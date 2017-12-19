@@ -1,0 +1,106 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bradley and Terry(1952)]{bt}
+Ralph~A. Bradley and Milton~E. Terry.
+\newblock The rank analysis of incomplete block designs: I. the method of
+  paired comparisons.
+\newblock \emph{Biometrika}, 39, 1952.
+
+\bibitem[Chang and Lin(2011)]{libsvm}
+Chih-Chung Chang and Chih-Jen Lin.
+\newblock {LIBSVM}: A library for support vector machines.
+\newblock \emph{ACM Transactions on Intelligent Systems and Technology},
+  2:\penalty0 27:1--27:27, 2011.
+
+\bibitem[Chu and Keerthi(2005)]{ordinal}
+Wei Chu and S~Sathiya Keerthi.
+\newblock New approaches to support vector ordinal regression.
+\newblock In \emph{Proceedings of the 22nd international conference on Machine
+  learning}, pages 145--152. ACM, 2005.
+
+\bibitem[Davidson(1970{\natexlab{a}})]{bt-tie}
+Roger~R. Davidson.
+\newblock On extending the bradley-terry model to accommodate ties in paired
+  comparison experiments.
+\newblock \emph{Journal of the American Statistical Association}, 65\penalty0
+  (329):\penalty0 317--328, 1970{\natexlab{a}}.
+
+\bibitem[Davidson(1970{\natexlab{b}})]{davidson-ties}
+Roger~R Davidson.
+\newblock {On Extending the Bradley-Terry Model to Accommodate Ties in Paired
+  Comparison Experiments}.
+\newblock \emph{Journal of the American Statistical Association}, 65\penalty0
+  (329):\penalty0 317--328, March 1970{\natexlab{b}}.
+
+\bibitem[Elo(1978)]{elo_score}
+Arpad Elo.
+\newblock The rating of chess players, past and present.
+\newblock \emph{Acro Publishing}, 1978.
+
+\bibitem[Glickman(1999)]{Glicko}
+Mark~E Glickman.
+\newblock Parameter estimation in large dynamic paired comparison experiments.
+\newblock \emph{Appl. Statist.}, 48\penalty0 (3):\penalty0 377--394, 1999.
+
+\bibitem[Herbrich et~al.(2006)Herbrich, Minka, and Graepel]{trueskill}
+Ralf Herbrich, Tom Minka, and Thore Graepel.
+\newblock Trueskill™: A {Bayesian} skill rating system.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  569--576, 2006.
+
+\bibitem[Joachims(2002)]{ranksvm}
+Thorsten Joachims.
+\newblock Optimizing search engines using clickthrough data.
+\newblock In \emph{KDD}, 2002.
+
+\bibitem[Kamishima et~al.(2010)Kamishima, Kazawa, and
+  Akaho]{object-ranking-methods}
+Toshihiro Kamishima, Hideto Kazawa, and Shotaro Akaho.
+\newblock A survey and empirical comparison of object ranking methods.
+\newblock \emph{Preference Learning}, pages 181--201, 2010.
+
+\bibitem[Karatzoglou et~al.(2004)Karatzoglou, Smola, Hornik, and
+  Zeileis]{kernlab}
+Alexandros Karatzoglou, Alex Smola, Kurt Hornik, and Achim Zeileis.
+\newblock kernlab -- an {S4} package for kernel methods in {R}.
+\newblock \emph{Journal of Statistical Software}, 11\penalty0 (9):\penalty0
+  1--20, 2004.
+
+\bibitem[Li(2011)]{learning-to-rank}
+Hang Li.
+\newblock A short introduction to learning to rank.
+\newblock \emph{IEICE Transactions on Information and Systems}, E94-D\penalty0
+  (10), 2011.
+
+\bibitem[Stephenson and Sonas(2016)]{play-raitings}
+Alec Stephenson and Jeff Sonas.
+\newblock {PlayerRatings: Dynamic Updating Methods for Player Ratings
+  Estimation (R package version 1.0-1)}.
+\newblock \emph{CRAN}, 2016.
+
+\bibitem[Thurstone(1927)]{tm}
+Louis~Leon Thurstone.
+\newblock A law of comparative judgement.
+\newblock \emph{Psychological Review}, 34\penalty0 (4):\penalty0 273--286,
+  1927.
+
+\bibitem[Van~Belle et~al.(2011)Van~Belle, Pelckmans, Van~Huffel, and
+  Suykens]{sv-survival}
+Vanya Van~Belle, Kristiaan Pelckmans, Sabine Van~Huffel, and Johan~AK Suykens.
+\newblock Support vector methods for survival analysis: a comparison between
+  ranking and regression approaches.
+\newblock \emph{Artificial Intelligence in Medicine}, 53\penalty0 (2):\penalty0
+  107--118, 2011.
+
+\bibitem[Zhou et~al.(2008)Zhou, Xue, Zha, and Yu]{rank-with-ties}
+Ke~Zhou, Gui-Rong Xue, Hongyuan Zha, and Yong Yu.
+\newblock Learning to rank with ties.
+\newblock In \emph{Proc. ACM SIGIR 31}, SIGIR '08, pages 275--282, New York,
+  NY, 2008.
+
+\end{thebibliography}

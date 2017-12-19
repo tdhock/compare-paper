@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: HOCKING-svm-compare.aux
+The style file: plainnat.bst
+Illegal, another \bibstyle command---line 104 of file HOCKING-svm-compare.aux
+ : \bibstyle
+ :          {abbrvnat}
+I'm skipping whatever remains of this command
+Database file #1: refs.bib
+You've used 16 entries,
+            2773 wiz_defined-function locations,
+            693 strings with 7150 characters,
+and the built_in function-call counts, 7313 in all, are:
+= -- 680
+> -- 331
+< -- 15
++ -- 116
+- -- 99
+* -- 544
+:= -- 1089
+add.period$ -- 49
+call.type$ -- 16
+change.case$ -- 81
+chr.to.int$ -- 15
+cite$ -- 32
+duplicate$ -- 369
+empty$ -- 648
+format.name$ -- 123
+if$ -- 1565
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 16
+newline$ -- 88
+num.names$ -- 64
+pop$ -- 162
+preamble$ -- 1
+purify$ -- 65
+quote$ -- 0
+skip$ -- 280
+stack$ -- 0
+substring$ -- 335
+swap$ -- 58
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 176
+warning$ -- 0
+while$ -- 74
+width$ -- 0
+write$ -- 215
+(There was 1 error message)

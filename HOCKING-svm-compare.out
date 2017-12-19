@@ -1,0 +1,15 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Related work}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Comparison and ranking problems}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{SVMrank for comparing}{section.2}% 4
+\BOOKMARK [1][-]{section.3}{Support vector comparison machines}{}% 5
+\BOOKMARK [2][-]{subsection.3.1}{LP and QP for separable data}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.2}{Kernelized QP for non-separable data}{section.3}% 7
+\BOOKMARK [1][-]{section.4}{Comparison to SVMrank in sushi and simulated data sets}{}% 8
+\BOOKMARK [2][-]{subsection.4.1}{Simulation: squared norms in 2D}{section.4}% 9
+\BOOKMARK [2][-]{subsection.4.2}{Learning to rank sushi data}{section.4}% 10
+\BOOKMARK [1][-]{section.5}{SVMcompare predict outcomes of chess games more accurately than ELO}{}% 11
+\BOOKMARK [2][-]{subsection.5.1}{Data source and processing}{section.5}% 12
+\BOOKMARK [2][-]{subsection.5.2}{Cross-validation experiment setup}{section.5}% 13
+\BOOKMARK [2][-]{subsection.5.3}{Results and discussion}{section.5}% 14
+\BOOKMARK [1][-]{section.6}{Conclusions and future work}{}% 15

@@ -1,0 +1,123 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\bibstyle{plainnat}
+\citation{learning-to-rank}
+\citation{elo_score}
+\citation{learning-to-rank}
+\citation{ranksvm}
+\citation{rank-with-ties}
+\citation{bt}
+\citation{tm}
+\citation{bt-tie}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}}
+\newlabel{eq:z}{{1}{2}{}{equation.1.1}{}}
+\newlabel{eq:min_c}{{2}{2}{}{equation.1.2}{}}
+\citation{davidson-ties}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Geometric interpretation. \textbf  {Left}: input feature pairs $\mathbf  x_i,\mathbf  x_i'\in \mathbb  R^p$ are segments for $y_i=0$ and arrows for $y_i\in \{-1,1\}$. The level curves of the ranking function $r(\mathbf  x)=||\mathbf  x||_2^2$ are grey, and differences $|r(\mathbf  x')-r(\mathbf  x)|\leq 1$ are considered insignificant ($y_i=0$). \textbf  {Middle}: in the enlarged feature space, the ranking function is linear: $r(\mathbf  x)=\mathbf  w^\intercal \Phi (\mathbf  x)$. \textbf  {Right}: two symmetric hyperplanes $\mathbf  w^\intercal [\Phi (\mathbf  x_i')-\Phi (\mathbf  x_i)]\in \{-1,1\}$ are used to classify the difference vectors.}}{3}{figure.1}}
+\newlabel{fig:norm-data}{{1}{3}{Geometric interpretation. \textbf {Left}: input feature pairs $\mathbf x_i,\mathbf x_i'\in \RR ^p$ are segments for $y_i=0$ and arrows for $y_i\in \{-1,1\}$. The level curves of the ranking function $r(\mathbf x)=||\mathbf x||_2^2$ are grey, and differences $|r(\mathbf x')-r(\mathbf x)|\leq 1$ are considered insignificant ($y_i=0$). \textbf {Middle}: in the enlarged feature space, the ranking function is linear: $r(\mathbf x)=\mathbf w^\intercal \Phi (\mathbf x)$. \textbf {Right}: two symmetric hyperplanes $\mathbf w^\intercal [\Phi (\mathbf x_i')-\Phi (\mathbf x_i)]\in \{-1,1\}$ are used to classify the difference vectors}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related work}{3}{section.2}}
+\newlabel{sec:related}{{2}{3}{}{section.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces  Our proposed SVM for comparison is similar to previous SVM algorithms for ranking and binary classification.}}{3}{table.1}}
+\newlabel{tab:related}{{1}{3}{Our proposed SVM for comparison is similar to previous SVM algorithms for ranking and binary classification}{table.1}{}}
+\citation{object-ranking-methods,learning-to-rank}
+\citation{trueskill}
+\citation{Glicko}
+\citation{elo_score}
+\citation{ranksvm}
+\citation{rank-with-ties}
+\citation{ordinal}
+\citation{sv-survival}
+\citation{ranksvm}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Comparison and ranking problems}{4}{subsection.2.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}SVMrank for comparing}{4}{subsection.2.2}}
+\newlabel{sec:svmrank}{{2.2}{4}{SVMrank for comparing}{subsection.2.2}{}}
+\newlabel{eq:svmrank}{{3}{4}{SVMrank for comparing}{equation.2.3}{}}
+\newlabel{eq:threshold}{{4}{5}{SVMrank for comparing}{equation.2.4}{}}
+\newlabel{eq:compare_general}{{5}{5}{SVMrank for comparing}{equation.2.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Support vector comparison machines}{5}{section.3}}
+\newlabel{sec:svm-compare}{{3}{5}{SVMrank for comparing}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}LP and QP for separable data}{5}{subsection.3.1}}
+\newlabel{sec:lp-qp}{{3.1}{5}{LP and QP for separable data}{subsection.3.1}{}}
+\newlabel{eq:max-margin-lp}{{7}{5}{LP and QP for separable data}{equation.3.7}{}}
+\newlabel{eq:tilde}{{8}{6}{LP and QP for separable data}{equation.3.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The separable LP and QP comparison problems. \textbf  {Left}: the difference vectors $\mathbf  x'-\mathbf  x$ of the original data and the optimal solution to the LP (\ref  {eq:max-margin-lp}). \textbf  {Middle}: for the unscaled flipped data $\mathbf  {\mathaccentV {tilde}07Ex'}-\mathbf  { \mathaccentV {tilde}07Ex}$ (\ref  {eq:tilde}), the LP is not the same as the QP (\ref  {eq:max-margin-qp-tilde}). \textbf  {Right}: in these scaled data, the QP is equivalent to the LP.}}{6}{figure.2}}
+\newlabel{fig:hard-margin}{{2}{6}{The separable LP and QP comparison problems. \textbf {Left}: the difference vectors $\mathbf x'-\mathbf x$ of the original data and the optimal solution to the LP (\ref {eq:max-margin-lp}). \textbf {Middle}: for the unscaled flipped data $\mathbf {\tilde x'}-\mathbf { \tilde x}$ (\ref {eq:tilde}), the LP is not the same as the QP (\ref {eq:max-margin-qp-tilde}). \textbf {Right}: in these scaled data, the QP is equivalent to the LP}{figure.2}{}}
+\citation{libsvm}
+\newlabel{eq:max-margin-qp-tilde}{{9}{7}{LP and QP for separable data}{equation.3.9}{}}
+\newlabel{lemma:feasible}{{1}{7}{LP and QP for separable data}{theorem.1}{}}
+\newlabel{eq:dec-boundary-rank}{{10}{7}{LP and QP for separable data}{equation.3.10}{}}
+\newlabel{eq:margin-rank}{{11}{7}{LP and QP for separable data}{equation.3.11}{}}
+\newlabel{eq:max-margin-qp}{{12}{7}{LP and QP for separable data}{equation.3.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Kernelized QP for non-separable data}{8}{subsection.3.2}}
+\newlabel{sec:kernelized-qp}{{3.2}{8}{Kernelized QP for non-separable data}{subsection.3.2}{}}
+\newlabel{eq:kernelized_r}{{13}{8}{Kernelized QP for non-separable data}{equation.3.13}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces SVMcompare}}{8}{algorithm.1}}
+\newlabel{alg:SVMcompare}{{1}{8}{Kernelized QP for non-separable data}{algorithm.1}{}}
+\citation{libsvm}
+\citation{kernlab}
+\citation{ranksvm}
+\newlabel{eq:lagrangian}{{16}{9}{Kernelized QP for non-separable data}{equation.3.16}{}}
+\newlabel{eq:stationarity}{{17}{9}{Kernelized QP for non-separable data}{equation.3.17}{}}
+\newlabel{eq:svm-dual}{{18}{9}{Kernelized QP for non-separable data}{equation.3.18}{}}
+\newlabel{eq:r_sv}{{19}{9}{Kernelized QP for non-separable data}{equation.3.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Comparison to SVMrank in sushi and simulated data sets}{9}{section.4}}
+\newlabel{sec:results}{{4}{9}{Kernelized QP for non-separable data}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Simulation: squared norms in 2D}{10}{subsection.4.1}}
+\newlabel{sec:simulations}{{4.1}{10}{Simulation: squared norms in 2D}{subsection.4.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces  Summary of how the different algorithms use the input pairs to learn the ranking function $r$. Equality $y_i=0$ pairs are shown as --- segments and inequality $y_i\in \{-1,1\}$ pairs are shown as $\rightarrow $ arrows. For example, the rank2 algorithm converts each input equality pair to two opposite-facing inequality pairs.}}{10}{table.2}}
+\newlabel{tab:models}{{2}{10}{Summary of how the different algorithms use the input pairs to learn the ranking function $r$. Equality $y_i=0$ pairs are shown as --- segments and inequality $y_i\in \{-1,1\}$ pairs are shown as $\rightarrow $ arrows. For example, the rank2 algorithm converts each input equality pair to two opposite-facing inequality pairs}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces We use area under the ROC curve to evaluate predictions $\mathaccentV {hat}05Ey$ given the true label $y$. False positives (FP) occur when predicting a significant difference $\mathaccentV {hat}05Ey\in \{-1,1\}$ when there is none ($y=0$). False Negatives (FN) occur when a labeled difference $y\in \{-1,1\}$ is incorrectly predicted.}}{11}{table.3}}
+\newlabel{tab:evaluation}{{3}{11}{We use area under the ROC curve to evaluate predictions $\hat y$ given the true label $y$. False positives (FP) occur when predicting a significant difference $\hat y\in \{-1,1\}$ when there is none ($y=0$). False Negatives (FN) occur when a labeled difference $y\in \{-1,1\}$ is incorrectly predicted}{table.3}{}}
+\citation{object-ranking-methods}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Learning to rank sushi data}{12}{subsection.4.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Application to a simulated pattern $r(\mathbf  x)=||\mathbf  x||_1^2$ where $\mathbf  x\in \mathbb  R^2$. \textbf  {Left}: the training data are $n=100$ pairs, half equality (segments indicate two points of equal rank), and half inequality (arrows point to the higher rank). \textbf  {Others}: level curves of the learned ranking functions. The rank model does not directly model the equality pairs, so the rank2 and compare models recover the true pattern better.}}{12}{figure.3}}
+\newlabel{fig:norm-level-curves}{{3}{12}{Application to a simulated pattern $r(\mathbf x)=||\mathbf x||_1^2$ where $\mathbf x\in \RR ^2$. \textbf {Left}: the training data are $n=100$ pairs, half equality (segments indicate two points of equal rank), and half inequality (arrows point to the higher rank). \textbf {Others}: level curves of the learned ranking functions. The rank model does not directly model the equality pairs, so the rank2 and compare models recover the true pattern better}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Test error for 3 different simulated patterns $r(\mathbf  x)$ where $\mathbf  x\in \mathbb  R^2$ and one real sushi data set where $\mathbf  x\in \mathbb  R^{14}$. We randomly generated data sets with $\rho =1/2$ equality and 1/2 inequality pairs, then plotted test error as a function of data set size $n$ (a vertical line shows the data set which was used in Figure\nobreakspace  {}\ref  {fig:norm-level-curves}). Lines show mean and shaded bands show standard deviation over 4 test sets.}}{12}{figure.4}}
+\newlabel{fig:simulation-samples}{{4}{12}{Test error for 3 different simulated patterns $r(\mathbf x)$ where $\mathbf x\in \RR ^2$ and one real sushi data set where $\mathbf x\in \RR ^{14}$. We randomly generated data sets with $\rho =1/2$ equality and 1/2 inequality pairs, then plotted test error as a function of data set size $n$ (a vertical line shows the data set which was used in Figure~\ref {fig:norm-level-curves}). Lines show mean and shaded bands show standard deviation over 4 test sets}{figure.4}{}}
+\citation{elo_score}
+\citation{Glicko}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Area under the ROC curve (AUC) for 3 different simulated patterns $r(\mathbf  x)$ where $\mathbf  x\in \mathbb  R^2$ and one real sushi data set where $\mathbf  x\in \mathbb  R^{14}$. For each data set we picked $n=400$ pairs, varying the proportion $\rho $ of equality pairs. We plot mean and standard deviation of AUC over 4 test sets.}}{13}{figure.5}}
+\newlabel{fig:auc}{{5}{13}{Area under the ROC curve (AUC) for 3 different simulated patterns $r(\mathbf x)$ where $\mathbf x\in \RR ^2$ and one real sushi data set where $\mathbf x\in \RR ^{14}$. For each data set we picked $n=400$ pairs, varying the proportion $\rho $ of equality pairs. We plot mean and standard deviation of AUC over 4 test sets}{figure.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}SVMcompare predict outcomes of chess games more accurately than ELO}{13}{section.5}}
+\citation{play-raitings}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Data source and processing}{14}{subsection.5.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Cross-validation experiment setup}{14}{subsection.5.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Results and discussion}{15}{subsection.5.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions and future work}{15}{section.6}}
+\newlabel{sec:conclusions}{{6}{15}{Results and discussion}{section.6}{}}
+\bibstyle{abbrvnat}
+\bibdata{refs}
+\bibcite{bt}{{1}{1952}{{Bradley and Terry}}{{}}}
+\bibcite{libsvm}{{2}{2011}{{Chang and Lin}}{{}}}
+\bibcite{ordinal}{{3}{2005}{{Chu and Keerthi}}{{}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods. All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and trivial model. The plots in black show the trivial AUC calculated by predicting the most common positive label. The plots in dark blue are AUC values obtained from using Glicko or ELO scores only. The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features.}}{16}{figure.6}}
+\newlabel{fig:chess}{{6}{16}{Test AUC for each model used after training on the first 4 months of match data in the 8 different 12-month periods. All SVM model AUCs are shown in addition to AUC of the ELO, Glicko scores and trivial model. The plots in black show the trivial AUC calculated by predicting the most common positive label. The plots in dark blue are AUC values obtained from using Glicko or ELO scores only. The plots in light blue show the AUC distribution from models using only ELO and Glicko features and plots in white are AUC values from models using all computed features}{figure.6}{}}
+\bibcite{bt-tie}{{4}{1970{a}}{{Davidson}}{{}}}
+\bibcite{davidson-ties}{{5}{1970{b}}{{Davidson}}{{}}}
+\bibcite{elo_score}{{6}{1978}{{Elo}}{{}}}
+\bibcite{Glicko}{{7}{1999}{{Glickman}}{{}}}
+\bibcite{trueskill}{{8}{2006}{{Herbrich et~al.}}{{Herbrich, Minka, and Graepel}}}
+\bibcite{ranksvm}{{9}{2002}{{Joachims}}{{}}}
+\bibcite{object-ranking-methods}{{10}{2010}{{Kamishima et~al.}}{{Kamishima, Kazawa, and Akaho}}}
+\bibcite{kernlab}{{11}{2004}{{Karatzoglou et~al.}}{{Karatzoglou, Smola, Hornik, and Zeileis}}}
+\bibcite{learning-to-rank}{{12}{2011}{{Li}}{{}}}
+\bibcite{play-raitings}{{13}{2016}{{Stephenson and Sonas}}{{}}}
+\bibcite{tm}{{14}{1927}{{Thurstone}}{{}}}
+\bibcite{sv-survival}{{15}{2011}{{Van~Belle et~al.}}{{Van~Belle, Pelckmans, Van~Huffel, and Suykens}}}
+\bibcite{rank-with-ties}{{16}{2008}{{Zhou et~al.}}{{Zhou, Xue, Zha, and Yu}}}
