@@ -1,4 +1,12 @@
-works_with_R("3.0.2", rankSVMcompare="2013.9.3", ggplot2="0.9.3.1")
+works_with_R(
+  "3.3.3",
+  future="1.4.0",
+  kernlab="0.9.19",
+  data.table="1.10.4",
+  "tdhock/rankSVMcompare@e4bcbeb1170970c8678eceb7b8b34290df42f657",
+  ggplot2="2.1.0")
+
+plan(multiprocess)
 
 source("svmlight.R")
 
@@ -9,6 +17,7 @@ deltas <- list(l2=function()runif(2,-1,1/2),
                l1=function()runif(2,-1/2,1/2),
                linf=function()runif(2,-1,1))
 set.seed(1)
+total.sim <- 2000
 pair.sets <- list()
 for(norm in names(funs)){
   delta.fun <- deltas[[norm]]
@@ -16,7 +25,7 @@ for(norm in names(funs)){
   Xi <- c()
   Xip <- c()
   yi <- c()
-  for(i in 1:2000){
+  for(i in 1:total.sim){#TDH 31 Jan 2018, this could be vectorized...
     x <- runif(2,-2,2)
     delta <- delta.fun()
     xp <- x+delta
@@ -30,157 +39,120 @@ for(norm in names(funs)){
     rownames(Xi) <- rownames(Xip) <- NULL
     yi <- c(yi, y)
   }
+  colnames(Xi) <- c("x1", "x2")
+  colnames(Xip) <- c("x1", "x2")
   pair.sets[[norm]] <- list(Xi=Xi, Xip=Xip, yi=yi)
 }
 lapply(pair.sets, with, table(yi))
 ## pairs per set, so N/2 equality and N/2 inequality pairs per set.
-all.ranks <- data.frame()
-unused.err <- data.frame()
+
+levs <- seq(-2,2,l=41)
+X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
+
+all.ranks.list <- list()
+err.list <- list()
 data.list <- list()
-for(N in c(50, 100, 200, 300)){
-  for(seed in 1:4){
-##for(N in c(50, 100)){
-##  for(seed in 1:2){
-    set.seed(seed)
-    norm.list <- list()
-    for(norm in names(pair.sets)){
-      Pairs <- pair.sets[[norm]]
-      is.zero <- Pairs$yi == 0
-      equal <- which(is.zero)
-      not.equal <- which(!is.zero)
-      set.list <- list()
-      for(set.name in c("train", "validation", "test")){
-        ##print(length(equal))
-        i <- c(sample(equal, N/2), sample(not.equal, N/2))
-        equal <- equal[!equal %in% i]
-        not.equal <- not.equal[!not.equal %in% i]
-        set.list[[set.name]] <- 
-          list(Xi=Pairs$Xi[i,],
-               Xip=Pairs$Xip[i,],
-               yi=Pairs$yi[i])
+test.N <- 1000
+for(norm in names(pair.sets)){
+  Pairs <- pair.sets[[norm]]
+  true.f <- funs[[norm]]
+  is.zero <- Pairs$yi == 0
+  set.vec <- rep(NA, length(is.zero))
+  set.seed(1)
+  set.vec[sample(which(is.zero), test.N/2)] <- "test"
+  set.vec[sample(which(!is.zero), test.N/2)] <- "test"
+  is.test <- set.vec=="test" & !is.na(set.vec)
+  test.set <- with(Pairs, list(
+    Xi=Xi[is.test,], Xip=Xip[is.test,], yi=yi[is.test]))
+  for(N in c(50, 100, 200, 300)){
+    for(seed in 1:4){
+      N.set.vec <- set.vec
+      set.seed(seed)
+      seed.sets <- list()
+      for(set.name in c("train", "validation")){
+        N.set.vec[sample(which(is.na(N.set.vec) & is.zero), N/2)] <- set.name
+        N.set.vec[sample(which(is.na(N.set.vec) & !is.zero), N/2)] <- set.name
+        is.set <- N.set.vec==set.name & !is.na(N.set.vec)
+        seed.sets[[set.name]] <- with(Pairs, list(
+          Xi=Xi[is.set,], Xip=Xip[is.set,], yi=yi[is.set]))
       }
-      norm.list[[norm]] <- set.list
-    }
-    data.list[[as.character(N)]][[as.character(seed)]] <- norm.list
-    ## Plot the points.
-    point.df <- data.frame()
-    seg.df <- data.frame()
-    arrow.df <- data.frame()
-    for(norm in names(norm.list)){
-      set.list <- norm.list[[norm]]
-      for(set in names(set.list)){
-        Pairs <- set.list[[set]]
-        m <- with(Pairs, rbind(Xi, Xip))
-        point.df <- rbind(point.df, data.frame(m, norm, set))
-        yi <- Pairs$yi
-        segs <- with(Pairs, data.frame(Xi, Xip))[yi == 0,]
-        seg.df <- rbind(seg.df, data.frame(norm, set, segs))
-        arrow.df <- with(Pairs,{
-          rbind(arrow.df,
-                data.frame(norm, set, Xip, Xi)[yi == -1,],
-                data.frame(norm, set, Xi, Xip)[yi == 1,])
-        })
-      }
-    }
-    library(grid)
-basePlot <- ggplot(,aes(X1, X2))+
-  facet_grid(set~norm)+
-  theme_bw()+
-  theme(panel.margin=unit(0,"cm"))+
-  coord_equal()
-pointPlot <- basePlot+
-  geom_point(data=point.df)
-print(pointPlot)
-segPlot <- basePlot+
-  aes(xend=X1.1,yend=X2.1)+
-  geom_segment(data=seg.df)+
-  geom_segment(data=arrow.df, arrow=arrow(type="closed",length=unit(0.05,"in")),
-               color="red")
-print(segPlot)
-    ## Looks fine.
-    levs <- seq(-2,2,l=41)
-    X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
-    ## fit SVM.
-    for(norm in names(norm.list)){
+      exp.N <- c(test.N, N, N)/2
+      stopifnot(sum(table(N.set.vec, is.zero) == cbind(exp.N, exp.N))==6)
+
+      ## fit SVM.
       cat(sprintf("N=%4d seed=%4d norm=%s\n", N, seed, norm))
-      Pair.sets <- norm.list[[norm]]
-      err.df <- data.frame()
-      Cvals <- 10^seq(-3,3,l=10)
+      err.df.list <- list()
+      Cvals <- 10^seq(-1,5,l=10)
       models <- list()
-      kvals <- 2^seq(-7, 4, l=10)
+      kvals <- 2^seq(-8, 4, l=10)
       model.df <- expand.grid(C=Cvals, k.width=kvals)
-      for(model.i in 1:nrow(model.df)){
-##      for(model.i in 1:2){
+      err.dt.list <- future_lapply(1:nrow(model.df), function(model.i){
         model <- model.df[model.i,]
+        ##cat(sprintf("%4d / %4d models\n", model.i, nrow(model.df)))
         Cval <- model$C
         k.width <- model$k.width
         ker <- rbfdot(k.width)
-        ##ker <- laplacedot(k.width)
-        ##cat(sprintf("%4d / %4d C=%5.2f k.width=%5.2f\n",
-        ##model.i, nrow(model.df), Cval, k.width))
-        fits <- list(compare=softCompareQP(Pair.sets$train, ker, C=Cval),
-                     rank=svmlight(Pair.sets$train, Cval, k.width))
+        fits <- list(
+          compare=softCompareQP(seed.sets$train, ker, C=Cval),
+          rank=svmlight(seed.sets$train, Cval, k.width))
         models[[model.i]] <- fits
-        for(fit.name in names(fits)){
+        data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
           fit <- fits[[fit.name]]
-          for(set in c("train","validation")){
-            s <- Pair.sets[[set]]
-            pred <- fit$predict(s$Xi, s$Xip)
-            true <- s$yi
-            err.df <- rbind(err.df, {
-              data.frame(FpFnInv(true, pred),
-                         Cval, k.width, set, norm, fit.name)
-            })
-          }
-        }
-      }
-      ## train/validation error curves.
-      validation.big <- subset(err.df, set=="validation")
-      validation.dfs <- split(validation.big, validation.big$fit.name)
-      f <- funs[[norm]]
-      rank.df <- data.frame(X.grid, rank=apply(X.grid, 1, f), what="latent")
-      chosen.df <- data.frame()
-      unused <- Pair.sets$test
-      for(fit.name in names(validation.dfs)){
-        validation.err <- validation.dfs[[fit.name]]
-        chosen <- which.min(validation.err$error)
-        chosen.df <- rbind(chosen.df, validation.err[chosen,])
-        fit <- models[[chosen]][[fit.name]]
-        r <- fit$rank(X.grid)
-        rank.df <- rbind(rank.df, {
-          data.frame(X.grid, rank=r-min(r), what=fit.name)
-        })
-        yhat <- with(unused, fit$predict(Xi, Xip))
-        unused.err <- rbind(unused.err, {
-          data.frame(N, seed, norm, fit.name, FpFnInv(unused$yi, yhat))
-        })
-      }
-  normContour <- ggplot(rank.df, aes(x1, x2, z=rank))+
-    geom_contour(colour="black")+
-    coord_equal()+
-    theme_bw()+
-    theme(panel.margin=unit(0,"cm"))+
-    facet_grid(.~what)
-  print(normContour)
-  overfitPlot <- ggplot(err.df, aes(log2(Cval), error, colour=fit.name))+
-    geom_line(aes(group=interaction(set, fit.name), linetype=set))+
-    facet_wrap("k.width")+
-    theme_bw()+
-    theme(panel.margin=unit(0,"cm"))+
-    geom_point(data=chosen.df)
-  print(overfitPlot)
-      ## if the optimal model occurs on the min/max of the validationed
-      ## hyperparameters, then this is probably sub-optimal and we need to
-      ## define a larger grid.
-      ##stopifnot(! validation.err[chosen,"Cval"] %in% range(Cvals))
-      ##stopifnot(! validation.err[chosen,"k.width"] %in% range(kvals))
-      
-      all.ranks <- rbind(all.ranks, data.frame(rank.df, norm, seed, N))
-    }
-  }
-}
+          s <- seed.sets[[set]]
+          pred <- fit$predict(s$Xi, s$Xip)
+          true <- s$yi
+          data.table(
+            FpFnInv(true, pred),
+            Cval, k.width)
+          }, by=list(fit.name, set)]
+      })
+      err.dt <- do.call(rbind, err.dt.list)
+      chosen.dt <- err.dt[set=="validation", {
+        .SD[which.min(error)]
+      }, by=list(fit.name)]
+            
+      ggplot()+
+        theme_bw()+
+        theme(panel.margin=grid::unit(0, "lines"))+
+        facet_grid(set ~ fit.name)+
+        scale_fill_gradient(low="white", high="black")+
+        geom_tile(aes(
+          log10(Cval), log2(k.width), fill=error), data=err.dt)+
+        geom_point(aes(
+          log10(Cval), log2(k.width)), color="red", data=chosen.dt)
 
-simulation.samples <- list(rank=all.ranks, error=unused.err, data=data.list)
+      train.validation <- with(seed.sets, list(
+        Xi=rbind(train$Xi, validation$Xi),
+        Xip=rbind(train$Xip, validation$Xip),
+        yi=c(train$yi, validation$yi)))
+      
+      for(model.i in 1:nrow(chosen.dt)){
+        model <- chosen.dt[model.i,]
+        fit <- if(model$fit.name=="rank"){
+          svmlight(seed.sets$train, model$Cval, model$k.width)
+        }else{
+          ker <- rbfdot(model$k.width)
+          softCompareQP(seed.sets$train, ker, C=model$Cval)
+        }
+        pred.vec <- with(test.set, fit$predict(Xi, Xip))
+        table(pred.vec, test.set$yi)
+        err.list[[paste(N, seed, norm, model$fit.name)]] <- data.table(
+          N, seed, norm, fit.name=model$fit.name, FpFnInv(test.set$yi, pred.vec))
+        all.ranks.list[[paste(norm, N, seed, model$fit.name)]] <-
+          data.table(X.grid, rank=as.numeric(fit$rank(X.grid)), what=model$fit.name)
+      }
+
+      seed.sets$test <- test.set
+      data.list[[paste(N)]][[paste(seed)]][[norm]] <- seed.sets
+      all.ranks.list[[paste(norm, N, seed, "latent")]] <-
+        data.table(X.grid, rank=apply(X.grid, 1, true.f), what="latent")
+      
+    }#norm
+  }#seed
+}#N
+
+simulation.samples <- list(
+  rank=do.call(rbind, all.ranks.list), error=do.call(rbind, err.list), data=data.list)
 
 save(simulation.samples, file="simulation.samples.RData")
 

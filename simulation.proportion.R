@@ -194,7 +194,9 @@ print(segPlot)
   }
 }
 
-simulation.proportion <-
-  list(rank=all.ranks, error=unused.err, data=data.list)
+simulation.proportion <- list(
+  rank=all.ranks,
+  error=unused.err,
+  data=data.list)[[N]][[seed]][[norm]][[set]]
 
 save(simulation.proportion, file="simulation.proportion.RData")
