@@ -229,3 +229,8 @@ svmlight <- function
 ### vector) or fit$compare(Xi, Xip) to get comparison values (integer
 ### vector with elements -1,0,1).
 }
+if(!file.exists("svm_learn")){
+  dir.create("svm_light_src")
+  download.file("http://download.joachims.org/svm_light/current/svm_light.tar.gz", "svm_light_src/svm_light.tar.gz")
+  system("cd svm_light_src && tar xvf svm_light.tar.gz && make && cp svm_learn svm_classify ..")
+}
