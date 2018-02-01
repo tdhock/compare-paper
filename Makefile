@@ -8,7 +8,7 @@ figure-norm-data.tex: figure-norm-data.R tikz.R colors.R
 	R --no-save < $<
 figure-hard-margin.tex: figure-hard-margin.R tikz.R colors.R
 	R --no-save < $<
-simulation.samples.RData: simulation.samples.R svmlight.R
+simulation.sushi.samples.RData: simulation.sushi.samples.R sushi.pairs.RData
 	R --no-save < $<
 figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RData tikz.R Nsamp.R colors.R sushi.samples.RData
 	R --no-save < $<

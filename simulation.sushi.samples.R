@@ -2,6 +2,7 @@ source("packages.R")
 
 load("sushi.pairs.RData")
 
+options(mc.cores=2)#because we may swap!
 plan(multiprocess)
 
 source("svmlight.R")
@@ -32,6 +33,8 @@ lapply(pair.sets, with, table(yi))
 
 levs <- seq(-2,2,l=41)
 X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
+
+dir.create("cache")
 
 all.ranks.list <- list()
 err.list <- list()
@@ -70,28 +73,35 @@ for(data.name in names(pair.sets)){
       models <- list()
       kvals <- 2^seq(-8, 4, l=10)
       model.df <- expand.grid(C=Cvals, k.width=kvals)
-      err.dt.list <- future_lapply(1:nrow(model.df), function(model.i){
-        model <- model.df[model.i,]
-        ##cat(sprintf("%4d / %4d models\n", model.i, nrow(model.df)))
-        Cval <- model$C
-        k.width <- model$k.width
-        ker <- rbfdot(k.width)
-        fits <- list(
-          compare=softCompareQP(seed.sets$train, ker, C=Cval),
-          rank2=svmlight(seed.sets$train, Cval, k.width, equality="bothpairs"),
-          rank=svmlight(seed.sets$train, Cval, k.width))
-        models[[model.i]] <- fits
-        data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
-          fit <- fits[[fit.name]]
-          s <- seed.sets[[set]]
-          pred <- fit$predict(s$Xi, s$Xip)
-          true <- s$yi
-          data.table(
-            FpFnInv(true, pred),
-            Cval, k.width)
+      cache.RData <- paste0("cache/", data.name, "_", seed, "_", N, ".RData")
+      if(file.exists(cache.RData)){
+        load(cache.RData)
+      }else{
+        err.dt.list <- future_lapply(1:nrow(model.df), function(model.i){
+          model <- model.df[model.i,]
+          ##cat(sprintf("%4d / %4d models\n", model.i, nrow(model.df)))
+          Cval <- model$C
+          k.width <- model$k.width
+          ker <- rbfdot(k.width)
+          fits <- list(
+            compare=softCompareQP(seed.sets$train, ker, C=Cval),
+            rank2=svmlight(seed.sets$train, Cval, k.width, equality="bothpairs"),
+            rank=svmlight(seed.sets$train, Cval, k.width))
+          models[[model.i]] <- fits
+          data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
+            fit <- fits[[fit.name]]
+            s <- seed.sets[[set]]
+            pred <- fit$predict(s$Xi, s$Xip)
+            true <- s$yi
+            data.table(
+              FpFnInv(true, pred),
+              fit=list(list(fit)),
+              Cval, k.width)
           }, by=list(fit.name, set)]
-      })
-      err.dt <- do.call(rbind, err.dt.list)
+        })
+        err.dt <- do.call(rbind, err.dt.list)
+        save(err.dt, file=cache.RData)
+      }
       chosen.dt <- err.dt[set=="validation", {
         .SD[which.min(error)]
       }, by=list(fit.name)]
@@ -113,33 +123,31 @@ for(data.name in names(pair.sets)){
       
       for(model.i in 1:nrow(chosen.dt)){
         model <- chosen.dt[model.i,]
-        fit <- if(model$fit.name=="compare"){
-          ker <- rbfdot(model$k.width)
-          softCompareQP(seed.sets$train, ker, C=model$Cval)
-        }else{
-          svmlight(seed.sets$train, model$Cval, model$k.width)
-        }
+        fit <- model$fit[[1]]
         pred.vec <- with(test.set, fit$predict(Xi, Xip))
         table(pred.vec, test.set$yi)
         err.list[[paste(N, seed, data.name, model$fit.name)]] <- data.table(
           N, seed, data.name, fit.name=model$fit.name, FpFnInv(test.set$yi, pred.vec))
-        all.ranks.list[[paste(data.name, N, seed, model$fit.name)]] <-
-          data.table(X.grid, rank=as.numeric(fit$rank(X.grid)), what=model$fit.name)
+        if(data.name != "sushi"){
+          all.ranks.list[[paste(data.name, N, seed, model$fit.name)]] <-
+            data.table(X.grid, rank=as.numeric(fit$rank(X.grid)), what=model$fit.name)
+        }
       }
-
-      true.f(
 
       seed.sets$test <- test.set
       data.list[[paste(N)]][[paste(seed)]][[data.name]] <- seed.sets
-      all.ranks.list[[paste(data.name, N, seed, "latent")]] <-
-        data.table(X.grid, rank=apply(X.grid, 1, true.f), what="latent")
+
+      if(data.name != "sushi"){
+        all.ranks.list[[paste(data.name, N, seed, "latent")]] <-
+          data.table(X.grid, rank=apply(X.grid, 1, true.f), what="latent")
+      }
       
     }#data.name
   }#seed
 }#N
 
-simulation.samples <- list(
+simulation.sushi.samples <- list(
   rank=do.call(rbind, all.ranks.list), error=do.call(rbind, err.list), data=data.list)
 
-save(simulation.samples, file="simulation.samples.RData")
+save(simulation.sushi.samples, file="simulation.sushi.samples.RData")
 

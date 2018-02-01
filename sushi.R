@@ -12,7 +12,6 @@
 
 sushi.score <- "sushi3-2016/sushi3b.5000.10.score"
 if(!file.exists(sushi.score)){
-  dir.create("sushi3")
   download.file("http://www.kamishima.net/asset/sushi3-2016.zip", "sushi3-2016.zip")
   system("unzip sushi3-2016.zip")
 }
