@@ -1,10 +1,6 @@
-works_with_R(
-  "3.3.3",
-  future="1.4.0",
-  kernlab="0.9.19",
-  data.table="1.10.4",
-  "tdhock/rankSVMcompare@e4bcbeb1170970c8678eceb7b8b34290df42f657",
-  ggplot2="2.1.0")
+source("packages.R")
+
+load("sushi.pairs.RData")
 
 plan(multiprocess)
 
@@ -17,30 +13,18 @@ deltas <- list(l2=function()runif(2,-1,1/2),
                l1=function()runif(2,-1/2,1/2),
                linf=function()runif(2,-1,1))
 set.seed(1)
-total.sim <- 2000
-pair.sets <- list()
+total.sim <- 25000
+pair.sets <- list(sushi=sushi.pairs)
 for(norm in names(funs)){
   delta.fun <- deltas[[norm]]
   f <- funs[[norm]]
-  Xi <- c()
-  Xip <- c()
-  yi <- c()
-  for(i in 1:total.sim){#TDH 31 Jan 2018, this could be vectorized...
-    x <- runif(2,-2,2)
-    delta <- delta.fun()
-    xp <- x+delta
-    noise <- 0
-    noise <- rnorm(1,sd=1/4)#comment for noiseless simulation.
-    fxdiff <- f(xp)-f(x)+noise
-    y <- ifelse(fxdiff < -1, -1L,
-                ifelse(fxdiff > 1, 1L, 0L))
-    Xi <- rbind(Xi, x)
-    Xip <- rbind(Xip, xp)
-    rownames(Xi) <- rownames(Xip) <- NULL
-    yi <- c(yi, y)
-  }
-  colnames(Xi) <- c("x1", "x2")
-  colnames(Xip) <- c("x1", "x2")
+  Xi <- matrix(runif(2*total.sim, -2, 2), total.sim, 2)
+  Xip <- Xi + rnorm(2*total.sim, sd=1/2)
+  fxdiff <- apply(Xip, 1, f)-apply(Xi, 1, f)
+  yi <- ifelse(
+    fxdiff < -1, -1L, ifelse(
+      1 < fxdiff, 1L, 0L))
+  colnames(Xi) <- colnames(Xip) <- c("x1", "x2")
   pair.sets[[norm]] <- list(Xi=Xi, Xip=Xip, yi=yi)
 }
 lapply(pair.sets, with, table(yi))
@@ -52,10 +36,10 @@ X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
 all.ranks.list <- list()
 err.list <- list()
 data.list <- list()
-test.N <- 1000
-for(norm in names(pair.sets)){
-  Pairs <- pair.sets[[norm]]
-  true.f <- funs[[norm]]
+test.N <- 10000
+for(data.name in names(pair.sets)){
+  Pairs <- pair.sets[[data.name]]
+  true.f <- funs[[data.name]]
   is.zero <- Pairs$yi == 0
   set.vec <- rep(NA, length(is.zero))
   set.seed(1)
@@ -64,7 +48,7 @@ for(norm in names(pair.sets)){
   is.test <- set.vec=="test" & !is.na(set.vec)
   test.set <- with(Pairs, list(
     Xi=Xi[is.test,], Xip=Xip[is.test,], yi=yi[is.test]))
-  for(N in c(50, 100, 200, 300)){
+  for(N in c(50, 100, 200, 400, 800)){
     for(seed in 1:4){
       N.set.vec <- set.vec
       set.seed(seed)
@@ -80,7 +64,7 @@ for(norm in names(pair.sets)){
       stopifnot(sum(table(N.set.vec, is.zero) == cbind(exp.N, exp.N))==6)
 
       ## fit SVM.
-      cat(sprintf("N=%4d seed=%4d norm=%s\n", N, seed, norm))
+      cat(sprintf("N=%4d seed=%4d data.name=%s\n", N, seed, data.name))
       err.df.list <- list()
       Cvals <- 10^seq(-1,5,l=10)
       models <- list()
@@ -94,6 +78,7 @@ for(norm in names(pair.sets)){
         ker <- rbfdot(k.width)
         fits <- list(
           compare=softCompareQP(seed.sets$train, ker, C=Cval),
+          rank2=svmlight(seed.sets$train, Cval, k.width, equality="bothpairs"),
           rank=svmlight(seed.sets$train, Cval, k.width))
         models[[model.i]] <- fits
         data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
@@ -128,26 +113,28 @@ for(norm in names(pair.sets)){
       
       for(model.i in 1:nrow(chosen.dt)){
         model <- chosen.dt[model.i,]
-        fit <- if(model$fit.name=="rank"){
-          svmlight(seed.sets$train, model$Cval, model$k.width)
-        }else{
+        fit <- if(model$fit.name=="compare"){
           ker <- rbfdot(model$k.width)
           softCompareQP(seed.sets$train, ker, C=model$Cval)
+        }else{
+          svmlight(seed.sets$train, model$Cval, model$k.width)
         }
         pred.vec <- with(test.set, fit$predict(Xi, Xip))
         table(pred.vec, test.set$yi)
-        err.list[[paste(N, seed, norm, model$fit.name)]] <- data.table(
-          N, seed, norm, fit.name=model$fit.name, FpFnInv(test.set$yi, pred.vec))
-        all.ranks.list[[paste(norm, N, seed, model$fit.name)]] <-
+        err.list[[paste(N, seed, data.name, model$fit.name)]] <- data.table(
+          N, seed, data.name, fit.name=model$fit.name, FpFnInv(test.set$yi, pred.vec))
+        all.ranks.list[[paste(data.name, N, seed, model$fit.name)]] <-
           data.table(X.grid, rank=as.numeric(fit$rank(X.grid)), what=model$fit.name)
       }
 
+      true.f(
+
       seed.sets$test <- test.set
-      data.list[[paste(N)]][[paste(seed)]][[norm]] <- seed.sets
-      all.ranks.list[[paste(norm, N, seed, "latent")]] <-
+      data.list[[paste(N)]][[paste(seed)]][[data.name]] <- seed.sets
+      all.ranks.list[[paste(data.name, N, seed, "latent")]] <-
         data.table(X.grid, rank=apply(X.grid, 1, true.f), what="latent")
       
-    }#norm
+    }#data.name
   }#seed
 }#N
 

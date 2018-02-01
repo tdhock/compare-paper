@@ -9,8 +9,10 @@ total.pairs <- sum(user.pairs)
 n.features <- sapply(sushi.features, ncol)
 total.features <- sum(n.features)
 
-Xi <- Xip <- matrix(NA, total.pairs, total.features)
+Xi <- Xip <- matrix(NA, total.pairs, total.features, dimnames=list(NULL, paste0("v", 1:total.features)))
 yi <- rep(NA, total.pairs)
+
+set.seed(1)
 
 pair.i <- 1
 for(user.id in 1:nrow(sushi$scores)){

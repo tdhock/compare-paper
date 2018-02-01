@@ -10,7 +10,14 @@
 ## using five-point-scale, 0:the most disliked, 4:the most preferred,
 ## -1:not rated
 
-scores <- read.table("sushi3/sushi3b.5000.10.score", sep=" ")
+sushi.score <- "sushi3-2016/sushi3b.5000.10.score"
+if(!file.exists(sushi.score)){
+  dir.create("sushi3")
+  download.file("http://www.kamishima.net/asset/sushi3-2016.zip", "sushi3-2016.zip")
+  system("unzip sushi3-2016.zip")
+}
+
+scores <- read.table(sushi.score, sep=" ")
 mat <- as.matrix(scores)
 mat[mat==-1] <- NA
 
@@ -18,11 +25,11 @@ ucols <- c("userID", "gender", "age", "time",
            "prefecture.until.15", "region.until.15", "east/west.until.15",
            "prefecture.current", "region.current", "east/west.current",
            "moved")
-users <- read.table("sushi3/sushi3.udata", col.names=ucols)
+users <- read.table("sushi3-2016/sushi3.udata", col.names=ucols)
 
 icols <- c("itemID", "japanese", "style", "major", "minor",
            "oily", "frequency.eat", "price", "frequency.sold")
-items <- read.table("sushi3/sushi3.idata", col.names=icols)
+items <- read.table("sushi3-2016/sushi3.idata", col.names=icols)
 
 sushi <- list(scores=mat, users=users, items=items)
 

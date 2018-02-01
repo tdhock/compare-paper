@@ -1,4 +1,4 @@
-works_with_R("3.0.2", RCurl="1.95.4.1", RJSONIO="1.0.3", ggplot2="0.9.3.1")
+source("packages.R")
 
 ## Download locations of prefectures from google.
 
@@ -9,7 +9,7 @@ pattern <- paste("(?<code>[0-9]+)",
                  ":",
                  "(?<prefecture>.*)",
                  sep="")
-matched <- str_match_perl(prefLines, pattern)
+matched <- namedCapture::str_match_named(prefLines, pattern)
 prefectures <- matched[,"prefecture"]
 names(prefectures) <- matched[,"code"]
 
@@ -27,17 +27,16 @@ construct.geocode.url <- function
   return(URLencode(u))
 }
 
-gGeoCode <- function(address,verbose=FALSE) {
-  if(verbose) cat(address,"\n")
+gGeoCode <- function(address) {
   u <- construct.geocode.url(address)
   doc <- getURL(u)
   x <- fromJSON(doc,simplify = FALSE)
   if(x$status=="OK") {
     lat <- x$results[[1]]$geometry$location$lat
     lng <- x$results[[1]]$geometry$location$lng
-    return(c(lat, lng))
+    c(lat, lng)
   } else {
-    return(c(NA,NA))
+    c(NA,NA)
   }
 }
 
@@ -47,17 +46,23 @@ prefLocations <-
            coordinate=c("latitude", "longitude")))
 x <- gGeoCode("Tokushima")
 prefLocations["Tokushima",] <- x
-for(pref.i in seq_along(prefectures)){
-  pref <- prefectures[[pref.i]]
-  pref.str <- sprintf("%s, Japan", pref)
-  if(is.na(prefLocations[pref,1])){
-    cat(sprintf("%4d / %4d %s\n", pref.i, length(prefectures), pref.str))
-    prefLocations[pref,] <- gGeoCode(pref.str)
+
+while(any(is.na(prefLocations))){
+  for(pref.i in seq_along(prefectures)){
+    pref <- prefectures[[pref.i]]
+    pref.str <- if(pref=="foreign countries"){
+      "Berkeley, CA"## Assumption: all foreigners come from Berkeley!
+    }else{
+      paste0(pref, ", Japan")
+    }
+    if(is.na(prefLocations[pref,1])){
+      g.vec <- gGeoCode(pref.str)
+      cat(sprintf("%4d / %4d %s -> %s %s\n", pref.i, length(prefectures), pref.str, g.vec[1], g.vec[2]))
+      prefLocations[pref,] <- g.vec
+      Sys.sleep(1)
+    }
   }
 }
-
-## Assumption: all foreigners come from Berkeley!
-prefLocations["foreign countries",] <- gGeoCode("Berkeley, CA")
 
 locs <- data.frame(prefLocations, prefectures)
 ggplot(locs)+

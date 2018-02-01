@@ -1,4 +1,7 @@
-works_with_R("3.0.2", plyr="1.8", reshape2="1.2.2")
+works_with_R(
+  "3.3.3",
+  data.table="1.10.4",
+  ggplot2="2.1.0")
 
 source("tikz.R")
 source("Nsamp.R")
@@ -7,7 +10,7 @@ source("colors.R")
 load("simulation.samples.RData")
 load("sushi.samples.RData")
 
-## matrix versions of the norm.
+## matrix versions of the data.name.
 funs <- list(l2=function(x)rowSums(x*x),
              l1=function(x)rowSums(abs(x))^2,
              linf=function(x)apply(abs(x), 1, max)^2)
@@ -16,53 +19,57 @@ size.list <- simulation.samples$data
 err <- simulation.samples$err
 err$percent <- err$error / err$count * 100
 ## sets of training data and bayes error on test data.
-sets <- dcast(err, N + seed + norm ~ fit.name, value.var="percent")
+sets <- dcast(err, N + seed + data.name ~ fit.name, value.var="percent")
 sets$diff <- sets$compare-sets$rank
 sets$set.id <- 1:nrow(sets)
-diff.df <- ddply(sets, .(N, norm), summarize,
-                   N=N[1], norm=norm[1],
-                   mean=mean(diff), sd=sd(diff))
-train.df <- data.frame()
-bayes.df <- data.frame()
+diff.df <- sets[,  list(
+  mean=mean(diff), sd=sd(diff)
+  ), by=list(N, data.name)]
+
+train.dt.list <- list()
+bayes.dt.list <- list()
 for(set.id in sets$set.id){
   e <- sets[set.id,]
   N <- as.character(e$N)
-  norm <- as.character(e$norm)
+  data.name <- as.character(e$data.name)
   seed <- as.character(e$seed)
-  err$set.id[err$norm == norm & err$N == N & err$seed == seed] <- set.id
-  set.list <- size.list[[N]][[seed]][[norm]]
-  info <- data.frame(N=as.integer(as.character(N)), norm, seed, set.id)
+  err$set.id[err$data.name == data.name & err$N == N & err$seed == seed] <- set.id
+  set.list <- size.list[[N]][[seed]][[data.name]]
+  info <- data.frame(N=as.integer(as.character(N)), data.name, seed, set.id)
   ## The Bayes error on the test data set.
   test <- set.list$test
-  fun <- funs[[norm]]
+  fun <- funs[[data.name]]
   fxdiff <- with(test, fun(Xip)-fun(Xi))
   yhat <- ifelse(fxdiff > 1, 1L,
                  ifelse(fxdiff < -1, -1L, 0))
   table(yhat, test$yi)
   percent <- mean(yhat != test$yi) * 100
-  bayes.df <- rbind(bayes.df, data.frame(info, percent))
+  bayes.dt.list[[paste(set.id)]] <- data.table(info, percent)
   ## Train pairs, oriented in the same way:
   pair.df <- with(set.list$train,{
     rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
           data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
           data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
   })
-  train.df <- rbind(train.df, data.frame(pair.df, info))
+  train.dt.list[[paste(set.id)]] <- data.table(pair.df, info)
 }
-bayes.df$fit.name <- "truth"
+train.dt <- do.call(rbind, train.dt.list)
+bayes.dt <- do.call(rbind, bayes.dt.list)
+
+bayes.dt$fit.name <- "truth"
 sushi.err <- sushi.samples$error
-sushi.err$norm <- "sushi"
+sushi.err$data.name <- "sushi"
 sushi.err$set.id <- NA
 sushi.err$percent <- with(sushi.err, error/count*100)
-combined <- rbind(err[,names(bayes.df)],
-                  bayes.df,
-                  sushi.err[,names(bayes.df)])
-percents <-
-  ddply(combined, .(N, fit.name, norm), summarize,
-        mean=mean(percent),
-        sd=sd(percent),
-        se=sd(percent)/sqrt(length(percent)))
-library(grid)
+combined <- rbind(
+  err[,names(bayes.dt), with=FALSE],
+  bayes.dt,
+  sushi.err[,names(bayes.dt)])
+percents <- combined[, list(
+  mean=mean(percent),
+  sd=sd(percent),
+  se=sd(percent)/sqrt(length(percent))
+  ), by=list(N, fit.name, data.name)]
 percents$fit.name <- factor(percents$fit.name, names(model.colors))
 labels <- c(l1="1",
             l2="2",
@@ -71,9 +78,9 @@ makelabel <- function(x){
   ifelse(x=="sushi", "sushi",
   sprintf("$r(\\mathbf x) = ||\\mathbf x||_%s^2$", labels[as.character(x)]))
 }
-percents$label <- makelabel(percents$norm)
-err$label <- makelabel(err$norm)
-indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.norm))
+percents$label <- makelabel(percents$data.name)
+err$label <- makelabel(err$data.name)
+indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.data.name))
 leg <- "function"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   geom_vline(aes(xintercept=N),size=2,data=indicator)+
