@@ -7,16 +7,15 @@ source("tikz.R")
 source("Nsamp.R")
 source("colors.R")
 
-load("simulation.samples.RData")
-load("sushi.samples.RData")
+load("simulation.sushi.samples.RData")
 
 ## matrix versions of the data.name.
 funs <- list(l2=function(x)rowSums(x*x),
              l1=function(x)rowSums(abs(x))^2,
              linf=function(x)apply(abs(x), 1, max)^2)
 
-size.list <- simulation.samples$data
-err <- simulation.samples$err
+size.list <- simulation.sushi.samples$data
+err <- simulation.sushi.samples$err
 err$percent <- err$error / err$count * 100
 ## sets of training data and bayes error on test data.
 sets <- dcast(err, N + seed + data.name ~ fit.name, value.var="percent")
@@ -39,32 +38,29 @@ for(set.id in sets$set.id){
   ## The Bayes error on the test data set.
   test <- set.list$test
   fun <- funs[[data.name]]
-  fxdiff <- with(test, fun(Xip)-fun(Xi))
-  yhat <- ifelse(fxdiff > 1, 1L,
-                 ifelse(fxdiff < -1, -1L, 0))
-  table(yhat, test$yi)
-  percent <- mean(yhat != test$yi) * 100
-  bayes.dt.list[[paste(set.id)]] <- data.table(info, percent)
-  ## Train pairs, oriented in the same way:
-  pair.df <- with(set.list$train,{
-    rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
-          data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
-          data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
-  })
-  train.dt.list[[paste(set.id)]] <- data.table(pair.df, info)
+  if(is.function(fun)){
+    fxdiff <- with(test, fun(Xip)-fun(Xi))
+    yhat <- ifelse(fxdiff > 1, 1L,
+                   ifelse(fxdiff < -1, -1L, 0))
+    table(yhat, test$yi)
+    percent <- mean(yhat != test$yi) * 100
+    bayes.dt.list[[paste(set.id)]] <- data.table(info, percent)
+    ## Train pairs, oriented in the same way:
+    pair.df <- with(set.list$train,{
+      rbind(data.frame(Xt=Xi[yi==1,],Xtp=Xip[yi==1,],yt=1),
+            if(any(yi==-1))data.frame(Xt=Xip[yi==-1,],Xtp=Xi[yi==-1,],yt=1),
+            data.frame(Xt=Xi[yi==0,],Xtp=Xip[yi==0,],yt=-1))
+    })
+    train.dt.list[[paste(set.id)]] <- data.table(pair.df, info)
+  }
 }
 train.dt <- do.call(rbind, train.dt.list)
 bayes.dt <- do.call(rbind, bayes.dt.list)
 
 bayes.dt$fit.name <- "truth"
-sushi.err <- sushi.samples$error
-sushi.err$data.name <- "sushi"
-sushi.err$set.id <- NA
-sushi.err$percent <- with(sushi.err, error/count*100)
 combined <- rbind(
   err[,names(bayes.dt), with=FALSE],
-  bayes.dt,
-  sushi.err[,names(bayes.dt)])
+  bayes.dt)
 percents <- combined[, list(
   mean=mean(percent),
   sd=sd(percent),
@@ -80,10 +76,10 @@ makelabel <- function(x){
 }
 percents$label <- makelabel(percents$data.name)
 err$label <- makelabel(err$data.name)
-indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(show.data.name))
+indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(data.name))
 leg <- "function"
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
-  geom_vline(aes(xintercept=N),size=2,data=indicator)+
+  ##geom_vline(aes(xintercept=N),size=2,data=indicator)+
   geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
   geom_line(aes(colour=fit.name),lwd=1.5)+
   ## Plot actual data:

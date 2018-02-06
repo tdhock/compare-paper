@@ -5,23 +5,22 @@ load("sushi.pairs.RData")
 options(mc.cores=2)#because we may swap!
 plan(multiprocess)
 
+LAPPLY <- lapply
+
 source("svmlight.R")
 
 funs <- list(l2=function(x)sum(x*x),
              l1=function(x)sum(abs(x))^2,
              linf=function(x)max(abs(x))^2)
-deltas <- list(l2=function()runif(2,-1,1/2),
-               l1=function()runif(2,-1/2,1/2),
-               linf=function()runif(2,-1,1))
 set.seed(1)
 total.sim <- 25000
 pair.sets <- list(sushi=sushi.pairs)
 for(norm in names(funs)){
-  delta.fun <- deltas[[norm]]
   f <- funs[[norm]]
   Xi <- matrix(runif(2*total.sim, -2, 2), total.sim, 2)
   Xip <- Xi + rnorm(2*total.sim, sd=1/2)
-  fxdiff <- apply(Xip, 1, f)-apply(Xi, 1, f)
+  noise <- rnorm(total.sim, sd=1/4)
+  fxdiff <- apply(Xip, 1, f)-apply(Xi, 1, f)+noise
   yi <- ifelse(
     fxdiff < -1, -1L, ifelse(
       1 < fxdiff, 1L, 0L))
@@ -51,7 +50,7 @@ for(data.name in names(pair.sets)){
   is.test <- set.vec=="test" & !is.na(set.vec)
   test.set <- with(Pairs, list(
     Xi=Xi[is.test,], Xip=Xip[is.test,], yi=yi[is.test]))
-  for(N in c(50, 100, 200, 400, 800)){
+  for(N in c(50, 100, 200, 400)){
     for(seed in 1:4){
       N.set.vec <- set.vec
       set.seed(seed)
@@ -67,7 +66,6 @@ for(data.name in names(pair.sets)){
       stopifnot(sum(table(N.set.vec, is.zero) == cbind(exp.N, exp.N))==6)
 
       ## fit SVM.
-      cat(sprintf("N=%4d seed=%4d data.name=%s\n", N, seed, data.name))
       err.df.list <- list()
       Cvals <- 10^seq(-1,5,l=10)
       models <- list()
@@ -77,7 +75,8 @@ for(data.name in names(pair.sets)){
       if(file.exists(cache.RData)){
         load(cache.RData)
       }else{
-        err.dt.list <- future_lapply(1:nrow(model.df), function(model.i){
+        cat(sprintf("N=%4d seed=%4d data.name=%s\n", N, seed, data.name))
+        err.dt.list <- LAPPLY(1:nrow(model.df), function(model.i){
           model <- model.df[model.i,]
           ##cat(sprintf("%4d / %4d models\n", model.i, nrow(model.df)))
           Cval <- model$C
@@ -85,8 +84,12 @@ for(data.name in names(pair.sets)){
           ker <- rbfdot(k.width)
           fits <- list(
             compare=softCompareQP(seed.sets$train, ker, C=Cval),
-            rank2=svmlight(seed.sets$train, Cval, k.width, equality="bothpairs"),
-            rank=svmlight(seed.sets$train, Cval, k.width))
+            rank2=svmlight(
+              seed.sets$train, Cval, k.width, equality="bothpairs",
+              filebase=sub("RData", paste0("rank2", "_", model.i), cache.RData)),
+            rank=svmlight(
+              seed.sets$train, Cval, k.width,
+              filebase=sub("RData", paste0("rank", "_", model.i), cache.RData)))
           models[[model.i]] <- fits
           data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
             fit <- fits[[fit.name]]
