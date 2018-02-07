@@ -78,10 +78,10 @@ percents$label <- makelabel(percents$data.name)
 err$label <- makelabel(err$data.name)
 indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(data.name))
 leg <- "function"
-boring <- ggplot(percents, aes(N, mean, group=fit.name))+
+boring <- ggplot()+
   ##geom_vline(aes(xintercept=N),size=2,data=indicator)+
-  geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2)+
-  geom_line(aes(colour=fit.name),lwd=1.5)+
+  geom_ribbon(aes(N, ymin=mean-sd,ymax=mean+sd,fill=fit.name),alpha=1/2, data=percents)+
+  geom_line(aes(N, mean, colour=fit.name),lwd=1.5, data=percents)+
   ## Plot actual data:
   ##geom_point(aes(N, error/count*100, colour=fit.name), data=err)+
   facet_grid(.~label)+
@@ -90,9 +90,14 @@ boring <- ggplot(percents, aes(N, mean, group=fit.name))+
         panel.grid=element_blank())+
   scale_colour_manual(leg,values=model.colors)+
   scale_fill_manual(leg,values=model.colors)+
+  geom_hline(yintercept=50, color="violet")+
+  geom_text(aes(200, 50, label="trivial model error rate"),
+            vjust=1.5,
+            data=data.frame(label=makelabel("linf")),
+            color="violet")+
   ylab("percent incorrectly\npredicted test pairs")+
   xlab("$n=$ number of labeled pairs, half equality and half inequality")
 
-tikz("figure-simulation-samples.tex",h=2)
+tikz("figure-simulation-sushi-samples.tex",h=2)
 print(boring)
 dev.off()
