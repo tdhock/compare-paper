@@ -1,3 +1,11 @@
+if(identical(getOption("repos"), c(CRAN="@CRAN@"))){
+  options(repos=c(
+            "http://www.bioconductor.org/packages/release/bioc",
+            "http://r-forge.r-project.org",
+            "http://cran.utstat.utoronto.ca/",
+            "http://probability.ca/cran",
+            "http://cran.r-project.org"))
+}
 ### Write down what package versions work with your R code, and
 ### attempt to download and load those packages. The first argument is
 ### the version of R that you used, e.g. "3.0.2" and then the rest of
