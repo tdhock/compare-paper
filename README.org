@@ -6,6 +6,8 @@ R package: https://github.com/tdhock/rankSVMcompare/
 
 Reproducible results:
 
+- To re-do computations from scratch, make sure to delete all figures
+  and intermediate RData files, =rm -rf *.RData figure-*.tex=
 - To re-make Figure 4 (percent incorrect test pairs versus number of
   training pairs, for three simulated data sets, and one sushi data
   set), execute =make figure-simulation-sushi-samples.tex=

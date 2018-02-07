@@ -91,6 +91,10 @@ boring <- ggplot()+
   ylab("percent incorrectly\npredicted test pairs")+
   xlab("$n=$ number of labeled pairs, half equality and half inequality")
 
+png("figure-simulation-sushi-samples.png", 1000, 600, res=100)
+print(boring)
+dev.off()
+
 tikz("figure-simulation-sushi-samples.tex",h=2)
 print(boring)
 dev.off()
