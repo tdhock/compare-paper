@@ -10,6 +10,8 @@ figure-hard-margin.tex: figure-hard-margin.R tikz.R colors.R
 	R --vanilla < $<
 simulation.sushi.samples.RData: simulation.sushi.samples.R sushi.pairs.RData
 	R --vanilla < $<
+simulation.sushi.proportion.RData: simulation.sushi.proportion.R sushi.pairs.RData
+	R --vanilla < $<
 figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RData tikz.R Nsamp.R colors.R sushi.samples.RData
 	R --vanilla < $<
 figure-simulation-sushi-samples.tex: figure-simulation-sushi-samples.R simulation.sushi.samples.RData
