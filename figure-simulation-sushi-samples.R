@@ -1,11 +1,4 @@
-works_with_R(
-  "3.3.3",
-  data.table="1.10.4",
-  ggplot2="2.1.0")
-
-source("tikz.R")
-source("Nsamp.R")
-source("colors.R")
+source("packages.R")
 
 load("simulation.sushi.samples.RData")
 
@@ -76,7 +69,7 @@ makelabel <- function(x){
 }
 percents$label <- makelabel(percents$data.name)
 err$label <- makelabel(err$data.name)
-indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(data.name))
+##indicator <- data.frame(N=as.integer(Nsamp), label=makelabel(data.name))
 leg <- "function"
 boring <- ggplot()+
   ##geom_vline(aes(xintercept=N),size=2,data=indicator)+

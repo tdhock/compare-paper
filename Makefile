@@ -1,4 +1,4 @@
-HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-samples.tex figure-norm-level-curves.tex figure-auc.tex
+HOCKING-svm-compare.pdf: HOCKING-svm-compare.tex refs.bib figure-norm-data.tex figure-hard-margin.tex aistats2014.sty figure-simulation-sushi-samples.tex figure-norm-level-curves.tex figure-auc.tex
 	rm -f *.aux *.bbl
 	pdflatex HOCKING-svm-compare
 	bibtex HOCKING-svm-compare
@@ -11,6 +11,8 @@ figure-hard-margin.tex: figure-hard-margin.R tikz.R colors.R
 simulation.sushi.samples.RData: simulation.sushi.samples.R sushi.pairs.RData
 	R --no-save < $<
 figure-simulation-samples.tex: figure-simulation-samples.R simulation.samples.RData tikz.R Nsamp.R colors.R sushi.samples.RData
+	R --no-save < $<
+figure-simulation-sushi-samples.tex: figure-simulation-sushi-samples.R simulation.sushi.samples.RData
 	R --no-save < $<
 figure-norm-level-curves.tex: figure-norm-level-curves.R tikz.R simulation.samples.RData Nsamp.R colors.R
 	R --no-save < $<

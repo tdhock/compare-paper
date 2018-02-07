@@ -1,4 +1,11 @@
-compare-paper
-=============
+Support vector comparison machines
 
-Support vector comparison machines, to submit to AISTATS 2014.
+arXiv paper: https://arxiv.org/abs/1401.8008
+
+R package: https://github.com/tdhock/rankSVMcompare/
+
+Reproducible results:
+
+- To re-make Figure 4 (percent incorrect test pairs versus number of
+  training pairs, for three simulated data sets, and one sushi data
+  set), execute =make figure-simulation-sushi-samples.tex=
