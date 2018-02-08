@@ -35,18 +35,34 @@ X.grid <- as.matrix(expand.grid(x1=levs,x2=levs))
 
 dir.create("cache-prop")
 
-
 computeROC <- function(rank.diff, label){
   stopifnot(length(rank.diff)==length(label))
-  rd <- data.table(rank.diff=as.numeric(rank.diff), label=as.numeric(label))
-  rd[, abs.diff := abs(rank.diff)]
-  ord <- rd[order(-abs.diff)]
-  ord[, FP := cumsum(label==0)]
-  ord[, TP := cumsum((label==-1 & rank.diff < 0) | (label == 1 & rank.diff > 0))]
-  ord[, FPR := FP / sum(label != 0)]
-  ord[, TPR := TP / sum(label != 0)]
-  ord
+  stopifnot(label %in% c(-1,0,1))
+  is.negative <- label==0
+  n.negative <- sum(is.negative)
+  n.positive <- sum(!is.negative)
+  stopifnot(0 < n.negative, 0 < n.positive)
+  example.dt <- data.table(rank.diff=as.numeric(rank.diff), label=as.numeric(label))
+  example.dt[, abs.diff := abs(rank.diff)]
+  example.dt[, is.FP := label==0]
+  example.dt[, is.TP := (label==-1 & rank.diff < 0) | (label == 1 & rank.diff > 0)]
+  thresh.dt <- example.dt[is.FP|is.TP, list(
+    n.FP=sum(is.FP),
+    n.TP=sum(is.TP)
+  ), by=list(abs.diff)][order(-abs.diff)]
+  thresh.dt[, FP := cumsum(n.FP)]
+  thresh.dt[, TP := cumsum(n.TP)]
+  thresh.dt[, FPR := FP / n.negative]
+  thresh.dt[, TPR := TP / n.positive]
+  rbind(
+    data.table(abs.diff=Inf, n.FP=0, n.TP=0, FP=0, TP=0, FPR=0, TPR=0),
+    data.table(thresh.dt)
+    )
 }
+simple.dt <- computeROC(c(2, 2, -2), c(1, 1, 0))
+simple.dt[, stopifnot(identical(FPR, c(0,1)), identical(TPR, c(0,1)))]
+simple.dt <- computeROC(c(3, -2.5, 2), c(1, 1, 0))
+simple.dt[, stopifnot(identical(FPR, c(0,0,1)), identical(TPR, c(0, 0.5, 0.5)))]
 
 all.ranks.list <- list()
 err.list <- list()
@@ -64,6 +80,10 @@ for(data.name in names(pair.sets)){
   is.test <- set.vec=="test" & !is.na(set.vec)
   test.set <- with(Pairs, list(
     Xi=Xi[is.test,], Xip=Xip[is.test,], yi=yi[is.test]))
+  test.lab.tab <- table(test.set$yi)
+  test.not.zero <- test.lab.tab[names(test.lab.tab)!="0"]
+  best.uninformed.guess <- as.numeric(names(test.not.zero[which.max(test.not.zero)]))
+  best.uninformed.roc <- computeROC(rep(best.uninformed.guess, length(test.set$yi)), test.set$yi)
   for(prop in seq(0.1, 0.9, by=0.1)){
     for(seed in 1:4){
       N.set.vec <- set.vec
@@ -87,6 +107,7 @@ for(data.name in names(pair.sets)){
       }else{
         cat(sprintf("N=%4d seed=%4d data.name=%s\n", N, seed, data.name))
         err.dt.list <- LAPPLY(1:nrow(model.df), function(model.i){
+          print(model.i)
           model <- model.df[model.i,]
           ##cat(sprintf("%4d / %4d models\n", model.i, nrow(model.df)))
           Cval <- model$C
@@ -102,14 +123,14 @@ for(data.name in names(pair.sets)){
               seed.sets$train, Cval, k.width,
               filebase=sub("RData", paste0("rank", "_", model.i), cache.RData)))
           data.table(expand.grid(fit.name=names(fits), set=c("train","validation")))[, {
-            fit <- fits[[fit.name]]
-            s <- seed.sets[[set]]
+            fit <- fits[[paste(fit.name)]]
+            s <- seed.sets[[paste(set)]]
             rank.diff <- fit$rank(s$Xip)-fit$rank(s$Xi)
             true <- s$yi
             roc.dt <- computeROC(rank.diff, true)
             auc <- WeightedROC::WeightedAUC(roc.dt[order(abs.diff)])
             data.table(
-              FpFnInv(true, pred),
+              auc,
               fit=list(list(fit)),
               Cval, k.width)
           }, by=list(fit.name, set)]
@@ -118,7 +139,7 @@ for(data.name in names(pair.sets)){
         save(err.dt, file=cache.RData)
       }
       chosen.dt <- err.dt[set=="validation", {
-        .SD[which.min(error)]
+        .SD[which.max(auc)]
       }, by=list(fit.name)]
             
       ggplot()+
@@ -127,7 +148,7 @@ for(data.name in names(pair.sets)){
         facet_grid(set ~ fit.name)+
         scale_fill_gradient(low="white", high="black")+
         geom_tile(aes(
-          log10(Cval), log2(k.width), fill=error), data=err.dt)+
+          log10(Cval), log2(k.width), fill=auc), data=err.dt)+
         geom_point(aes(
           log10(Cval), log2(k.width)), color="red", data=chosen.dt)
 
@@ -138,11 +159,12 @@ for(data.name in names(pair.sets)){
       
       for(model.i in 1:nrow(chosen.dt)){
         model <- chosen.dt[model.i,]
-        fit <- model$fit[[1]]
-        pred.vec <- with(test.set, fit$predict(Xi, Xip))
-        table(pred.vec, test.set$yi)
+        fit <- model$fit[[1]][[1]]
+        rank.diff <- with(test.set, fit$rank(Xip)-fit$rank(Xi))
+        roc.dt <- computeROC(rank.diff, test.set$yi)
+        auc <- WeightedROC::WeightedAUC(roc.dt[order(abs.diff)])
         err.list[[paste(N, seed, data.name, model$fit.name)]] <- data.table(
-          N, seed, data.name, fit.name=model$fit.name, FpFnInv(test.set$yi, pred.vec))
+          N, seed, data.name, fit.name=model$fit.name, auc)
         if(data.name != "sushi"){
           all.ranks.list[[paste(data.name, N, seed, model$fit.name)]] <-
             data.table(X.grid, rank=as.numeric(fit$rank(X.grid)), what=model$fit.name)
